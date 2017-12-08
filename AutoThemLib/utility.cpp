@@ -189,9 +189,9 @@ void Util_RegReadString(HKEY hKey, LPCTSTR lpSubKey, LPCTSTR lpValueName, DWORD 
 
 void Util_WinKill(HWND hWnd)
 {
-	DWORD      dwResult;
+	DWORD_PTR  dwResult;
 
-	LRESULT lResult = SendMessageTimeout(hWnd, WM_CLOSE, 0, 0, SMTO_ABORTIFHUNG, 500, &dwResult);	// wait 500ms
+	LRESULT lResult = SendMessageTimeoutW(hWnd, WM_CLOSE, 0, 0, SMTO_ABORTIFHUNG, 500, &dwResult);	// wait 500ms
 
 	if( !lResult )
 	{
@@ -236,6 +236,19 @@ bool Util_DoesProcessExist(const char *szName, DWORD &dwPid, bool &bResult)
 
 } // Util_DoesProcessExist()
 
+typedef struct tagPROCESSENTRY32A
+{
+	DWORD   dwSize;
+	DWORD   cntUsage;
+	DWORD   th32ProcessID;          // this process
+	ULONG_PTR th32DefaultHeapID;
+	DWORD   th32ModuleID;           // associated exe
+	DWORD   cntThreads;
+	DWORD   th32ParentProcessID;    // this process's parent process
+	LONG    pcPriClassBase;         // Base priority of process's threads
+	DWORD   dwFlags;
+	CHAR    szExeFile[MAX_PATH];    // Path
+} PROCESSENTRY32A;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Util_DoesProcessExist9x()
@@ -251,11 +264,11 @@ bool Util_DoesProcessExist(const char *szName, DWORD &dwPid, bool &bResult)
 
 bool Util_DoesProcessExist9x2000(const char *szName, DWORD &dwPid, bool &bResult)
 {
-typedef BOOL (WINAPI *PROCESSWALK)(HANDLE hSnapshot, LPPROCESSENTRY32 lppe);
+typedef BOOL (WINAPI *PROCESSWALK)(HANDLE hSnapshot, PROCESSENTRY32A* lppe);
 typedef HANDLE (WINAPI *CREATESNAPSHOT)(DWORD dwFlags, DWORD th32ProcessID);
 
 	HANDLE			snapshot;
-	PROCESSENTRY32	proc;
+	PROCESSENTRY32A	proc;
 	HINSTANCE		hinstLib;
 	CREATESNAPSHOT	lpfnCreateToolhelp32Snapshot = NULL;
 	PROCESSWALK		lpfnProcess32First = NULL;
@@ -267,7 +280,7 @@ typedef HANDLE (WINAPI *CREATESNAPSHOT)(DWORD dwFlags, DWORD th32ProcessID);
 	DWORD			dwTemp;
 
 	// We must dynamically load the function to retain compatibility with WinNT
-	hinstLib = GetModuleHandle("KERNEL32.DLL");
+	hinstLib = GetModuleHandleW(L"KERNEL32.DLL");
 	if (hinstLib == NULL)
 		return false;
 
@@ -333,7 +346,7 @@ bool Util_DoesProcessExistNT(const char *szName, DWORD &dwPid, bool &bResult)
 {
 typedef BOOL (WINAPI *MyEnumProcesses)(DWORD*, DWORD, DWORD*);
 typedef BOOL (WINAPI *MyEnumProcessModules)(HANDLE, HMODULE*, DWORD, LPDWORD);
-typedef DWORD (WINAPI *MyGetModuleBaseName)(HANDLE, HMODULE, LPTSTR, DWORD);
+typedef DWORD (WINAPI *MyGetModuleBaseName)(HANDLE, HMODULE, LPSTR, DWORD);
 
 //BOOL EnumProcesses(
 //  DWORD *lpidProcess,  // array of process identifiers
@@ -376,7 +389,7 @@ typedef DWORD (WINAPI *MyGetModuleBaseName)(HANDLE, HMODULE, LPTSTR, DWORD);
 
 	// We must dynamically load the function to retain compatibility with Win95
     // Get a handle to the DLL module that contains EnumProcesses
-	hinstLib = LoadLibrary("psapi.dll");
+	hinstLib = LoadLibraryW(L"psapi.dll");
 	if (hinstLib == NULL)
 		return false;
 
@@ -525,11 +538,11 @@ unsigned int _stdcall Util_TimeoutMsgBoxThread(void *pParam)
 
 BOOL CALLBACK Util_FindMsgBoxProc(HWND hwnd, LPARAM lParam)
 {
-  char	szClassname[256];
+  wchar_t	szClassname[256];
   BOOL	RetVal = TRUE;
 
-  int nRes = GetClassName(hwnd, szClassname, 256);
-  if (!strcmp(szClassname, "#32770") )			// Class name for a MessageBox window
+  int nRes = GetClassNameW(hwnd, szClassname, 256);
+  if (!wcscmp(szClassname, L"#32770") )			// Class name for a MessageBox window
   {
 	g_hwndMsgBox = hwnd;
     RetVal = FALSE;
@@ -648,7 +661,7 @@ bool Util_FileSetTime(const char *szFilename, FILETIME *ft, int nWhichTime)
 	if (Util_IsDir(szFilename) && g_oVersion.IsWin9x() )
 		return true;
 
-	if ( (hFile = CreateFile(szFilename, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, NULL)) == INVALID_HANDLE_VALUE )
+	if ( (hFile = CreateFileA(szFilename, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, NULL)) == INVALID_HANDLE_VALUE )
 		return false;
 
 	if (nWhichTime == 0)
@@ -677,7 +690,7 @@ bool Util_GetFileVersion(char *szFile, char *szVersion)
 {
 	// Get size of the info block
 	DWORD				dwUnused;
-	DWORD dwSize = GetFileVersionInfoSize(szFile, &dwUnused);
+	DWORD dwSize = GetFileVersionInfoSizeA(szFile, &dwUnused);
 
 	if (dwSize)
 	{
@@ -687,10 +700,10 @@ bool Util_GetFileVersion(char *szFile, char *szVersion)
 		BYTE *pInfo = new BYTE[dwSize];
 
 		// Read the version resource
-		GetFileVersionInfo((LPSTR)szFile, 0, dwSize, (LPVOID)pInfo);
+		GetFileVersionInfoA((LPSTR)szFile, 0, dwSize, (LPVOID)pInfo);
 
 		// Locate the fixed information
-		if (VerQueryValue(pInfo, "\\", (LPVOID *)&pFFI, &uSize)!=0)
+		if (VerQueryValueA(pInfo, "\\", (LPVOID *)&pFFI, &uSize)!=0)
 		{
 			//extract the fields you want from pFFI
 			uint iFileMS = (uint)pFFI->dwFileVersionMS;
@@ -722,9 +735,9 @@ bool Util_DoesFileExist(const char *szFilename)
 {
 	if ( strchr(szFilename,'*')||strchr(szFilename,'?') )
 	{
-		WIN32_FIND_DATA	wfd;
+		WIN32_FIND_DATAA	wfd;
 
-	    HANDLE hFile = FindFirstFile(szFilename, &wfd);
+	    HANDLE hFile = FindFirstFileA(szFilename, &wfd);
 
 		if ( hFile == INVALID_HANDLE_VALUE )
 			return false;
@@ -734,7 +747,7 @@ bool Util_DoesFileExist(const char *szFilename)
 	}
     else
 	{
-		if ( GetFileAttributes(szFilename) != 0xffffffff )
+		if ( GetFileAttributesA(szFilename) != INVALID_FILE_ATTRIBUTES )
 			return true;
 		else
 			return false;
@@ -750,8 +763,8 @@ bool Util_DoesFileExist(const char *szFilename)
 
 bool Util_IsDir(const char *szPath)
 {
-	DWORD dwTemp = GetFileAttributes(szPath);
-	if ( dwTemp != 0xffffffff && (dwTemp & FILE_ATTRIBUTE_DIRECTORY) )
+	DWORD dwTemp = GetFileAttributesA(szPath);
+	if ( dwTemp != INVALID_FILE_ATTRIBUTES && (dwTemp & FILE_ATTRIBUTE_DIRECTORY) )
 		return true;
 	else
 		return false;
@@ -769,7 +782,7 @@ void Util_GetFullPathName(const char *szIn, char *szOut)
 {
 	char	*szFilePart;
 
-	GetFullPathName(szIn, _MAX_PATH, szOut, &szFilePart);
+	GetFullPathNameA(szIn, _MAX_PATH, szOut, &szFilePart);
 	Util_StripTrailingDir(szOut);
 
 } // Util_GetFullPathName()
@@ -803,7 +816,7 @@ bool Util_GetLongFileName(const char *szIn, char *szOut)
 		MultiByteToWideChar(CP_ACP, 0, szIn, -1, buffer, MAX_PATH);
 		if(iShellFolder->ParseDisplayName(NULL, NULL, buffer, &eaten, &itemIDList, NULL) == S_OK)
 		{
-			if(	(ret=SHGetPathFromIDList(itemIDList, filePath)) )
+			if(	(ret=SHGetPathFromIDListA(itemIDList, filePath)) )
 				strcpy(szOut, filePath);
 			iMalloc->Free(itemIDList);
 		}
@@ -880,7 +893,7 @@ bool Util_IsDifferentVolumes(const char *szPath1, const char *szPath2)
 
 bool Util_DeleteFile(const char *szFilename)
 {
-	WIN32_FIND_DATA	findData;
+	WIN32_FIND_DATAA	findData;
 	bool			bFound = false;				// Not found initially
 	char			szDrive[_MAX_PATH+1];
 	char			szDir[_MAX_PATH+1];
@@ -899,7 +912,7 @@ bool Util_DeleteFile(const char *szFilename)
 	_splitpath( szTempPath, szDrive, szDir, szFile, szExt );
 
 	// Delete all files matching the criteria
-	HANDLE hSearch = FindFirstFile(szTempPath, &findData);
+	HANDLE hSearch = FindFirstFileA(szTempPath, &findData);
 	bool bLoop = true;
 	while (hSearch != INVALID_HANDLE_VALUE && bLoop == true)
 	{
@@ -915,7 +928,7 @@ bool Util_DeleteFile(const char *szFilename)
 			strcat(szTempPath, szDir);
 			strcat(szTempPath, findData.cFileName);
 
-			if ( DeleteFile(szTempPath) != TRUE )
+			if ( DeleteFileA(szTempPath) != TRUE )
 			{
 				FindClose(hSearch);
 				return false;						// Error deleting one of the files
@@ -923,7 +936,7 @@ bool Util_DeleteFile(const char *szFilename)
 
 		} // End if
 
-		if (FindNextFile(hSearch, &findData) == FALSE)
+		if (FindNextFileA(hSearch, &findData) == FALSE)
 			bLoop = false;
 	}
 
@@ -942,7 +955,7 @@ bool Util_DeleteFile(const char *szFilename)
 
 bool Util_CopyFile(const char *szInputSource, const char *szInputDest, bool bOverwrite, bool bMove)
 {
-	WIN32_FIND_DATA	findData;
+	WIN32_FIND_DATAA	findData;
 	bool			bFound = false;				// Not found initially
 	BOOL			bRes;
 
@@ -976,7 +989,7 @@ bool Util_CopyFile(const char *szInputSource, const char *szInputDest, bool bOve
 	// Note we now rely on the SOURCE being the contents of szDrive, szDir, szFile, etc.
 
 	// Does the source file exist?
-	HANDLE hSearch = FindFirstFile(szSource, &findData);
+	HANDLE hSearch = FindFirstFileA(szSource, &findData);
 	bool bLoop = true;
 	while (hSearch != INVALID_HANDLE_VALUE && bLoop == true)
 	{
@@ -1003,7 +1016,7 @@ bool Util_CopyFile(const char *szInputSource, const char *szInputDest, bool bOve
 					return false;					// Destination already exists and we not overwriting
 				}
 				else
-					DeleteFile(szExpandedDest);
+					DeleteFileA(szExpandedDest);
 			}
 
 			// Move or copy operation?
@@ -1011,17 +1024,17 @@ bool Util_CopyFile(const char *szInputSource, const char *szInputDest, bool bOve
 			{
 				if (bDiffVol == false)
 				{
-					bRes = MoveFile(szTempPath, szExpandedDest);
+					bRes = MoveFileA(szTempPath, szExpandedDest);
 				}
 				else
 				{
 					// Do a copy then delete (simulated copy)
-					if ( (bRes = CopyFile(szTempPath, szExpandedDest, FALSE)) != FALSE )
-						bRes = DeleteFile(szTempPath);
+					if ( (bRes = CopyFileA(szTempPath, szExpandedDest, FALSE)) != FALSE )
+						bRes = DeleteFileA(szTempPath);
 				}
 			}
 			else
-				bRes = CopyFile(szTempPath, szExpandedDest, FALSE);
+				bRes = CopyFileA(szTempPath, szExpandedDest, FALSE);
 
 			if (bRes == FALSE)
 			{
@@ -1031,7 +1044,7 @@ bool Util_CopyFile(const char *szInputSource, const char *szInputDest, bool bOve
 
 		} // End If
 
-		if (FindNextFile(hSearch, &findData) == FALSE)
+		if (FindNextFileA(hSearch, &findData) == FALSE)
 			bLoop = false;
 
 	} // End while
@@ -1123,7 +1136,7 @@ void Util_ExpandFilenameWildcardPart(const char *szSource, const char *szDest, c
 	int		i = 0, j = 0, k = 0;
 
 	// Replace first * in the dest with the src, remove any other *
-	char *lpTemp = strchr(szDest, '*');
+	const char *lpTemp = strchr(szDest, '*');
 	if (lpTemp != NULL)
 	{
 		// Contains at least one *, copy up to this point
@@ -1161,11 +1174,11 @@ bool Util_CreateDir(const char *szDirName)
 {
 	bool	bRes;
 
-	DWORD dwTemp = GetFileAttributes(szDirName);
+	DWORD dwTemp = GetFileAttributesA(szDirName);
 	if (dwTemp == FILE_ATTRIBUTE_DIRECTORY)
 		return true;							// Directory exists, yay!
 
-	if (dwTemp == 0xffffffff)
+	if (dwTemp == INVALID_FILE_ATTRIBUTES)
 	{	// error getting attribute - what was the error?
 		if (GetLastError() == ERROR_PATH_NOT_FOUND)
 		{
@@ -1185,7 +1198,7 @@ bool Util_CreateDir(const char *szDirName)
 				delete [] szTemp;
 				if (bRes)
 				{
-					if (CreateDirectory(szDirName, NULL))
+					if (CreateDirectoryA(szDirName, NULL))
 						bRes = true;
 					else
 						bRes = false;
@@ -1199,7 +1212,7 @@ bool Util_CreateDir(const char *szDirName)
 			if (GetLastError() == ERROR_FILE_NOT_FOUND)
 			{
 				// Create directory
-				if (CreateDirectory(szDirName, NULL))
+				if (CreateDirectoryA(szDirName, NULL))
 					return true;
 				else
 					return false;
@@ -1218,7 +1231,7 @@ bool Util_CreateDir(const char *szDirName)
 
 bool Util_CopyDir (const char *szInputSource, const char *szInputDest, bool bOverwrite)
 {
-	SHFILEOPSTRUCT	FileOp;
+	SHFILEOPSTRUCTA	FileOp;
 	char			szSource[_MAX_PATH+2];
 	char			szDest[_MAX_PATH+2];
 
@@ -1262,7 +1275,7 @@ bool Util_CopyDir (const char *szInputSource, const char *szInputDest, bool bOve
 	FileOp.wFunc	= FO_COPY;
 	FileOp.fFlags	= FOF_SILENT | FOF_NOCONFIRMMKDIR | FOF_NOCONFIRMATION | FOF_NOERRORUI;
 
-	if ( SHFileOperation(&FileOp) )
+	if ( SHFileOperationA(&FileOp) )
 		return false;
 
 	return true;
@@ -1276,7 +1289,7 @@ bool Util_CopyDir (const char *szInputSource, const char *szInputDest, bool bOve
 
 bool Util_MoveDir (const char *szInputSource, const char *szInputDest, bool bOverwrite)
 {
-	SHFILEOPSTRUCT	FileOp;
+	SHFILEOPSTRUCTA	FileOp;
 	char			szSource[_MAX_PATH+2];
 	char			szDest[_MAX_PATH+2];
 
@@ -1323,7 +1336,7 @@ bool Util_MoveDir (const char *szInputSource, const char *szInputDest, bool bOve
 	FileOp.wFunc	= FO_MOVE;
 	FileOp.fFlags	= FOF_SILENT | FOF_NOCONFIRMMKDIR | FOF_NOCONFIRMATION | FOF_NOERRORUI;
 
-	if ( SHFileOperation(&FileOp) )
+	if ( SHFileOperationA(&FileOp) )
 		return false;
 	else
 		return true;
@@ -1337,7 +1350,7 @@ bool Util_MoveDir (const char *szInputSource, const char *szInputDest, bool bOve
 
 bool Util_RemoveDir (const char *szInputSource, bool bRecurse)
 {
-	SHFILEOPSTRUCT	FileOp;
+	SHFILEOPSTRUCTA	FileOp;
 	char			szSource[_MAX_PATH+2];
 
 	// Get the fullpathnames and strip trailing \s
@@ -1351,7 +1364,7 @@ bool Util_RemoveDir (const char *szInputSource, bool bRecurse)
 	// delete a directory even if not empty no matter what flags you give it...)
 	if (bRecurse == false)
 	{
-		if (!RemoveDirectory(szSource))
+		if (!RemoveDirectoryA(szSource))
 			return false;
 		else
 			return true;
@@ -1371,7 +1384,7 @@ bool Util_RemoveDir (const char *szInputSource, bool bRecurse)
 	FileOp.wFunc	= FO_DELETE;
 	FileOp.fFlags	= FOF_SILENT | FOF_NOCONFIRMMKDIR | FOF_NOCONFIRMATION | FOF_NOERRORUI;
 
-	if ( SHFileOperation(&FileOp) )
+	if ( SHFileOperationA(&FileOp) )
 		return false;
 
 	return true;
@@ -1557,7 +1570,7 @@ BOOL CALLBACK Util_GetClassListProc(HWND hWnd, LPARAM lParam)
 	char	*szWinText = (char*)lParam;
 	char	szBuffer[UTIL_WINTEXTBUFFERSIZE+1];					// Maximum under win95
 
-	GetClassName(hWnd, szBuffer, sizeof(szBuffer));
+	GetClassNameA(hWnd, szBuffer, sizeof(szBuffer));
 	if (szBuffer[0] != '\0')
 	{
 		Util_AddTextToBuffer(szBuffer, szWinText, UTIL_WINTEXTBUFFERSIZE);
@@ -1585,23 +1598,23 @@ void Util_SoundPlay(const char *szFilename, bool bWait)
 	sMCI += '"';
 	sMCI += " alias PlayMe";
 
-	mciSendString("status PlayMe mode",szBuffer,sizeof(szBuffer),NULL);
+	mciSendStringA("status PlayMe mode",szBuffer,sizeof(szBuffer),NULL);
 
 	if ( !szBuffer[0] == '\0' )
-		mciSendString("close PlayMe",NULL,0,NULL);
+		mciSendStringA("close PlayMe",NULL,0,NULL);
 
 	if (szFilename[0] == '\0')
 		return;									// No sound to play
 
-	if ( mciSendString(sMCI.c_str(),NULL,0,NULL)==0 )
+	if ( mciSendStringA(sMCI.c_str(),NULL,0,NULL)==0 )
 	{
 		if (bWait)
 		{
-            mciSendString("play PlayMe wait",NULL,0,NULL);
-			mciSendString("close PlayMe",NULL,0,NULL);
+            mciSendStringA("play PlayMe wait",NULL,0,NULL);
+			mciSendStringA("close PlayMe",NULL,0,NULL);
 		}
 		else
-            mciSendString("play PlayMe",NULL,0,NULL);
+            mciSendStringA("play PlayMe",NULL,0,NULL);
 	}
 
 } // Util_SoundPlay()
@@ -1790,7 +1803,7 @@ bool Util_ConvDec(const char *szHex, int &nDec)
 
 bool Util_IsWinHung(HWND hWnd, UINT nTimeOut)
 {
-	DWORD dwResult;
+	DWORD_PTR dwResult;
 
 	if (SendMessageTimeout(hWnd, WM_NULL, 0, 0, SMTO_ABORTIFHUNG, nTimeOut, &dwResult))
 		return false;
@@ -1839,7 +1852,7 @@ int Util_MouseDown(const char *szButton)
 		event = MOUSEEVENTF_MIDDLEDOWN;
 	else
 	{
-		Util_RegReadString(HKEY_CURRENT_USER, "Control Panel\\Mouse", "SwapMouseButtons", 4, swapped );
+		Util_RegReadString(HKEY_CURRENT_USER, L"Control Panel\\Mouse", L"SwapMouseButtons", 4, swapped );
 		if ( swapped[0] == '1')	// buttons swapped
 		{
 			if ( stricmp(szButton,"MAIN")==0 || stricmp(szButton, "PRIMARY"))
@@ -1884,7 +1897,7 @@ int Util_MouseUp(const char *szButton)
 		event = MOUSEEVENTF_MIDDLEUP;
 	else
 	{
-		Util_RegReadString(HKEY_CURRENT_USER, "Control Panel\\Mouse", "SwapMouseButtons", 4, swapped );
+		Util_RegReadString(HKEY_CURRENT_USER, L"Control Panel\\Mouse", L"SwapMouseButtons", 4, swapped );
 		if ( swapped[0] = '1')	// buttons swapped
 		{
 			if ( stricmp(szButton,"MAIN")==0 || stricmp(szButton, "PRIMARY"))
@@ -2075,7 +2088,7 @@ int Util_WinPrintf(const char *szTitle, const char *szFormat, ...)
 
 	va_end(pArgList);
 
-	return MessageBox(NULL, szBuffer, szTitle, MB_OK);
+	return MessageBoxA(NULL, szBuffer, szTitle, MB_OK);
 
 } // Util_WinPrintf()
 
@@ -2136,7 +2149,7 @@ void Util_DebugMsg(const char *szFormat, ...)
 
 	va_end(pArgList);
 
-	OutputDebugString(szBuffer);
+	OutputDebugStringA(szBuffer);
 
 } // Util_DebugMsg()
 

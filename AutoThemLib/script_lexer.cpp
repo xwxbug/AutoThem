@@ -512,7 +512,7 @@ void AutoIt_Script::Lexer_KeywordOrFunc(const char *szLine, uint &iPos, Token &r
 	}
 
 	szTemp[iPosTemp] = '\0';					// Terminate
-	CharUpper(szTemp);							// Convert to upper case to speed up comparisons (strcmp rather than stricmp)
+	CharUpperA(szTemp);							// Convert to upper case to speed up comparisons (strcmp rather than stricmp)
 
 	// Is it a valid keyword?
 	i = 0;

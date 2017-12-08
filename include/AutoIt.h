@@ -69,6 +69,7 @@ typedef unsigned short 		ushort;
 typedef unsigned int 		uint;
 typedef unsigned long 		ulong;
 
+int		WINAPI ATL_WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow);
 
 #define AUT_MAX_LINESIZE		4095			// Max size for a line of script
 #define AUT_STRBUFFER			4095			// Size of a general string buffer
@@ -97,9 +98,10 @@ typedef unsigned long 		ulong;
 #ifdef _DEBUG
 	#include <assert.h>
 
-	#define AUT_DEBUGMSG(szText) OutputDebugString(szText);
+	#define AUT_DEBUGMSG(szText) OutputDebugString(TEXT(szText));
 	#define AUT_ASSERT(x) assert(x);
 	#define AUT_DEBUGMESSAGEBOX(szText) MessageBox(NULL, szText, "", MB_OK);
+	#define AUT_DEBUGMESSAGEBOXA(szText) MessageBoxA(NULL, szText, "", MB_OK);
 #else
 	#define AUT_DEBUGMSG(szText)
 	#define AUT_ASSERT(x)

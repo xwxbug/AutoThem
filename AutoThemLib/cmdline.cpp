@@ -158,6 +158,16 @@ void CmdLine::SetCmdLine(char *szCmdLine)
 } // SetCmdLine()
 
 
+const char * CmdLine::GetCmdLine()
+{
+	return m_szCmdLineRaw;
+}
+
+int CmdLine::GetNumParams(void) const
+{
+	return m_nNumParameters;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // StoreParam()
 ///////////////////////////////////////////////////////////////////////////////
@@ -242,3 +252,8 @@ bool CmdLine::GetNextParam(char *szParam)
 	}
 
 } // GetNextParam()
+
+void CmdLine::GetNextParamReset(void)
+{
+	m_nCurrentParam = 0;
+}

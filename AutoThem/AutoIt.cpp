@@ -62,26 +62,25 @@
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	g_hInstance			= hInstance;			// Program instance
-	g_nExitCode			= 0;					// Default exit code
-	g_nExitMethod		= AUT_EXITBY_NATURAL;	// Default exit method
-
-#ifdef _MSC_VER
-	_set_new_handler(Util_NewHandler);			// Functon to call if "new" fails
-	_set_new_mode(1);							// Make "malloc" use the "new" handler as well
-#endif
-
-	// Perform any startup that the objects need
-	g_oSetForeWinEx.Patch();					// Run our setforegroundwindow patch
-	g_oCmdLine.SetCmdLine(lpCmdLine);			// Split the cmdline parameters into chunks
-
-
-	// Run our main application object
-	g_oApplication.Run();
-
-	// Perform any close down that our objects need
-	g_oSetForeWinEx.UnPatch();					// Undo our setforegroundwindow patch
-
-	return g_nExitCode;
-
+	return ATL_WinMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 } // Winmain()
+
+int main(int argc, char* argv[])
+{
+	HMODULE hModule;
+	STARTUPINFOW si = {0};
+	si.cb = sizeof STARTUPINFOW;
+	hModule = GetModuleHandleW(NULL);
+	GetStartupInfoW(&si);
+
+	char* lpCmdLine = new char[4097]();
+	for (size_t i=1;i<argc;i++)
+	{
+		strcat(lpCmdLine, "\"");
+		strcat(lpCmdLine, argv[i]);
+		strcat(lpCmdLine, "\" ");
+	}
+	int n_result= ATL_WinMain(hModule, nullptr, lpCmdLine, si.wShowWindow);
+	delete[]lpCmdLine;
+	return n_result;
+}

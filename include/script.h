@@ -223,7 +223,7 @@ typedef AUT_RESULT (AutoIt_Script::*AU3_FUNCTION)(VectorVariant &vParams, Varian
 
 typedef struct
 {
-	char			*szName;					// Function name
+	const char		*szName;					// Function name
 	AU3_FUNCTION	lpFunc;						// Pointer to function
 	int				nMin;						// Min params
 	int				nMax;						// Max params
@@ -375,8 +375,8 @@ private:
 	LexerCache		m_LexerCache[AUT_LEXER_CACHESIZE];
 #endif
 	static char		m_PrecOpRules[OPR_MAXOPR][OPR_MAXOPR];	// Table for precedence rules
-	static char		*m_szKeywords[];			// Valid keywords
-	static char		*m_szMacros[];				// Valid functions
+	static const char		*m_szKeywords[];			// Valid keywords
+	static const char		*m_szMacros[];				// Valid functions
 	AU3_FuncInfo	*m_FuncList;				// List of functions and details for each
 	int				m_nFuncListSize;			// Number of functions
 

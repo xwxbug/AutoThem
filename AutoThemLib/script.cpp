@@ -73,7 +73,7 @@
 
 // Keyword values (must match the order as in script.cpp)
 // Must be in UPPERCASE
-char * AutoIt_Script::m_szKeywords[K_MAX] =	{
+const char * AutoIt_Script::m_szKeywords[K_MAX] =	{
 	"AND", "OR", "NOT",
 	"IF", "THEN", "ELSE", "ELSEIF", "ENDIF",
 	"WHILE", "WEND",
@@ -488,7 +488,7 @@ AU3_FuncInfo funcList[] =
 		if (i>0 && strcmp(m_FuncList[i-1].szName, m_FuncList[i].szName) > 0)	// out of sequence
 		{
 			// display out of order name before aborting.
-			AUT_DEBUGMESSAGEBOX(m_FuncList[i].szName);
+			AUT_DEBUGMESSAGEBOXA(m_FuncList[i].szName);
 			AUT_ASSERT(strcmp(m_FuncList[i-1].szName, m_FuncList[i].szName) < 0);
 		}
 #endif
@@ -526,7 +526,7 @@ AutoIt_Script::~AutoIt_Script()
 //	if ( !szBuffer[0]=='\0' )
 //		mciSendString("close PlayMe",NULL,0,NULL);
 // NOTE: The above code was causing hanging in rare cases when SoundPlay wasn't even used
-    mciSendString("close all", NULL, 0, NULL);
+    mciSendStringA("close all", NULL, 0, NULL);
 
 
 	// Free memory for hotkeys and unregister hotkeys if required
@@ -593,8 +593,8 @@ void AutoIt_Script::FatalError(int iErr, int nCol)
 	char		szOutput[AUT_MAX_LINESIZE*3];
 	char		szOutput2[AUT_MAX_LINESIZE*3];
 
-	LoadString(g_hInstance, IDS_AUT_E_TITLE, szTitle, AUT_MAX_LINESIZE);
-	LoadString(g_hInstance, iErr, szText, AUT_MAX_LINESIZE);
+	LoadStringA(g_hInstance, IDS_AUT_E_TITLE, szTitle, AUT_MAX_LINESIZE);
+	LoadStringA(g_hInstance, iErr, szText, AUT_MAX_LINESIZE);
 
 	// Get the line and include file
 	const char *szScriptLine = g_oScriptFile.GetLine(m_nErrorLine);
@@ -626,7 +626,7 @@ void AutoIt_Script::FatalError(int iErr, int nCol)
 	if (g_bStdOut)
 		printf("%s (%d) : ==> %s: \n%s \n%s\n",szInclude, nAutScriptLine, szText, szScriptLine, szOutput2 );
 	else
-		MessageBox(g_hWnd, szOutput, szTitle, MB_ICONSTOP | MB_OK | MB_SYSTEMMODAL | MB_SETFOREGROUND);
+		MessageBoxA(g_hWnd, szOutput, szTitle, MB_ICONSTOP | MB_OK | MB_SYSTEMMODAL | MB_SETFOREGROUND);
 
 	// Signal that we want to quit as soon as possible
 	m_nCurrentOperation = AUT_QUIT;
@@ -651,8 +651,8 @@ void AutoIt_Script::FatalError(int iErr, const char *szText2)
 	char	szText[AUT_MAX_LINESIZE];
 	char	szOutput[AUT_MAX_LINESIZE*3];
 
-	LoadString(g_hInstance, IDS_AUT_E_TITLE, szTitle, AUT_MAX_LINESIZE);
-	LoadString(g_hInstance, iErr, szText, AUT_MAX_LINESIZE);
+	LoadStringA(g_hInstance, IDS_AUT_E_TITLE, szTitle, AUT_MAX_LINESIZE);
+	LoadStringA(g_hInstance, iErr, szText, AUT_MAX_LINESIZE);
 
 	// Get the line
 	const char *szScriptLine = g_oScriptFile.GetLine(m_nErrorLine);
@@ -674,7 +674,7 @@ void AutoIt_Script::FatalError(int iErr, const char *szText2)
 	if (g_bStdOut)
 		printf("%s (%d) : ==> %s: \n%s \n%s\n",szInclude, nAutScriptLine, szText, szScriptLine, szText2);
 	else
-		MessageBox(g_hWnd, szOutput, szTitle, MB_ICONSTOP | MB_OK | MB_SYSTEMMODAL | MB_SETFOREGROUND);
+		MessageBoxA(g_hWnd, szOutput, szTitle, MB_ICONSTOP | MB_OK | MB_SYSTEMMODAL | MB_SETFOREGROUND);
 
 	// Signal that we want to quit as soon as possible
 	m_nCurrentOperation = AUT_QUIT;
@@ -693,9 +693,9 @@ const char * AutoIt_Script::FormatWinError(DWORD dwCode)
 	static char szBuffer[AUT_STRBUFFER+1];
 
 	if (dwCode == 0xffffffff)
-		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, szBuffer, AUT_STRBUFFER, NULL);
+		FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, szBuffer, AUT_STRBUFFER, NULL);
 	else
-		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, dwCode, 0, szBuffer, AUT_STRBUFFER, NULL);
+		FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, dwCode, 0, szBuffer, AUT_STRBUFFER, NULL);
 
 	return szBuffer;
 
@@ -732,7 +732,7 @@ AUT_RESULT AutoIt_Script::InitScript(char *szFile)
 	char	szFileTemp[_MAX_PATH+1];
 	char	*szFilePart;
 
-	GetFullPathName(szFile, _MAX_PATH, szFileTemp, &szFilePart);
+	GetFullPathNameA(szFile, _MAX_PATH, szFileTemp, &szFilePart);
 	m_sScriptFullPath = szFileTemp;
 	m_sScriptName = szFilePart;
 	szFilePart[-1] = '\0';

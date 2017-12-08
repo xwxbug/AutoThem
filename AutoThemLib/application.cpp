@@ -61,6 +61,11 @@
 #include "resources\resource.h"
 #include "utility.h"
 
+#pragma comment(lib,"ws2_32.lib")
+#pragma comment(lib,"Winmm.lib")
+#pragma comment(lib,"Mpr.lib")
+#pragma comment(lib,"version.lib")
+//#pragma comment(lib,"Mincore.lib")
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor()
@@ -123,7 +128,7 @@ AutoIt_App::~AutoIt_App()
 
 void AutoIt_App::Run(void)
 {
-	char	szOldWorkingDir[_MAX_PATH+1];
+	wchar_t	szOldWorkingDir[_MAX_PATH+1];
 	char	szTempFileName[_MAX_PATH+1];
 
 
@@ -148,7 +153,7 @@ void AutoIt_App::Run(void)
 			return;									// Error loading script
 		}
 		else
-			GetFullPathName(m_szScriptFileName, _MAX_PATH, szTempFileName, &m_szScriptFilePart);
+			GetFullPathNameA(m_szScriptFileName, _MAX_PATH, szTempFileName, &m_szScriptFilePart);
 	}
 
 	// Prepare the script for use
@@ -163,7 +168,7 @@ void AutoIt_App::Run(void)
 	}
 
 	// Save the current working directory
-	GetCurrentDirectory(_MAX_PATH, szOldWorkingDir);
+	GetCurrentDirectoryW(_MAX_PATH, szOldWorkingDir);
 
 	// Register our classes (including the GUI class) and create the main windows
 	RegisterClass();
@@ -181,7 +186,7 @@ void AutoIt_App::Run(void)
 	g_oScriptFile.UnloadScript();
 
 	// Restore the old working directory
-	SetCurrentDirectory(szOldWorkingDir);
+	SetCurrentDirectoryW(szOldWorkingDir);
 
 } // Run()
 
@@ -239,11 +244,11 @@ void AutoIt_App::RegisterClass(void)
 
 void AutoIt_App::WindowCreate(void)
 {
-	g_hWnd = CreateWindow(  AUT_APPCLASS, AUT_APPTITLE, WS_OVERLAPPEDWINDOW,
+	g_hWnd = CreateWindowW(  AUT_APPCLASS, AUT_APPTITLE, WS_OVERLAPPEDWINDOW,
 							CW_USEDEFAULT, CW_USEDEFAULT, 300, 100, NULL, NULL, g_hInstance, NULL);
 
 	// Add read-only edit control to our main window
-	g_hWndEdit = CreateWindow("edit", NULL, WS_CHILD | WS_VISIBLE | WS_HSCROLL |
+	g_hWndEdit = CreateWindowW(L"edit", NULL, WS_CHILD | WS_VISIBLE | WS_HSCROLL |
 					WS_VSCROLL | WS_BORDER | ES_LEFT | ES_MULTILINE | ES_AUTOHSCROLL |
 					ES_AUTOVSCROLL | ES_READONLY, 0, 0, 0, 0,
 					g_hWnd, (HMENU)1, g_hInstance, NULL);
@@ -316,7 +321,7 @@ void AutoIt_App::ParseCmdLine(void)
 	if ( !stricmp("/c", szTemp) )
 	{
 		m_bSingleCmdMode = true;
-		GetModuleFileName(NULL, m_szScriptFileName, _MAX_PATH);
+		GetModuleFileNameA(NULL, m_szScriptFileName, _MAX_PATH);
 
 		g_oCmdLine.GetNextParam(szTemp);
 		m_sSingleLine = szTemp;					// Store the single line
@@ -565,7 +570,7 @@ LRESULT AutoIt_App::WndProcHandler (HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM 
 				SetTimer(hWnd, AUT_MAIN_TIMER_ID, AUT_MAIN_TIMER_DELAY, NULL);
 
 				// Register a message so we know if explorer crashes and we have to redraw taskbar
-				s_uTaskbarRestart = RegisterWindowMessage("TaskbarCreated");
+				s_uTaskbarRestart = RegisterWindowMessageW(L"TaskbarCreated");
 
 				return 0;
 
@@ -792,7 +797,7 @@ void AutoIt_App::CreateTrayIcon(void)
 
 void AutoIt_App::SetTrayIconToolTip(void)
 {
-	NOTIFYICONDATA	nic;
+	NOTIFYICONDATAA	nic;
 	char			szTip[63+1];				// Tool tip
 	AString			sTip(_MAX_PATH);			// Preallocate for speed
 	int				nCurLine;
@@ -808,7 +813,7 @@ void AutoIt_App::SetTrayIconToolTip(void)
 
 	// Set up the tooltip, add "paused" to the start if required
 	if (g_bScriptPaused == true)
-		LoadString(g_hInstance, IDS_AUT_TIP_PAUSED, szTip, 63);
+		LoadStringA(g_hInstance, IDS_AUT_TIP_PAUSED, szTip, 63);
 	else
 		szTip[0] = '\0';
 
@@ -850,7 +855,7 @@ void AutoIt_App::SetTrayIconToolTip(void)
 	// Tip can only be 64 characters, enforce and display
 	Util_Strncpy(szTip, sTip.c_str(), 63+1);
 	strcpy(nic.szTip, szTip);
-	Shell_NotifyIcon(NIM_MODIFY, &nic);
+	Shell_NotifyIconA(NIM_MODIFY, &nic);
 
 } // SetTrayIconToolTip()
 

@@ -36,14 +36,52 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 //
-// shared_memory.cpp
+// AutoIt.cpp
 //
-// Custom class for handling shared memory allocation, deallocation and copying.
-// This is very different and hard to handle under NT and 9x so this class puts
-// a layer inbetween for ease of use. :)
+// The main entry point to the program.  This file also creates the pre-compiled
+// header files.
 //
 ///////////////////////////////////////////////////////////////////////////////
+
 
 // Includes
 #include "StdAfx.h"								// Pre-compiled headers
 
+#ifndef _MSC_VER								// Includes for non-MS compilers
+	#include <windef.h>
+#endif
+
+#include "AutoIt.h"								// Autoit values, macros and config options
+#include "globaldata.h"
+#include "utility.h"
+
+
+///////////////////////////////////////////////////////////////////////////////
+// WinMain()
+///////////////////////////////////////////////////////////////////////////////
+
+int WINAPI ATL_WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+{
+	g_hInstance			= hInstance;			// Program instance
+	g_nExitCode			= 0;					// Default exit code
+	g_nExitMethod		= AUT_EXITBY_NATURAL;	// Default exit method
+
+#ifdef _MSC_VER
+	_set_new_handler(Util_NewHandler);			// Functon to call if "new" fails
+	_set_new_mode(1);							// Make "malloc" use the "new" handler as well
+#endif
+
+	// Perform any startup that the objects need
+	g_oSetForeWinEx.Patch();					// Run our setforegroundwindow patch
+	g_oCmdLine.SetCmdLine(lpCmdLine);			// Split the cmdline parameters into chunks
+
+
+	// Run our main application object
+	g_oApplication.Run();
+
+	// Perform any close down that our objects need
+	g_oSetForeWinEx.UnPatch();					// Undo our setforegroundwindow patch
+
+	return g_nExitCode;
+
+} // Winmain()

@@ -183,7 +183,7 @@ AUT_RESULT AutoIt_Script::F_RegRead(VectorVariant &vParams, Variant &vResult)
 	if (!sCname.empty())
 	{
 		// Remote
-		if ( RegConnectRegistry(sCname.c_str(), hMainKey, &hRemoteKey) != ERROR_SUCCESS )
+		if ( RegConnectRegistryA(sCname.c_str(), hMainKey, &hRemoteKey) != ERROR_SUCCESS )
 		{
 			SetFuncErrorCode(1);					// Default is 0
 			return AUT_OK;
@@ -194,7 +194,7 @@ AUT_RESULT AutoIt_Script::F_RegRead(VectorVariant &vParams, Variant &vResult)
 
 	//local
 	// Open the registry key
-	if ( RegOpenKeyEx(hMainKey, sSubKey.c_str(), 0, KEY_READ, &hRegKey) != ERROR_SUCCESS )
+	if ( RegOpenKeyExA(hMainKey, sSubKey.c_str(), 0, KEY_READ, &hRegKey) != ERROR_SUCCESS )
 	{
 		if (!sCname.empty())
 			RegCloseKey(hRemoteKey);
@@ -204,7 +204,7 @@ AUT_RESULT AutoIt_Script::F_RegRead(VectorVariant &vParams, Variant &vResult)
 	}
 
 	// Read the value and determine the type
-	if ( RegQueryValueEx(hRegKey, vParams[1].szValue(), NULL, &dwType, NULL, NULL) != ERROR_SUCCESS )
+	if ( RegQueryValueExA(hRegKey, vParams[1].szValue(), NULL, &dwType, NULL, NULL) != ERROR_SUCCESS )
 	{
 		// Error reading key
 		SetFuncErrorCode(-1);					// Default is 0
@@ -228,7 +228,7 @@ AUT_RESULT AutoIt_Script::F_RegRead(VectorVariant &vParams, Variant &vResult)
 	{
 		case REG_SZ:
 		case REG_EXPAND_SZ:
-			if (RegQueryValueEx(hRegKey, vParams[1].szValue(), NULL, NULL, (LPBYTE)szRegBuffer, &dwRes) == ERROR_SUCCESS)
+			if (RegQueryValueExA(hRegKey, vParams[1].szValue(), NULL, NULL, (LPBYTE)szRegBuffer, &dwRes) == ERROR_SUCCESS)
 			{
 				// dwres is number of chars INCLUDING the null char IF present, according to docs we must ensure termination
 				szRegBuffer[dwRes] = '\0';
@@ -240,7 +240,7 @@ AUT_RESULT AutoIt_Script::F_RegRead(VectorVariant &vParams, Variant &vResult)
 			break;
 
 		case REG_MULTI_SZ:
-			if (RegQueryValueEx(hRegKey, vParams[1].szValue(), NULL, NULL, (LPBYTE)szRegBuffer, &dwRes) == ERROR_SUCCESS)
+			if (RegQueryValueExA(hRegKey, vParams[1].szValue(), NULL, NULL, (LPBYTE)szRegBuffer, &dwRes) == ERROR_SUCCESS)
 			{
 				szRegBuffer[dwRes] = '\0';	// Ensure termination
 
@@ -264,12 +264,12 @@ AUT_RESULT AutoIt_Script::F_RegRead(VectorVariant &vParams, Variant &vResult)
 
 		case REG_DWORD:
 			dwRes = sizeof(dwBuf);
-			RegQueryValueEx(hRegKey, vParams[1].szValue(), NULL, NULL, (LPBYTE)&dwBuf, &dwRes);
+			RegQueryValueExA(hRegKey, vParams[1].szValue(), NULL, NULL, (LPBYTE)&dwBuf, &dwRes);
 			vResult = (double)dwBuf;	// Unsigned DWORD possibly too big for signed int
 			break;
 
 		case REG_BINARY:
-			if (RegQueryValueEx(hRegKey, vParams[1].szValue(), NULL, NULL, (LPBYTE)szRegBuffer, &dwRes) == ERROR_SUCCESS)
+			if (RegQueryValueExA(hRegKey, vParams[1].szValue(), NULL, NULL, (LPBYTE)szRegBuffer, &dwRes) == ERROR_SUCCESS)
 			{
 				szBinary = new char[(dwRes * 2) + 1];	// Each byte will turned into 2 digits, plus a final null
 				szBinary[0] = '\0';
@@ -343,7 +343,7 @@ AUT_RESULT AutoIt_Script::F_RegWrite(VectorVariant &vParams, Variant &vResult)
 	if (!sCname.empty())
 	{
 		// Remote
-		if ( RegConnectRegistry(sCname.c_str(), hMainKey, &hRemoteKey) != ERROR_SUCCESS )
+		if ( RegConnectRegistryA(sCname.c_str(), hMainKey, &hRemoteKey) != ERROR_SUCCESS )
 		{
 			vResult = 0;							// Default is 1
 			return AUT_OK;
@@ -354,7 +354,7 @@ AUT_RESULT AutoIt_Script::F_RegWrite(VectorVariant &vParams, Variant &vResult)
 
 	//local
 	// Open the registry key
-	if ( RegCreateKeyEx(hMainKey, sSubKey.c_str(), 0, "", REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hRegKey, &dwRes) != ERROR_SUCCESS )
+	if ( RegCreateKeyExA(hMainKey, sSubKey.c_str(), 0, (LPSTR)"", REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hRegKey, &dwRes) != ERROR_SUCCESS )
 	{
 		vResult = 0;							// Default is 1
 
@@ -382,7 +382,7 @@ AUT_RESULT AutoIt_Script::F_RegWrite(VectorVariant &vParams, Variant &vResult)
 	if (!stricmp(vParams[2].szValue(), "REG_EXPAND_SZ"))
 	{
 		strcpy(szRegBuffer, vParams[3].szValue());
-		if ( RegSetValueEx(hRegKey, vParams[1].szValue(), 0, REG_EXPAND_SZ, (CONST BYTE *)vParams[3].szValue(), (DWORD)nLen+1 ) != ERROR_SUCCESS )
+		if ( RegSetValueExA(hRegKey, vParams[1].szValue(), 0, REG_EXPAND_SZ, (CONST BYTE *)vParams[3].szValue(), (DWORD)nLen+1 ) != ERROR_SUCCESS )
 			vResult = 0;						// Default is 1
 
 		RegCloseKey(hRegKey);
@@ -394,7 +394,7 @@ AUT_RESULT AutoIt_Script::F_RegWrite(VectorVariant &vParams, Variant &vResult)
 	if (!stricmp(vParams[2].szValue(), "REG_SZ"))
 	{
 		strcpy(szRegBuffer, vParams[3].szValue());
-		if ( RegSetValueEx(hRegKey, vParams[1].szValue(), 0, REG_SZ, (CONST BYTE *)vParams[3].szValue(), (DWORD)nLen+1 ) != ERROR_SUCCESS )
+		if ( RegSetValueExA(hRegKey, vParams[1].szValue(), 0, REG_SZ, (CONST BYTE *)vParams[3].szValue(), (DWORD)nLen+1 ) != ERROR_SUCCESS )
 			vResult = 0;						// Default is 1
 
 		RegCloseKey(hRegKey);
@@ -422,7 +422,7 @@ AUT_RESULT AutoIt_Script::F_RegWrite(VectorVariant &vParams, Variant &vResult)
 		if (nLen != 0)
 			nLen = nLen + 2;
 
-		if ( RegSetValueEx(hRegKey, vParams[1].szValue(), 0, REG_MULTI_SZ, (CONST BYTE *)szRegBuffer, (DWORD)nLen ) != ERROR_SUCCESS )
+		if ( RegSetValueExA(hRegKey, vParams[1].szValue(), 0, REG_MULTI_SZ, (CONST BYTE *)szRegBuffer, (DWORD)nLen ) != ERROR_SUCCESS )
 			vResult = 0;						// Default is 1
 
 		RegCloseKey(hRegKey);
@@ -435,7 +435,7 @@ AUT_RESULT AutoIt_Script::F_RegWrite(VectorVariant &vParams, Variant &vResult)
 	if (!stricmp(vParams[2].szValue(), "REG_DWORD"))
 	{
 		dwBuf = vParams[3].nValue(); // Safe to use nvalue as the conversion TO dword happens ok
-		if ( RegSetValueEx(hRegKey, vParams[1].szValue(), 0, REG_DWORD, (CONST BYTE *)&dwBuf, sizeof(dwBuf) ) != ERROR_SUCCESS )
+		if ( RegSetValueExA(hRegKey, vParams[1].szValue(), 0, REG_DWORD, (CONST BYTE *)&dwBuf, sizeof(dwBuf) ) != ERROR_SUCCESS )
 			vResult = 0;						// Default is 1
 
 		RegCloseKey(hRegKey);
@@ -486,7 +486,7 @@ AUT_RESULT AutoIt_Script::F_RegWrite(VectorVariant &vParams, Variant &vResult)
 			szRegBuffer[j++] = (char)nVal;
 		}
 
-		if ( RegSetValueEx(hRegKey, vParams[1].szValue(), 0, REG_BINARY, (CONST BYTE *)szRegBuffer, (DWORD)j ) != ERROR_SUCCESS )
+		if ( RegSetValueExA(hRegKey, vParams[1].szValue(), 0, REG_BINARY, (CONST BYTE *)szRegBuffer, (DWORD)j ) != ERROR_SUCCESS )
 			vResult = 0;						// Default is 1
 
 		RegCloseKey(hRegKey);
@@ -515,7 +515,7 @@ AUT_RESULT AutoIt_Script::F_RegWrite(VectorVariant &vParams, Variant &vResult)
 static bool RegRemoveSubkeys(HKEY hRegKey)
 {
 	// Removes all subkeys to the given key.  Will not touch the given key.
-	CHAR Name[256];
+	wchar_t Name[256];
 	DWORD dwNameSize;
 	FILETIME ftLastWrite;
 	HKEY hSubKey;
@@ -524,9 +524,9 @@ static bool RegRemoveSubkeys(HKEY hRegKey)
 	for (;;)
 	{ // infinite loop
 		dwNameSize=255;
-		if (RegEnumKeyEx(hRegKey, 0, Name, &dwNameSize, NULL, NULL, NULL, &ftLastWrite) == ERROR_NO_MORE_ITEMS)
+		if (RegEnumKeyExW(hRegKey, 0, Name, &dwNameSize, NULL, NULL, NULL, &ftLastWrite) == ERROR_NO_MORE_ITEMS)
 			break;
-		if ( RegOpenKeyEx(hRegKey, Name, 0, KEY_READ, &hSubKey) != ERROR_SUCCESS )
+		if ( RegOpenKeyExW(hRegKey, Name, 0, KEY_READ, &hSubKey) != ERROR_SUCCESS )
 			return false;
 
 		Success=RegRemoveSubkeys(hSubKey);
@@ -566,7 +566,7 @@ AUT_RESULT AutoIt_Script::F_RegDelete(VectorVariant &vParams, Variant &vResult)
 	if (!sCname.empty())
 	{
 		// Remote
-		if ( RegConnectRegistry(sCname.c_str(), hMainKey, &hRemoteKey) != ERROR_SUCCESS )
+		if ( RegConnectRegistryA(sCname.c_str(), hMainKey, &hRemoteKey) != ERROR_SUCCESS )
 		{
 			vResult = 0;							// Default is 1, 0=key did not exist
 			return AUT_OK;
@@ -577,7 +577,7 @@ AUT_RESULT AutoIt_Script::F_RegDelete(VectorVariant &vParams, Variant &vResult)
 
 	// Local
 	// Open the key we want
-	if ( RegOpenKeyEx(hMainKey, sSubKey.c_str(), 0, KEY_READ | KEY_WRITE, &hRegKey) != ERROR_SUCCESS )
+	if ( RegOpenKeyExA(hMainKey, sSubKey.c_str(), 0, KEY_READ | KEY_WRITE, &hRegKey) != ERROR_SUCCESS )
 	{
 		vResult = 0;							// Default is 1, 0=key did not exist
 
@@ -598,7 +598,7 @@ AUT_RESULT AutoIt_Script::F_RegDelete(VectorVariant &vParams, Variant &vResult)
 			{
 				vResult = 2;							// Default is 1, 2=error deleting
 			}
-			else if (RegDeleteKey(hMainKey, sSubKey.c_str()) != ERROR_SUCCESS)
+			else if (RegDeleteKeyA(hMainKey, sSubKey.c_str()) != ERROR_SUCCESS)
 			{
 				vResult = 2;							// Default is 1, 2=error deleting
 			}
@@ -606,7 +606,7 @@ AUT_RESULT AutoIt_Script::F_RegDelete(VectorVariant &vParams, Variant &vResult)
 
 		case 2:
 			// Remove Value
-			LONG lRes = RegDeleteValue(hRegKey, vParams[1].szValue());
+			LONG lRes = RegDeleteValueA(hRegKey, vParams[1].szValue());
 			if (lRes != ERROR_SUCCESS)
 			{
 				if (lRes == ERROR_FILE_NOT_FOUND)
@@ -656,7 +656,7 @@ AUT_RESULT AutoIt_Script::F_RegEnumKey(VectorVariant &vParams, Variant &vResult)
 	if (!sCname.empty())
 	{
 		// Remote
-		if ( RegConnectRegistry(sCname.c_str(), hMainKey, &hRemoteKey) != ERROR_SUCCESS )
+		if ( RegConnectRegistryA(sCname.c_str(), hMainKey, &hRemoteKey) != ERROR_SUCCESS )
 		{
 			SetFuncErrorCode(1);					// Default is 0
 			return AUT_OK;
@@ -666,7 +666,7 @@ AUT_RESULT AutoIt_Script::F_RegEnumKey(VectorVariant &vParams, Variant &vResult)
 	}
 
 	// Open the registry key
-	if ( RegOpenKeyEx(hMainKey, sSubKey.c_str(), 0, KEY_READ , &hRegKey) != ERROR_SUCCESS )
+	if ( RegOpenKeyExA(hMainKey, sSubKey.c_str(), 0, KEY_READ , &hRegKey) != ERROR_SUCCESS )
 	{
 		SetFuncErrorCode(1);					// Default is 0
 
@@ -677,7 +677,7 @@ AUT_RESULT AutoIt_Script::F_RegEnumKey(VectorVariant &vParams, Variant &vResult)
 	}
 
 	// Read the key
-	if ( RegEnumKeyEx(hRegKey, vParams[1].nValue()-1, szRegBuffer, &dwBuf, NULL, NULL, NULL, &ftLastWriteTime) != ERROR_SUCCESS )
+	if ( RegEnumKeyExA(hRegKey, vParams[1].nValue()-1, szRegBuffer, &dwBuf, NULL, NULL, NULL, &ftLastWriteTime) != ERROR_SUCCESS )
 	{
 		// Error reading key
 		SetFuncErrorCode(-1);					// Default is 0
@@ -726,7 +726,7 @@ AUT_RESULT AutoIt_Script::F_RegEnumVal(VectorVariant &vParams, Variant &vResult)
 	if (!sCname.empty())
 	{
 		// Remote
-		if ( RegConnectRegistry(sCname.c_str(), hMainKey, &hRemoteKey) != ERROR_SUCCESS )
+		if ( RegConnectRegistryA(sCname.c_str(), hMainKey, &hRemoteKey) != ERROR_SUCCESS )
 		{
 			SetFuncErrorCode(1);					// Default is 0
 			return AUT_OK;
@@ -736,7 +736,7 @@ AUT_RESULT AutoIt_Script::F_RegEnumVal(VectorVariant &vParams, Variant &vResult)
 	}
 
 	// Open the registry key
-	if ( RegOpenKeyEx(hMainKey, sSubKey.c_str(), 0, KEY_READ , &hRegKey) != ERROR_SUCCESS )
+	if ( RegOpenKeyExA(hMainKey, sSubKey.c_str(), 0, KEY_READ , &hRegKey) != ERROR_SUCCESS )
 	{
 		SetFuncErrorCode(1);					// Default is 0
 		if (!sCname.empty())
@@ -745,7 +745,7 @@ AUT_RESULT AutoIt_Script::F_RegEnumVal(VectorVariant &vParams, Variant &vResult)
 	}
 
 	// Read the key
-	if ( RegEnumValue(hRegKey, vParams[1].nValue()-1, szRegBuffer, &dwBuf, NULL, NULL, NULL, NULL) != ERROR_SUCCESS )
+	if ( RegEnumValueA(hRegKey, vParams[1].nValue()-1, szRegBuffer, &dwBuf, NULL, NULL, NULL, NULL) != ERROR_SUCCESS )
 	{
 		// Error reading key
 		SetFuncErrorCode(-1);					// Default is 0

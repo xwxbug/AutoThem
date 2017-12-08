@@ -57,12 +57,12 @@ public:
 	// Functions
 	void	SetCmdLine(char *szCmdLine);		// Call this with the full cmd line
 
-	const char * GetCmdLine() { return m_szCmdLineRaw; }
+	const char * GetCmdLine();
 
-	int		GetNumParams(void) const {return m_nNumParameters;}
+	int		GetNumParams(void) const;
 	bool	GetParam(int nParam, char *szParam) const;
 	bool	GetNextParam(char *szParam);
-	void	GetNextParamReset(void) {m_nCurrentParam = 0;}
+	void	GetNextParamReset(void);
 
 private:
 	// Variables

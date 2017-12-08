@@ -106,11 +106,11 @@ Windows Me/98/95:  Pointer to a null-terminated string that indicates additional
 OS_Version::OS_Version()
 {
 	int				i;
-	OSVERSIONINFO	OSvi;						// OS Version data
+	OSVERSIONINFOA	OSvi;						// OS Version data
 
 	// Get details of the OS we are running on
-	OSvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	GetVersionEx(&OSvi);
+	OSvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
+	GetVersionExA(&OSvi);
 
 	// Populate Major and Minor version numbers
 	m_dwMajorVersion	= OSvi.dwMajorVersion;
@@ -118,7 +118,7 @@ OS_Version::OS_Version()
 	m_dwBuildNumber		= OSvi.dwBuildNumber;
 
 	// Get CSD information
-	int nTemp = (int)strlen(OSvi.szCSDVersion);
+	size_t nTemp = strlen(OSvi.szCSDVersion);
 
 	if (nTemp > 0)
 	{

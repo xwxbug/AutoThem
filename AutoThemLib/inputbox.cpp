@@ -108,18 +108,18 @@ BOOL CInputBox::OnInitDialog()
 
 	// Title the message box
 	if (m_title.length()>0)
-		SetWindowText(m_hWnd, m_title.c_str());
+		SetWindowTextA(m_hWnd, m_title.c_str());
 
 	// Prompt
 	if (m_strPrompt.length()>0) {
 		hControl = GetDlgItem(m_hWnd, IDC_INPUTPROMPT);
-		SetWindowText(hControl, m_strPrompt.c_str());
+		SetWindowTextA(hControl, m_strPrompt.c_str());
 	}
 
 	// Default Value?
 	if (m_strInputText.length()>0) {
 		hControl = GetDlgItem(m_hWnd, IDC_INPUTEDIT);
-		SetWindowText(hControl, m_strInputText.c_str());
+		SetWindowTextA(hControl, m_strInputText.c_str());
 	}
 
 	// Check for password character
@@ -148,7 +148,7 @@ BOOL CInputBox::OnInitDialog()
 	if (m_height>0)
 		nHeight=m_height;
 	if (m_title != "")
-		SetWindowText(m_hWnd, m_title.c_str());
+		SetWindowTextA(m_hWnd, m_title.c_str());
 
   	GetWindowRect(GetDesktopWindow(), &rSize);
 	Normalize(rSize);
@@ -279,7 +279,7 @@ void CInputBox::OnOK()
 	// Make sure that the string is not empty.
 	hControl = GetDlgItem(m_hWnd, IDC_INPUTEDIT);
 	if (hControl != NULL) {
-		GetWindowText(hControl, szInputText, 256);
+		GetWindowTextA(hControl, szInputText, 256);
  		if ((m_flags & ibf_notnull) && *szInputText == '\0')	// empty string
  			MessageBeep(MB_OK);
  		else {
@@ -302,7 +302,7 @@ UINT CInputBox::DoModal(HINSTANCE hInstance, HWND hWnd)
 	int iRetVal;
 
 	CurrInputBox = this;
-	iRetVal=(int)DialogBox(hInstance, MAKEINTRESOURCE(IDD), hWnd, ProcHandler);
+	iRetVal=(int)DialogBox(hInstance, MAKEINTRESOURCE(IDD), hWnd, (DLGPROC)ProcHandler);
 	CurrInputBox=NULL;
 
 	return iRetVal;

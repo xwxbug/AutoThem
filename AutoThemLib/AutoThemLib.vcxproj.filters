@@ -87,9 +87,6 @@
     <ClCompile Include="setforegroundwinex.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="shared_memory.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="stack_int_datatype.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -126,10 +123,18 @@
     <ClCompile Include="vector_variant_datatype.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="AutoIt.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources\AutoIt.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AutoThemLib.def">
+      <Filter>源文件</Filter>
+    </None>
   </ItemGroup>
 </Project>

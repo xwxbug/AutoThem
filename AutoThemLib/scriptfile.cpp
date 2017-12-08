@@ -90,11 +90,11 @@ AutoIt_ScriptFile::AutoIt_ScriptFile()
 	DWORD	dwRes;
 	HKEY	hRegKey;
 
-	if ( RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\AutoIt v3\\AutoIt", 0, KEY_READ, &hRegKey) == ERROR_SUCCESS )
+	if ( RegOpenKeyExA(HKEY_LOCAL_MACHINE, "Software\\AutoIt v3\\AutoIt", 0, KEY_READ, &hRegKey) == ERROR_SUCCESS )
 	{
 		// Get the install directory's include path and add it as the first directory to search.
 		dwRes = _MAX_PATH;
-		if ( RegQueryValueEx(hRegKey, "InstallDir", NULL, NULL, (LPBYTE)szTemp, &dwRes) == ERROR_SUCCESS )
+		if ( RegQueryValueExA(hRegKey, "InstallDir", NULL, NULL, (LPBYTE)szTemp, &dwRes) == ERROR_SUCCESS )
 		{
 			// Add a trailing \ if required
 			if (strlen(szTemp) && szTemp[strlen(szTemp)-1] != '\\')
@@ -110,7 +110,7 @@ AutoIt_ScriptFile::AutoIt_ScriptFile()
 		}
 		// Look for a key called "Include" which is REG_MULTI_SZ and lists some user-defined include directories
 		dwRes = 65535;
-		if (RegQueryValueEx(hRegKey, "Include", NULL, NULL, (LPBYTE)szRegBuffer, &dwRes) == ERROR_SUCCESS)
+		if (RegQueryValueExA(hRegKey, "Include", NULL, NULL, (LPBYTE)szRegBuffer, &dwRes) == ERROR_SUCCESS)
 		{
 			szRegBuffer[dwRes] = '\0';
 //			szRegBuffer[dwRes+1] = '\0';		// Ensure double null termination
@@ -257,7 +257,7 @@ int AutoIt_ScriptFile::AddIncludeName(const char *szFileName)
 	if (m_nNumIncludes >= AUT_MAX_INCLUDE_IDS)
 		return -1;
 
-	GetFullPathName(szFileName, _MAX_PATH, szFullPath, &szTemp);
+	GetFullPathNameA(szFileName, _MAX_PATH, szFullPath, &szTemp);
 
 	// Does this file already exist?
 	for (int i=0; i < m_nNumIncludes; ++i)
@@ -330,7 +330,7 @@ const char * AutoIt_ScriptFile::GetIncludeFileName(int nIncludeID)
 	{
 		char *szInclude = (char *)g_oScriptFile.GetIncludeName(nIncludeID);
 		char		*szFilePart;
-		GetFullPathName(szInclude, _MAX_PATH, szInclude, &szFilePart);
+		GetFullPathNameA(szInclude, _MAX_PATH, szInclude, &szFilePart);
 		return szFilePart;
 	}
 
@@ -609,15 +609,15 @@ void AutoIt_ScriptFile::PrepareScript(void)
 
 bool AutoIt_ScriptFile::LoadScript(char *szFile)
 {
-	OPENFILENAME	ofn;
+	OPENFILENAMEA	ofn;
 
 //	strcpy(szFile, "bin\\test.au3");
 
 	// Was a script file specified? If not, bring up the fileopen dialog
     if (szFile[0] == '\0')
     {
-		ZeroMemory(&ofn, sizeof(OPENFILENAME));
-		ofn.lStructSize		= sizeof(OPENFILENAME);
+		ZeroMemory(&ofn, sizeof(OPENFILENAMEA));
+		ofn.lStructSize		= sizeof(OPENFILENAMEA);
 		ofn.lpstrTitle		= "Run Script:\0";
 		ofn.hwndOwner		= NULL;
 		ofn.lpstrFile		= szFile;
@@ -628,7 +628,7 @@ bool AutoIt_ScriptFile::LoadScript(char *szFile)
 		ofn.lpstrDefExt		= "au3";
 
 		// Check that the user successfully selected a scriptfile
-		if (!GetOpenFileName(&ofn))
+		if (!GetOpenFileNameA(&ofn))
 			return false;
 	}
 
@@ -653,7 +653,7 @@ bool AutoIt_ScriptFile::Include(const char *szFileName, int nIncludeID)
 	char	szFname[_MAX_FNAME+1];
 	char	szExt[_MAX_EXT+1];
 	char	*szFilePart;
-	char	szOldWorkingDir[_MAX_PATH+1];
+	wchar_t	szOldWorkingDir[_MAX_PATH+1];
 	char	szWorkingDir[_MAX_PATH+1];
 	char	szFullFileName[_MAX_PATH+1];		// Full path of current file to include
 
@@ -675,7 +675,7 @@ bool AutoIt_ScriptFile::Include(const char *szFileName, int nIncludeID)
 		strcpy(szBuffer, "Error reading the file:\n\n");
 		strcat(szBuffer, szFileName);
 
-		Util_FatalError("AutoIt", szBuffer, NULL);
+		Util_FatalError((char*)"AutoIt", szBuffer, NULL);
 		return false;
 	}
 
@@ -683,14 +683,14 @@ bool AutoIt_ScriptFile::Include(const char *szFileName, int nIncludeID)
 	GetCurrentDirectory(_MAX_PATH, szOldWorkingDir);
 
 	// Get the FULL PATH of the filename we are working with (for future use with IsInlcudedOnceOnly)
-	GetFullPathName(szFileName, _MAX_PATH, szFullFileName, &szFilePart);
+	GetFullPathNameA(szFileName, _MAX_PATH, szFullFileName, &szFilePart);
 
 	// Set the working directory based on the filename we just opened - NOTE this will BREAK any further calls
 	// to GetFullPathName for the currently loaded file which uses the working directory to resolve!
 	_splitpath( szFullFileName, szDrive, szDir, szFname, szExt );
 	strcpy(szWorkingDir, szDrive);
 	strcat(szWorkingDir, szDir);
-	SetCurrentDirectory(szWorkingDir);
+	SetCurrentDirectoryA(szWorkingDir);
 
 
 	// Read in lines of text until EOF is reached or error occurs

@@ -129,7 +129,7 @@ void SetForegroundWinEx::Activate(HWND hWnd)
 
 	// if there is not any foreground window, then input focus is on the TaskBar.
 	if (!hForegroundWnd)
-		hForegroundWnd = FindWindow("Shell_TrayWnd", NULL);
+		hForegroundWnd = FindWindowW(L"Shell_TrayWnd", NULL);
 
 	// If the target window is currently top - don't bother
 	if (hWnd == hForegroundWnd)

@@ -1,4 +1,4 @@
-
+ï»¿
 ///////////////////////////////////////////////////////////////////////////////
 //
 // AutoIt v3
@@ -134,7 +134,7 @@ typedef enum {CTRLDOWN, CTRLUP, ALTDOWN, ALTUP, SHIFTDOWN, SHIFTUP,
 //#define IsPhysicallyDown(vk) (GetAsyncKeyState(vk) & 0x80000000)	// Both GetKeyState and GetAsyncKeyState are unreliable :(
 #define IsPhysicallyDown(vk) ( (GetAsyncKeyState(vk) & 0x80000000) || ((GetKeyState(vk) & 0x8000)) )
 
-char *g_szKeyTable[NUMKEYS] =
+const char *g_szKeyTable[NUMKEYS] =
 /*1 */	{"ALT", "BACKSPACE", "BS", "DEL", "DELETE", "DOWN", "END", "ENTER",
 /*2 */	"ESC", "ESCAPE", "F1", "F2", "F3", "F4", "F5", "F6",
 /*3 */	"F7", "F8", "F9", "F10", "F11", "F12", "HOME", "INS",
@@ -188,7 +188,7 @@ int g_nKeyCodes[NUMKEYS] =
 /*7 */	VK_NUMPAD8, VK_NUMPAD9, VK_MULTIPLY, VK_ADD, VK_SUBTRACT, VK_DECIMAL, VK_DIVIDE, VK_APPS,
 /*8 */	VK_LCONTROL, VK_RCONTROL, VK_LMENU, VK_RMENU, VK_LSHIFT, VK_RSHIFT, VK_SLEEP, NUMPADENTER,
 /*9 */	VK_BROWSER_BACK, VK_BROWSER_FORWARD, VK_BROWSER_REFRESH, VK_BROWSER_STOP,
-/*10*/	VK_BROWSER_SEARCH, VK_BROWSER_FAVORTIES, VK_BROWSER_HOME, VK_VOLUME_MUTE,
+/*10*/	VK_BROWSER_SEARCH, VK_BROWSER_FAVORITES, VK_BROWSER_HOME, VK_VOLUME_MUTE,
 /*11*/	VK_VOLUME_DOWN, VK_VOLUME_UP, VK_MEDIA_NEXT_TRACK, VK_MEDIA_PREV_TRACK,
 /*12*/	VK_MEDIA_STOP, VK_MEDIA_PLAY_PAUSE, VK_LAUNCH_MAIL, VK_LAUNCH_MEDIA_SELECT,
 /*13*/	VK_LAUNCH_APP1, VK_LAUNCH_APP2,
@@ -201,7 +201,7 @@ int g_nKeyCodes[NUMKEYS] =
 
 // List of Diadic characters will be updated according to keyboard layout
 //                     0   1   2   3   4   5   6   7
-char g_cDiadic [8] = {' ',' ','´','^','~','¨','`',' '};
+char g_cDiadic [8] = {' ',' ','Â´','^','~','Â¨','`',' '};
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -246,7 +246,7 @@ void HS_SendKeys::Init(void)
 	m_scanAlt = MapVirtualKey(VK_MENU, 0);
 
 	char szKLID[KL_NAMELENGTH];
-	GetKeyboardLayoutName(szKLID );		// Get input locale identifier name
+	GetKeyboardLayoutNameA(szKLID );		// Get input locale identifier name
 
 	//	update Diadics char according to keyboard possibility
 	for (int i=1; i<=7; ++i)
@@ -268,12 +268,12 @@ void HS_SendKeys::Init(void)
 
 /* I cannot have them working (JPM)
 	// need to check if a hungarian keyboard  in use
-	// because ~^`¨ does not work as a diadic char
+	// because ~^`Â¨ does not work as a diadic char
 	else if (strcmp(&szKLID[6], "0E") == 0)	// hungarian keyboard
 	{
 		g_cDiadic[3] = ' ';	// ^
 		g_cDiadic[4] = ' ';	// ~
-		g_cDiadic[5] = ' ';	// ¨
+		g_cDiadic[5] = ' ';	// Â¨
 		g_cDiadic[6] = ' ';	// `
 	}
 
@@ -281,9 +281,9 @@ void HS_SendKeys::Init(void)
 	// because ~ does not work as a diadic char
 	else if (strcmp(&szKLID[6], "05") == 0)	// czech keyboard
 	{
-		g_cDiadic[2] = ' ';	// ´
+		g_cDiadic[2] = ' ';	// Â´
 		g_cDiadic[4] = ' ';	// ~
-		g_cDiadic[5] = ' ';	// ¨
+		g_cDiadic[5] = ' ';	// Â¨
 		g_cDiadic[6] = ' ';	// `
 	}
 */
@@ -599,35 +599,35 @@ void  HS_SendKeys::SendSpecialCh(char ch)
 	Util_DebugMsg("==> HS_SendKeys::SendSpecialCh : ch=%d)\n", ch);
 #endif
 // Table to convert char >=128 to {Asc nnn} or to a diadic + letter
-// the comment above the value show as € due to Courier Font but they are real Ansi chars
+// the comment above the value show as â‚¬ due to Courier Font but they are real Ansi chars
 // 0 means no translation = try using the ALT+0nnn syntax
 // value >127 (x7f) will be the translated value sent by ALT+nnn (not ALT+0nnn)
 // value <128 define the diadic 0-3 bits index in g_cDiadic[] : if ' '  will not be sent
 //								4-7 bits index in g_cDiadicLetter[]
 	static char cAnsiToAscii [128] =
 	{
-// 80   €            ‚      ƒ      „      …      †      ‡      ˆ      ‰      Š      ‹      Œ            Ž      
+// 80   â‚¬      Â      â€š      Æ’      â€ž      â€¦      â€       â€¡      Ë†      â€°      Å       â€¹      Å’      Â      Å½      Â
      '\x80','\x81','\x82','\x83','\x84','\x85','\x86','\x87','\x88','\x89','\x8a','\x8b','\x8c','\x8d','\x8e','\x8f',
 
-// 90         ‘      ’      “      ”     •:f9    –      —      ˜      ™      š      ›      œ            ž      Ÿ
+// 90   Â      â€˜      â€™      â€œ      â€     â€¢:f9    â€“      â€”      Ëœ      â„¢      Å¡      â€º      Å“      Â      Å¾      Å¸
      '\x90','\x91','\x92','\x93','\x94','\x95','\x96','\x97','\x98','\x99','\x9a','\x9b','\x9c','\x9d','\x9e','\x9f',
 
-// A0          ¡      ¢      £      ¤      ¥      ¦      §      ¨      ©      ª      «      ¬      ­      ®      ¯
+// A0          Â¡      Â¢      Â£      Â¤      Â¥      Â¦      Â§      Â¨      Â©      Âª      Â«      Â¬      Â­      Â®      Â¯
      '\xa0','\xa1','\xa2','\xa3','\xa4','\xa5','\xa6','\x15','\xa8','\xa9','\xaa','\xab','\xac','\xad','\xae','\xaf',
 
-// B0   °      ±      ²      ³      ´      µ      ¶      ·      ¸      ¹      º      »      ¼      ½      ¾      ¿
+// B0   Â°      Â±      Â²      Â³      Â´      Âµ      Â¶      Â·      Â¸      Â¹      Âº      Â»      Â¼      Â½      Â¾      Â¿
      '\xb0','\xb1','\xb2','\xb3','\xb4','\xb5','\x14','\xb7','\xb8','\xb9','\xba','\xbb','\xbc','\xbd','\xbe','\xbf',
 
-// C0   À      Á      Â      Ã      Ä      Å      Æ      Ç      È      É      Ê      Ë      Ì      Í      Î      Ï
+// C0   Ã€      Ã      Ã‚      Ãƒ      Ã„      Ã…      Ã†      Ã‡      Ãˆ      Ã‰      ÃŠ      Ã‹      ÃŒ      Ã      ÃŽ      Ã
      '\x62','\x22','\x32','\x42','\xc4','\xc5','\xc6','\xc7','\x64','\xc9','\x34','\x54','\x66','\x26','\x36','\x56',
 
-// D0   Ð      Ñ      Ò      Ó      Ô      Õ      Ö      ×      Ø      Ù      Ú      Û      Ü      Ý      Þ      ß
+// D0   Ã      Ã‘      Ã’      Ã“      Ã”      Ã•      Ã–      Ã—      Ã˜      Ã™      Ãš      Ã›      Ãœ      Ã      Ãž      ÃŸ
      '\xd0','\xd1','\x68','\x28','\x38','\x48','\xd6','\xd7','\xd8','\x6a','\x2a','\x3a','\xdc','\x2c','\xde','\xdf',
 
-// E0   à      á      â      ã      ä      å      æ      ç      è      é      ê      ë      ì      í      î      ï
+// E0   Ã       Ã¡      Ã¢      Ã£      Ã¤      Ã¥      Ã¦      Ã§      Ã¨      Ã©      Ãª      Ã«      Ã¬      Ã­      Ã®      Ã¯
      '\xe0','\xe1','\xe2','\x41','\xe4','\xe5','\xe6','\xe7','\xe8','\xe9','\xea','\xeb','\xec','\xed','\xee','\xef',
 
-// F0   ð      ñ      ò      ó      ô      õ      ö      ÷      ø      ù      ú      û      ü      ý      þ      ÿ
+// F0   Ã°      Ã±      Ã²      Ã³      Ã´      Ãµ      Ã¶      Ã·      Ã¸      Ã¹      Ãº      Ã»      Ã¼      Ã½      Ã¾      Ã¿
      '\xf0','\xf1','\xf2','\xf3','\xf4','\x47','\xf6','\xf7','\xf8','\xf9','\xfa','\xfb','\xfc','\x2b','\xfe','\xff'
 	};
 
@@ -794,7 +794,7 @@ bool HS_SendKeys::IsVKExtended(UINT key)
 		key == VK_PRIOR || key == VK_DIVIDE || key == VK_APPS || key == VK_LWIN || key == VK_RWIN ||
 		key == VK_RMENU || key == VK_RCONTROL || key == VK_SLEEP || key == VK_BROWSER_BACK ||
 		key == VK_BROWSER_FORWARD || key == VK_BROWSER_REFRESH || key == VK_BROWSER_STOP ||
-		key == VK_BROWSER_SEARCH || key == VK_BROWSER_FAVORTIES || key == VK_BROWSER_HOME ||
+		key == VK_BROWSER_SEARCH || key == VK_BROWSER_FAVORITES || key == VK_BROWSER_HOME ||
 		key == VK_VOLUME_MUTE || key == VK_VOLUME_DOWN || key == VK_VOLUME_UP || key == VK_MEDIA_NEXT_TRACK ||
 		key == VK_MEDIA_PREV_TRACK || key == VK_MEDIA_STOP || key == VK_MEDIA_PLAY_PAUSE ||
 		key == VK_LAUNCH_MAIL || key == VK_LAUNCH_MEDIA_SELECT || key == VK_LAUNCH_APP1 || key == VK_LAUNCH_APP2)

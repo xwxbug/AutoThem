@@ -335,7 +335,7 @@ BOOL AutoIt_Script::Win_WindowSearchProcHandler(HWND hWnd, LPARAM lParam)
 	char	szBuffer[1024+1] = "";				// 1024 chars is more than enough for a title
 
 	// Get the window text
-	GetWindowText(hWnd, szBuffer, 1024);
+	GetWindowTextA(hWnd, szBuffer, 1024);
 
 	m_WindowSearchHWND = hWnd;					// Save the handle of the window for use in the WinTextSearch()
 
@@ -369,7 +369,7 @@ BOOL AutoIt_Script::Win_WindowSearchProcHandler(HWND hWnd, LPARAM lParam)
 			// valid options are "classname=", "handle=", "", "all", "regexp="
 			if ( !strnicmp(m_vWindowSearchTitle.szValue(), "classname=", 10) )	// classname=
 			{
-				GetClassName(hWnd, szBuffer, 1024);
+				GetClassNameA(hWnd, szBuffer, 1024);
 				if (!strcmp(szBuffer, &m_vWindowSearchTitle.szValue()[10]) )
 				{
 					if ( Win_WindowSearchText() == true && m_bWindowSearchFirstOnly == true)
@@ -444,7 +444,7 @@ BOOL AutoIt_Script::Win_WindowSearchTextProcHandler(HWND hWnd, LPARAM lParam)
 	{
 		if (m_nWindowSearchTextMode == 2)
 		{
-			nLen = GetWindowText(hWnd, szBuffer, AUT_WINTEXTBUFFER);	// Quicker mode
+			nLen = GetWindowTextA(hWnd, szBuffer, AUT_WINTEXTBUFFER);	// Quicker mode
 		}
 		else //if (SendMessage(hWnd, WM_GETTEXTLENGTH, 0, 0) > 0)
 		{
@@ -730,7 +730,7 @@ AUT_RESULT AutoIt_Script::F_WinSetTitle(VectorVariant &vParams, Variant &vResult
 	if (Win_WindowSearch() == false)
 		return AUT_OK;									// Required window not found
 
-	SetWindowText( m_WindowSearchHWND, vParams[2].szValue() );
+	SetWindowTextA( m_WindowSearchHWND, vParams[2].szValue() );
 
 	return AUT_OK;
 
@@ -752,7 +752,7 @@ AUT_RESULT AutoIt_Script::F_WinGetTitle(VectorVariant &vParams, Variant &vResult
 	if (Win_WindowSearch() == false)
 		return AUT_OK;									// Required window not found
 
-	GetWindowText(m_WindowSearchHWND, szBuffer, AUT_WINTEXTBUFFER);
+	GetWindowTextA(m_WindowSearchHWND, szBuffer, AUT_WINTEXTBUFFER);
 
 	vResult = szBuffer;
 
@@ -857,7 +857,7 @@ BOOL AutoIt_Script::ControlSearchProcHandler(HWND hWnd, LPARAM lParam)
 	}
 	else if (m_nControlSearchMethod == AUT_CONTROLSEARCH_CLASS)
 	{
-		GetClassName(hWnd, szBuffer, 256);
+		GetClassNameA(hWnd, szBuffer, 256);
 
 		if ( strncmp(m_vControlSearchValue.szValue(), szBuffer, strlen(szBuffer)) == 0 )
 		{
@@ -871,7 +871,7 @@ BOOL AutoIt_Script::ControlSearchProcHandler(HWND hWnd, LPARAM lParam)
 	}
 	else										// Use window text
 	{
-		GetWindowText(hWnd, szBuffer, 1024);
+		GetWindowTextA(hWnd, szBuffer, 1024);
 
 		if ( strcmp(m_vControlSearchValue.szValue(), szBuffer) == 0 )
 			bRes = FALSE;
@@ -1723,7 +1723,7 @@ AUT_RESULT AutoIt_Script::F_WinMenuSelectItem(VectorVariant &vParams, Variant &v
 		bFound=FALSE;
 		for ( c=0 ;c<=nCount-1; c++ )
 		{
-			GetMenuString(hMenu,c,szBuffer,AUT_WINTEXTBUFFER,MF_BYPOSITION);
+			GetMenuStringA(hMenu,c,szBuffer,AUT_WINTEXTBUFFER,MF_BYPOSITION);
 			if ( strncmp(vParams[i-1].szValue(),szBuffer,strlen(vParams[i-1].szValue()))==0 )
 			{
 				if ( i == iNumParams )
@@ -1893,7 +1893,7 @@ void AutoIt_Script::ControlWithFocus(HWND hWnd, Variant &vResult)
 		return;
 	}
 
-	GetClassName(m_ControlSearchHWND, szClass, 255);
+	GetClassNameA(m_ControlSearchHWND, szClass, 255);
 	m_vControlSearchValue		= szClass;		// Set the class to find
 
 	m_iControlSearchInstance	= 0;			// Variable to keep track of class instance
@@ -1920,7 +1920,7 @@ BOOL AutoIt_Script::ControlWithFocusProcHandler(HWND hWnd, LPARAM lParam)
 {
 	char	szBuffer[256];
 
-	GetClassName(hWnd, szBuffer, 255);
+	GetClassNameA(hWnd, szBuffer, 255);
 
 	if ( strcmp(m_vControlSearchValue.szValue(), szBuffer) == 0 )
 	{
@@ -2083,7 +2083,7 @@ AUT_RESULT AutoIt_Script::F_ToolTip(VectorVariant &vParams, Variant &vResult)
 	#define TTM_TRACKACTIVATE (WM_USER+17)
 #endif
 
-	TOOLINFO ti;
+	TOOLINFOA ti;
 	POINT  pt;
 
 	ti.cbSize = sizeof(ti);
@@ -2112,14 +2112,14 @@ AUT_RESULT AutoIt_Script::F_ToolTip(VectorVariant &vParams, Variant &vResult)
 		RECT dtw;
 		GetWindowRect(GetDesktopWindow(), &dtw);
 
-		SendMessage (m_hWndTip , TTM_ADDTOOL, 0, (LPARAM) (LPTOOLINFO)&ti);
+		SendMessageA (m_hWndTip , TTM_ADDTOOL, 0, (LPARAM) (LPTOOLINFO)&ti);
 		SendMessage(m_hWndTip, TTM_SETMAXTIPWIDTH, 0, (LPARAM)dtw.right);
 	}
 	else
-		SendMessage(m_hWndTip, TTM_UPDATETIPTEXT, 0, (LPARAM)&ti);
+		SendMessageA(m_hWndTip, TTM_UPDATETIPTEXT, 0, (LPARAM)&ti);
 
 	SendMessage (m_hWndTip , TTM_TRACKPOSITION, 0, (LPARAM)MAKELONG(pt.x, pt.y));
-	SendMessage (m_hWndTip , TTM_TRACKACTIVATE, true, (LPARAM)&ti);
+	SendMessageA(m_hWndTip , TTM_TRACKACTIVATE, true, (LPARAM)&ti);
 
 	return AUT_OK;
 
@@ -2132,7 +2132,7 @@ AUT_RESULT AutoIt_Script::F_ToolTip(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT AutoIt_Script::F_WinMinimizeAll(VectorVariant &vParams, Variant &vResult)
 {
-	PostMessage(FindWindow("Shell_TrayWnd", NULL), WM_COMMAND, 419, 0);
+	PostMessage(FindWindowW(L"Shell_TrayWnd", NULL), WM_COMMAND, 419, 0);
 	Util_Sleep(m_nWinWaitDelay);				// Briefly pause before continuing
 
 	return AUT_OK;
@@ -2146,7 +2146,7 @@ AUT_RESULT AutoIt_Script::F_WinMinimizeAll(VectorVariant &vParams, Variant &vRes
 
 AUT_RESULT AutoIt_Script::F_WinMinimizeAllUndo(VectorVariant &vParams, Variant &vResult)
 {
-	PostMessage(FindWindow("Shell_TrayWnd", NULL), WM_COMMAND, 416, 0);
+	PostMessage(FindWindowW(L"Shell_TrayWnd", NULL), WM_COMMAND, 416, 0);
 	Util_Sleep(m_nWinWaitDelay);				// Briefly pause before continuing
 
 	return AUT_OK;
@@ -2180,7 +2180,7 @@ AUT_RESULT AutoIt_Script::F_WinSetTrans(VectorVariant &vParams, Variant &vResult
 	if (Win_WindowSearch() == false)
 		return AUT_OK; // No window
 
-	HMODULE hMod = LoadLibrary("user32.dll");
+	HMODULE hMod = LoadLibraryW(L"user32.dll");
 	if (!hMod)
 		return AUT_OK;	// If this happens, we have major OS issues.
 
@@ -2258,7 +2258,7 @@ AUT_RESULT AutoIt_Script::F_WinList(VectorVariant &vParams, Variant &vResult)
 	for (int i = 1; i <= m_nWinListCount; ++i)
 	{
 		// Get the window text
-		GetWindowText(lpTemp->hWnd, szTitle, AUT_WINTEXTBUFFER);
+		GetWindowTextA(lpTemp->hWnd, szTitle, AUT_WINTEXTBUFFER);
 		vResult.ArraySubscriptClear();						// Reset the subscript
 		vResult.ArraySubscriptSetNext(i);
 		vResult.ArraySubscriptSetNext(0);					// [i][0]

@@ -388,7 +388,7 @@ AUT_RESULT AutoIt_Script::F_RunWait(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT AutoIt_Script::Run(int nFunction, VectorVariant &vParams, uint iNumParams, Variant &vResult)
 {
-	STARTUPINFO				si;
+	STARTUPINFOA			si;
 	STARTUPINFOW			wsi;
 
 	PROCESS_INFORMATION		pi;
@@ -422,7 +422,7 @@ AUT_RESULT AutoIt_Script::Run(int nFunction, VectorVariant &vParams, uint iNumPa
 		szDir[0] = '\0';
 
 	if (szDir[0] == '\0')
-		GetCurrentDirectory(_MAX_PATH, szDir);
+		GetCurrentDirectoryA(_MAX_PATH, szDir);
 
 	if (iNumParams == 3)						// Has show flag
 		si.wShowWindow = (WORD)vParams[2].nValue();	// Default is SW_SHOWNORMAL
@@ -432,7 +432,7 @@ AUT_RESULT AutoIt_Script::Run(int nFunction, VectorVariant &vParams, uint iNumPa
 	if (m_bRunAsSet)
 	{
 		// Get a handle to the DLL module that contains CreateProcessWithLogonW
-		hinstLib = LoadLibrary("advapi32.dll");
+		hinstLib = LoadLibraryW(L"advapi32.dll");
 		if (hinstLib != NULL)
 		{
 			lpfnDLLProc = (MyCreateProcessWithLogonW)GetProcAddress(hinstLib, "CreateProcessWithLogonW");
@@ -469,7 +469,7 @@ AUT_RESULT AutoIt_Script::Run(int nFunction, VectorVariant &vParams, uint iNumPa
 
 	// RunAs or Normal?
 	if (lpfnDLLProc == NULL)
-		bRes = CreateProcess(NULL, szRun, NULL, NULL, FALSE, 0, NULL, szDir, &si, &pi);
+		bRes = CreateProcessA(NULL, szRun, NULL, NULL, FALSE, 0, NULL, szDir, &si, &pi);
 	else
 	{
 		bRes = lpfnDLLProc( m_wszRunUser, m_wszRunDom, m_wszRunPwd, m_dwRunAsLogonFlags, 0, wszRun, 0, 0, wszDir, &wsi, &pi );
@@ -570,7 +570,7 @@ AUT_RESULT AutoIt_Script::F_ProcessSetPriority(VectorVariant &vParams, Variant &
 	if (!bRes)
 		return AUT_OK;
 
-	hInst = GetModuleHandle("KERNEL32.DLL");
+	hInst = GetModuleHandleW(L"KERNEL32.DLL");
 	if (hInst == NULL)
 		return AUT_OK;
 
@@ -634,6 +634,20 @@ AUT_RESULT AutoIt_Script::F_ProcessSetPriority(VectorVariant &vParams, Variant &
 //
 //////////////////////////////////////////////////////////////////////////
 
+typedef struct tagPROCESSENTRY32A
+{
+	DWORD   dwSize;
+	DWORD   cntUsage;
+	DWORD   th32ProcessID;          // this process
+	ULONG_PTR th32DefaultHeapID;
+	DWORD   th32ModuleID;           // associated exe
+	DWORD   cntThreads;
+	DWORD   th32ParentProcessID;    // this process's parent process
+	LONG    pcPriClassBase;         // Base priority of process's threads
+	DWORD   dwFlags;
+	CHAR    szExeFile[MAX_PATH];    // Path
+} PROCESSENTRY32A;
+
 AUT_RESULT AutoIt_Script::F_ProcessList(VectorVariant &vParams, Variant &vResult)
 {
 	// Variables used in both method's.
@@ -654,7 +668,7 @@ AUT_RESULT AutoIt_Script::F_ProcessList(VectorVariant &vParams, Variant &vResult
 	{
 		typedef BOOL (WINAPI *MyEnumProcesses)(DWORD*, DWORD, DWORD*);
 		typedef BOOL (WINAPI *MyEnumProcessModules)(HANDLE, HMODULE*, DWORD, LPDWORD);
-		typedef DWORD (WINAPI *MyGetModuleBaseName)(HANDLE, HMODULE, LPTSTR, DWORD);
+		typedef DWORD (WINAPI *MyGetModuleBaseName)(HANDLE, HMODULE, LPSTR, DWORD);
 
 		MyEnumProcesses			lpfnEnumProcesses;
 		MyEnumProcessModules	lpfnEnumProcessModules;
@@ -669,7 +683,7 @@ AUT_RESULT AutoIt_Script::F_ProcessList(VectorVariant &vParams, Variant &vResult
 
 		// We must dynamically load the function to retain compatibility with Win95
 		// Get a handle to the DLL module that contains EnumProcesses
-		hinstLib = LoadLibrary("psapi.dll");
+		hinstLib = LoadLibraryW(L"psapi.dll");
 		if (!hinstLib)
 		{
 			SetFuncErrorCode(1);
@@ -721,17 +735,17 @@ AUT_RESULT AutoIt_Script::F_ProcessList(VectorVariant &vParams, Variant &vResult
 	}
 	else	// Win 98
 	{
-		typedef BOOL (WINAPI *PROCESSWALK)(HANDLE hSnapshot, LPPROCESSENTRY32 lppe);
+		typedef BOOL (WINAPI *PROCESSWALK)(HANDLE hSnapshot, PROCESSENTRY32A* lppe);
 		typedef HANDLE (WINAPI *CREATESNAPSHOT)(DWORD dwFlags, DWORD th32ProcessID);
 
 		HANDLE			snapshot;
-		PROCESSENTRY32	proc;
+		PROCESSENTRY32A	proc;
 		CREATESNAPSHOT	lpfnCreateToolhelp32Snapshot = NULL;
 		PROCESSWALK		lpfnProcess32First = NULL;
 		PROCESSWALK		lpfnProcess32Next  = NULL;
 
 		// We must dynamically load the function to retain compatibility with WinNT
-		hinstLib = GetModuleHandle("KERNEL32.DLL");
+		hinstLib = GetModuleHandleW(L"KERNEL32.DLL");
 		if (!hinstLib)
 		{
 			SetFuncErrorCode(1);

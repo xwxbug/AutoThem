@@ -72,7 +72,7 @@ AUT_RESULT AutoIt_Script::F_IniRead(VectorVariant &vParams, Variant &vResult)
 	// Get the fullpathname (ini functions need a full path)
 	Util_GetFullPathName(vParams[0].szValue(), szFileTemp);
 
-	GetPrivateProfileString(vParams[1].szValue(), vParams[2].szValue(),
+	GetPrivateProfileStringA(vParams[1].szValue(), vParams[2].szValue(),
 							vParams[3].szValue(), szBuffer, 65535, szFileTemp);
 
 	vResult = szBuffer;							// Return the string
@@ -95,8 +95,8 @@ AUT_RESULT AutoIt_Script::F_IniWrite(VectorVariant &vParams, Variant &vResult)
 	Util_GetFullPathName(vParams[0].szValue(), szFileTemp);
 
 
-	if (WritePrivateProfileString(vParams[1].szValue(), vParams[2].szValue(), vParams[3].szValue(), szFileTemp))
-		WritePrivateProfileString(NULL, NULL, NULL, szFileTemp);	// Flush
+	if (WritePrivateProfileStringA(vParams[1].szValue(), vParams[2].szValue(), vParams[3].szValue(), szFileTemp))
+		WritePrivateProfileStringA(NULL, NULL, NULL, szFileTemp);	// Flush
 	else
 		vResult = 0;							// Error, default is 1
 
@@ -121,16 +121,16 @@ AUT_RESULT AutoIt_Script::F_IniDelete(VectorVariant &vParams, Variant &vResult)
 	if (vParams.size() == 2)
 	{
 		// Delete entire section
-		if (WritePrivateProfileString(vParams[1].szValue(), NULL, NULL, szFileTemp))
-			WritePrivateProfileString(NULL, NULL, NULL, szFileTemp);	// Flush
+		if (WritePrivateProfileStringA(vParams[1].szValue(), NULL, NULL, szFileTemp))
+			WritePrivateProfileStringA(NULL, NULL, NULL, szFileTemp);	// Flush
 		else
 			vResult = 0;
 	}
 	else
 	{
 		// Just delete a key as usual
-		if (WritePrivateProfileString(vParams[1].szValue(), vParams[2].szValue(), NULL, szFileTemp))
-			WritePrivateProfileString(NULL, NULL, NULL, szFileTemp);	// Flush
+		if (WritePrivateProfileStringA(vParams[1].szValue(), vParams[2].szValue(), NULL, szFileTemp))
+			WritePrivateProfileStringA(NULL, NULL, NULL, szFileTemp);	// Flush
 		else
 			vResult = 0;
 	}
@@ -163,7 +163,7 @@ AUT_RESULT AutoIt_Script::F_IniReadSection(VectorVariant &vParams, Variant &vRes
 
 	int		i;
 	char	szBuffer[32767];	// Temporary buffer, max size of INI _section_ in 95 (See MSDN for GetPrivateProfileSection)
-	int		iRes = GetPrivateProfileSection(vParams[1].szValue(), szBuffer, 32767, szFileTemp);
+	int		iRes = GetPrivateProfileSectionA(vParams[1].szValue(), szBuffer, 32767, szFileTemp);
 
 	if (!iRes)
 		SetFuncErrorCode(1);
@@ -276,7 +276,7 @@ AUT_RESULT AutoIt_Script::F_IniReadSectionNames(VectorVariant &vParams, Variant 
 
 	int		i;
 	char	szBuffer[65535];	// Temporary buffer, max size of INI in 95 (According to F_IniRead above)
-	int		iRes = GetPrivateProfileSectionNames(szBuffer, 65535, szFileTemp);
+	int		iRes = GetPrivateProfileSectionNamesA(szBuffer, 65535, szFileTemp);
 
 	if (!iRes)
 		SetFuncErrorCode(1);
@@ -885,9 +885,9 @@ AUT_RESULT AutoIt_Script::F_FileGetTime(VectorVariant &vParams, Variant &vResult
 	FILETIME		ftCreationTime,ftLastAccessTime,ftLastWriteTime;
 	int				n=0;
  	char			szTime[14+1];
-	WIN32_FIND_DATA	findData;
+	WIN32_FIND_DATAA	findData;
 
-	fileIn = FindFirstFile(vParams[0].szValue(),&findData);
+	fileIn = FindFirstFileA(vParams[0].szValue(),&findData);
 	if (fileIn != INVALID_HANDLE_VALUE)
 	{
 		ftCreationTime		= findData.ftCreationTime;
@@ -980,7 +980,7 @@ AUT_RESULT AutoIt_Script::F_FileSetTime (VectorVariant &vParams, Variant &vResul
 	uint		iNumParams = vParams.size();
 	const char	*szTime = vParams[1].szValue();
 	bool		bRecurse;
-	char		szOldWorkingDir[_MAX_PATH+1];
+	wchar_t		szOldWorkingDir[_MAX_PATH+1];
 	char		szPath[_MAX_PATH+1];
 	char		szDrive[_MAX_PATH+1];
 	char		szDir[_MAX_PATH+1];
@@ -1027,7 +1027,7 @@ AUT_RESULT AutoIt_Script::F_FileSetTime (VectorVariant &vParams, Variant &vResul
 	Util_StripTrailingDir(szPath);
 
 	// Get the FULL pathname including drive directory etc
-	GetFullPathName(szPath, _MAX_PATH, szPath, &szFilePart);
+	GetFullPathNameA(szPath, _MAX_PATH, szPath, &szFilePart);
 
 	// Split the target into bits
 	_splitpath( szPath, szDrive, szDir, szFile, szExt );
@@ -1035,8 +1035,8 @@ AUT_RESULT AutoIt_Script::F_FileSetTime (VectorVariant &vParams, Variant &vResul
 	strcat(szFile, szExt);
 
 	// Get a copy of the current working directory and then change it to match our requested path
-	GetCurrentDirectory(_MAX_PATH, szOldWorkingDir);
-	SetCurrentDirectory(szDrive);
+	GetCurrentDirectoryW(_MAX_PATH, szOldWorkingDir);
+	SetCurrentDirectoryA(szDrive);
 
 
 	// Is the requested filename a directory?
@@ -1052,7 +1052,7 @@ AUT_RESULT AutoIt_Script::F_FileSetTime (VectorVariant &vParams, Variant &vResul
 			return AUT_OK;
 		else
 		{
-			SetCurrentDirectory(szFile);	// Go into the directory
+			SetCurrentDirectoryA(szFile);	// Go into the directory
 			strcpy(szFile, "*.*");			// Match all
 		}
 	}
@@ -1061,7 +1061,7 @@ AUT_RESULT AutoIt_Script::F_FileSetTime (VectorVariant &vParams, Variant &vResul
 	if (FileSetTime_recurse(szFile, &ft, nWhichTime, bRecurse) == false)
 		vResult = 0;							// Default is 1
 
-	SetCurrentDirectory(szOldWorkingDir);	// Restore working directory
+	SetCurrentDirectoryW(szOldWorkingDir);	// Restore working directory
 
 	return AUT_OK;
 
@@ -1076,10 +1076,10 @@ AUT_RESULT AutoIt_Script::F_FileSetTime (VectorVariant &vParams, Variant &vResul
 
 bool AutoIt_Script::FileSetTime_recurse (const char *szIn, FILETIME *ft, int nWhichTime, bool bRecurse)
 {
-	WIN32_FIND_DATA	findData;
+	WIN32_FIND_DATAA	findData;
 
 	// Does the source file exist?
-	HANDLE hSearch = FindFirstFile(szIn, &findData);
+	HANDLE hSearch = FindFirstFileA(szIn, &findData);
 
 	while (hSearch != INVALID_HANDLE_VALUE)
 	{
@@ -1094,7 +1094,7 @@ bool AutoIt_Script::FileSetTime_recurse (const char *szIn, FILETIME *ft, int nWh
 
 		} // End If
 
-		if (FindNextFile(hSearch, &findData) == FALSE)
+		if (FindNextFileA(hSearch, &findData) == FALSE)
 			break;
 
 	} // End while
@@ -1107,7 +1107,7 @@ bool AutoIt_Script::FileSetTime_recurse (const char *szIn, FILETIME *ft, int nWh
 
 
 	// Redo the search of this directory with *.* to find all the directories
-	hSearch = FindFirstFile("*.*", &findData);
+	hSearch = FindFirstFileA("*.*", &findData);
 
 	while (hSearch != INVALID_HANDLE_VALUE)
 	{
@@ -1115,7 +1115,7 @@ bool AutoIt_Script::FileSetTime_recurse (const char *szIn, FILETIME *ft, int nWh
 		if ( (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY
 			&& strcmp(findData.cFileName, ".") && strcmp(findData.cFileName, "..") )
 		{
-			SetCurrentDirectory(findData.cFileName);	// Move into new directory
+			SetCurrentDirectoryA(findData.cFileName);	// Move into new directory
 
 			if (FileSetTime_recurse(szIn, ft, nWhichTime, bRecurse) == false)
 			{
@@ -1123,11 +1123,11 @@ bool AutoIt_Script::FileSetTime_recurse (const char *szIn, FILETIME *ft, int nWh
 				return false;
 			}
 
-			SetCurrentDirectory("..");			// Return from directory
+			SetCurrentDirectoryA("..");			// Return from directory
 
 		} // End If
 
-		if (FindNextFile(hSearch, &findData) == FALSE)
+		if (FindNextFileA(hSearch, &findData) == FALSE)
 			break;
 
 	} // End while
@@ -1150,10 +1150,10 @@ AUT_RESULT AutoIt_Script::F_FileGetSize(VectorVariant &vParams, Variant &vResult
 	// Typical, the original version of the function works better than the newer one :)
 	// The FindFirstFile also works on in-use files
 
-	WIN32_FIND_DATA	findData;
+	WIN32_FIND_DATAA	findData;
 
 	// Does the source file exist?
-	HANDLE hSearch = FindFirstFile(vParams[0].szValue(), &findData);
+	HANDLE hSearch = FindFirstFileA(vParams[0].szValue(), &findData);
 
 	if (hSearch == INVALID_HANDLE_VALUE)
 	{
@@ -1213,7 +1213,7 @@ AUT_RESULT AutoIt_Script::F_FileSaveDialog(VectorVariant &vParams, Variant &vRes
 
 AUT_RESULT AutoIt_Script::FileDialog(VectorVariant &vParams, Variant &vResult, uint iNumParams, int nFlag)
 {
-	OPENFILENAME	ofn;
+	OPENFILENAMEA	ofn;
 	char			szFile[65536] = "";	// initalize entire array with null characters
 	char			szTitle[32768];
 	char			szDir[_MAX_PATH+1];
@@ -1260,8 +1260,8 @@ AUT_RESULT AutoIt_Script::FileDialog(VectorVariant &vParams, Variant &vResult, u
 	{
 		szFile[0] = '\0';
 	}
-	ZeroMemory(&ofn, sizeof(OPENFILENAME));
-	ofn.lStructSize		= sizeof(OPENFILENAME);
+	ZeroMemory(&ofn, sizeof(OPENFILENAMEA));
+	ofn.lStructSize		= sizeof(OPENFILENAMEA);
 	ofn.hwndOwner		= NULL;
 	ofn.lpstrFilter		= szFilter;
 	ofn.lpstrTitle		= szTitle;
@@ -1290,7 +1290,7 @@ AUT_RESULT AutoIt_Script::FileDialog(VectorVariant &vParams, Variant &vResult, u
 
 	if(nFlag == 1)
 	{
-		if(GetOpenFileName(&ofn))
+		if(GetOpenFileNameA(&ofn))
 		{
 			if(nPos2 & OFN_ALLOWMULTISELECT)
 			{
@@ -1314,7 +1314,7 @@ AUT_RESULT AutoIt_Script::FileDialog(VectorVariant &vParams, Variant &vResult, u
 	}
 	else
 	{
-		if(GetSaveFileName(&ofn))
+		if(GetSaveFileNameA(&ofn))
 			vResult = ofn.lpstrFile;
 		else
 			SetFuncErrorCode(1);				// Default is 0
@@ -1348,7 +1348,7 @@ AUT_RESULT AutoIt_Script::F_FileSelectFolder (VectorVariant &vParams, Variant &v
 #define BIF_BROWSEFORCOMPUTER	0x1000
 
 	LPMALLOC		pMalloc;
-	BROWSEINFO		browseInfo;
+	BROWSEINFOA		browseInfo;
 	LPITEMIDLIST	lpItemIDList;
 	char			Result[_MAX_PATH+1] = "";
 	char			szText[2048];
@@ -1395,12 +1395,12 @@ AUT_RESULT AutoIt_Script::F_FileSelectFolder (VectorVariant &vParams, Variant &v
 	browseInfo.ulFlags			= flag;
 	browseInfo.iImage			= iImage;
 
-	lpItemIDList = SHBrowseForFolder(&browseInfo);// Spawn Dialog
+	lpItemIDList = SHBrowseForFolderA(&browseInfo);// Spawn Dialog
 
 	if(lpItemIDList != NULL)					// Folder Is Chosen
 	{
 		vResult = Result;						// Return Full Path	(in case of server name)
-		SHGetPathFromIDList(lpItemIDList,Result);	// Doesn't work with server names! Just use return value...
+		SHGetPathFromIDListA(lpItemIDList,Result);	// Doesn't work with server names! Just use return value...
 		pMalloc->Free(lpItemIDList);
 
 		if (Result[0] != '\0')
@@ -1454,7 +1454,7 @@ int CALLBACK AutoIt_Script::BrowseForFolderProc(HWND hWnd,UINT iMsg,LPARAM lPara
 
 AUT_RESULT AutoIt_Script::F_DriveMapAdd(VectorVariant &vParams, Variant &vResult)
 {
-	NETRESOURCE	nr;
+	NETRESOURCEA	nr;
 	DWORD		res;
 	uint		iNumParams = vParams.size();
 	DWORD		dwFlags = 0;
@@ -1486,13 +1486,13 @@ AUT_RESULT AutoIt_Script::F_DriveMapAdd(VectorVariant &vParams, Variant &vResult
 		dwFlags |= CONNECT_REDIRECT;			// Use first available drive
 
 	if (iNumParams < 4 || g_oVersion.IsWin9x())
-		res = WNetUseConnection(NULL,&nr, NULL, NULL, dwFlags, szBuffer, &dwBuffersize, &dwResult); // Use current user/password
+		res = WNetUseConnectionA(NULL,&nr, NULL, NULL, dwFlags, szBuffer, &dwBuffersize, &dwResult); // Use current user/password
 	else
 	{
 		if (iNumParams == 4)
-			res = WNetUseConnection(NULL,&nr, NULL, vParams[3].szValue(), dwFlags, szBuffer, &dwBuffersize, &dwResult);
+			res = WNetUseConnectionA(NULL,&nr, NULL, vParams[3].szValue(), dwFlags, szBuffer, &dwBuffersize, &dwResult);
 		else
-			 res = WNetUseConnection(NULL,&nr, vParams[4].szValue(), vParams[3].szValue(), dwFlags, szBuffer, &dwBuffersize, &dwResult);
+			 res = WNetUseConnectionA(NULL,&nr, vParams[4].szValue(), vParams[3].szValue(), dwFlags, szBuffer, &dwBuffersize, &dwResult);
 	}
 
 	if(res != NO_ERROR)
@@ -1541,7 +1541,7 @@ AUT_RESULT AutoIt_Script::F_DriveMapAdd(VectorVariant &vParams, Variant &vResult
 
 AUT_RESULT AutoIt_Script::F_DriveMapDel(VectorVariant &vParams, Variant &vResult)
 {
-	DWORD res = WNetCancelConnection2(vParams[0].szValue(), CONNECT_UPDATE_PROFILE, TRUE);
+	DWORD res = WNetCancelConnection2A(vParams[0].szValue(), CONNECT_UPDATE_PROFILE, TRUE);
 
 	if(res != NO_ERROR)
 	{
@@ -1567,7 +1567,7 @@ AUT_RESULT AutoIt_Script::F_DriveMapGet(VectorVariant &vParams, Variant &vResult
 	char	szBuffer[1024];
 	DWORD	dwLen = 1024;
 
-	DWORD res = WNetGetConnection(vParams[0].szValue(), szBuffer, &dwLen);
+	DWORD res = WNetGetConnectionA(vParams[0].szValue(), szBuffer, &dwLen);
 
 	if(res != NO_ERROR)
 	{
@@ -1623,7 +1623,7 @@ AUT_RESULT AutoIt_Script::F_DriveGetDrive(VectorVariant &vParams, Variant &vResu
     {
 		sBuffer	= (char)n;
 		sBuffer += ":\\";
-		uiTemp = GetDriveType(sBuffer.c_str());
+		uiTemp = GetDriveTypeA(sBuffer.c_str());
 		if( uiTemp==uiFlag || (uiFlag==99 && uiTemp!=DRIVE_NO_ROOT_DIR) )
 		{
 			sBuffer.strip_trailing("\\");
@@ -1668,22 +1668,22 @@ AUT_RESULT AutoIt_Script::F_CDTray(VectorVariant &vParams, Variant &vResult)
 	if (sAction == "close")
 		sAction = "closed";						// Will be a common mistake...
 
-	if ( (sAction == "open" || sAction == "closed") && GetDriveType(sDrive.c_str()) == DRIVE_CDROM )
+	if ( (sAction == "open" || sAction == "closed") && GetDriveTypeA(sDrive.c_str()) == DRIVE_CDROM )
 	{
 		AString sMCI = "open ";
 		sMCI += sDrive;
 		sMCI += " type cdaudio alias cd wait";
 
-		if ( mciSendString(sMCI.c_str(), 0, 0, 0) == 0 )	// open handle to Drive
+		if ( mciSendStringA(sMCI.c_str(), 0, 0, 0) == 0 )	// open handle to Drive
 		{
 			sMCI = "set cd door ";
 			sMCI += sAction;
 			sMCI += " wait";
-			if ( !(mciSendString(sMCI.c_str(), 0, 0, 0) == 0) )
+			if ( !(mciSendStringA(sMCI.c_str(), 0, 0, 0) == 0) )
 				vResult = 0;					// Error
 
 			sMCI = "close cd wait";
-			mciSendString(sMCI.c_str(), 0, 0, 0);			// close handle to Drive
+			mciSendStringA(sMCI.c_str(), 0, 0, 0);			// close handle to Drive
 		}
 		else
 			vResult = 0;						// Error
@@ -1711,7 +1711,7 @@ AUT_RESULT AutoIt_Script::F_DriveGetType(VectorVariant &vParams, Variant &vResul
 	if ( sTemp[sTemp.length()-1] != '\\' )	// Attempt to fix the parameter passed
 		sTemp += "\\";
 
-	if ( (uiType = GetDriveType(sTemp.c_str())) != DRIVE_NO_ROOT_DIR )
+	if ( (uiType = GetDriveTypeA(sTemp.c_str())) != DRIVE_NO_ROOT_DIR )
 	{
 		switch (uiType)
 		{
@@ -1757,10 +1757,10 @@ AUT_RESULT AutoIt_Script::F_DriveSpaceTotal(VectorVariant &vParams, Variant &vRe
 
 	ULARGE_INTEGER	uiTotal, uiFree, uiUsed;
 	DWORD			dwSectPerClust, dwBytesPerSect, dwFreeClusters, dwTotalClusters;
-	typedef BOOL (WINAPI *MyGetDiskFreeSpaceEx)(LPCTSTR, PULARGE_INTEGER, PULARGE_INTEGER, PULARGE_INTEGER);
+	typedef BOOL (WINAPI *MyGetDiskFreeSpaceEx)(LPCSTR, PULARGE_INTEGER, PULARGE_INTEGER, PULARGE_INTEGER);
 	MyGetDiskFreeSpaceEx	lpfnGetDiskFreeSpaceEx;
 
-	if ( (lpfnGetDiskFreeSpaceEx = (MyGetDiskFreeSpaceEx)GetProcAddress(GetModuleHandle("kernel32.dll"), "GetDiskFreeSpaceExA")) != NULL )
+	if ( (lpfnGetDiskFreeSpaceEx = (MyGetDiskFreeSpaceEx)GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "GetDiskFreeSpaceExA")) != NULL )
 	{
 		if ( lpfnGetDiskFreeSpaceEx(sTemp.c_str(),&uiFree,&uiTotal,&uiUsed) )
 			vResult = double((__int64)(uiTotal.QuadPart))/(1024.*1024.);
@@ -1769,7 +1769,7 @@ AUT_RESULT AutoIt_Script::F_DriveSpaceTotal(VectorVariant &vParams, Variant &vRe
 	}
 	else
 	{
-		if ( GetDiskFreeSpace(sTemp.c_str(), &dwSectPerClust, &dwBytesPerSect, &dwFreeClusters, &dwTotalClusters) )
+		if ( GetDiskFreeSpaceA(sTemp.c_str(), &dwSectPerClust, &dwBytesPerSect, &dwFreeClusters, &dwTotalClusters) )
 			vResult = double((__int64)(dwTotalClusters * dwSectPerClust * dwBytesPerSect))/(1024.*1024.);
 		else
 			SetFuncErrorCode(1);
@@ -1795,11 +1795,11 @@ AUT_RESULT AutoIt_Script::F_DriveSpaceFree(VectorVariant &vParams, Variant &vRes
 
 	ULARGE_INTEGER	uiTotal, uiFree, uiUsed;
 	DWORD			dwSectPerClust, dwBytesPerSect, dwFreeClusters, dwTotalClusters;
-	typedef BOOL (WINAPI *MyGetDiskFreeSpaceEx)(LPCTSTR, PULARGE_INTEGER, PULARGE_INTEGER, PULARGE_INTEGER);
+	typedef BOOL (WINAPI *MyGetDiskFreeSpaceEx)(LPCSTR, PULARGE_INTEGER, PULARGE_INTEGER, PULARGE_INTEGER);
 	MyGetDiskFreeSpaceEx	lpfnGetDiskFreeSpaceEx;
 //	int				test = ERROR_SUCCESS;
 
-	if ( (lpfnGetDiskFreeSpaceEx = (MyGetDiskFreeSpaceEx)GetProcAddress(GetModuleHandle("kernel32.dll"), "GetDiskFreeSpaceExA")) != NULL )
+	if ( (lpfnGetDiskFreeSpaceEx = (MyGetDiskFreeSpaceEx)GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "GetDiskFreeSpaceExA")) != NULL )
 	{
 		if ( lpfnGetDiskFreeSpaceEx(sTemp.c_str(),&uiFree,&uiTotal,&uiUsed) )
 			vResult = double((__int64)(uiFree.QuadPart))/(1024.*1024.);
@@ -1808,7 +1808,7 @@ AUT_RESULT AutoIt_Script::F_DriveSpaceFree(VectorVariant &vParams, Variant &vRes
 	}
 	else
 	{
-		if ( GetDiskFreeSpace(sTemp.c_str(), &dwSectPerClust, &dwBytesPerSect, &dwFreeClusters, &dwTotalClusters) )
+		if ( GetDiskFreeSpaceA(sTemp.c_str(), &dwSectPerClust, &dwBytesPerSect, &dwFreeClusters, &dwTotalClusters) )
 			vResult = double((__int64)(dwFreeClusters * dwSectPerClust * dwBytesPerSect))/(1024.*1024.);
 		else
 			SetFuncErrorCode(1);
@@ -1835,7 +1835,7 @@ AUT_RESULT AutoIt_Script::F_DriveStatus(VectorVariant &vParams, Variant &vResult
 	DWORD			dwSectPerClust, dwBytesPerSect, dwFreeClusters, dwTotalClusters;
 	int				test = ERROR_SUCCESS;
 
-	if ( !(GetDiskFreeSpace(sTemp.c_str(), &dwSectPerClust, &dwBytesPerSect, &dwFreeClusters, &dwTotalClusters)) )
+	if ( !(GetDiskFreeSpaceA(sTemp.c_str(), &dwSectPerClust, &dwBytesPerSect, &dwFreeClusters, &dwTotalClusters)) )
 			test = GetLastError();
 
 	switch (test)
@@ -1881,7 +1881,7 @@ AUT_RESULT AutoIt_Script::F_DriveGetFileSystem(VectorVariant &vParams, Variant &
 	if ( sTemp[sTemp.length()-1] != '\\' )	// Attemp to fix the parameter passed
 		sTemp += "\\";
 
-	if ( GetVolumeInformation(sTemp.c_str(),szBuffer,255,&dwVolumeSerial,&dwMaxCL,&dwFSFlags,szFileSystem,255) )
+	if ( GetVolumeInformationA(sTemp.c_str(),szBuffer,255,&dwVolumeSerial,&dwMaxCL,&dwFSFlags,szFileSystem,255) )
 		vResult = szFileSystem;
 	else
 		SetFuncErrorCode(1);
@@ -1908,7 +1908,7 @@ AUT_RESULT AutoIt_Script::F_DriveGetSerial(VectorVariant &vParams, Variant &vRes
 	if ( sTemp[sTemp.length()-1] != '\\' )	// Attemp to fix the parameter passed
 		sTemp += "\\";
 
-	if ( GetVolumeInformation(sTemp.c_str(),szBuffer,255,&dwVolumeSerial,&dwMaxCL,&dwFSFlags,szFileSystem,255) )
+	if ( GetVolumeInformationA(sTemp.c_str(),szBuffer,255,&dwVolumeSerial,&dwMaxCL,&dwFSFlags,szFileSystem,255) )
 	{
 		sprintf(szBuffer,"%lu",dwVolumeSerial);
 		vResult = szBuffer;
@@ -1938,7 +1938,7 @@ AUT_RESULT AutoIt_Script::F_DriveGetLabel(VectorVariant &vParams, Variant &vResu
 	if ( sTemp[sTemp.length()-1] != '\\' )	// Attemp to fix the parameter passed
 		sTemp += "\\";
 
-	if ( GetVolumeInformation(sTemp.c_str(),szBuffer,255,&dwVolumeSerial,&dwMaxCL,&dwFSFlags,szFileSystem,255) )
+	if ( GetVolumeInformationA(sTemp.c_str(),szBuffer,255,&dwVolumeSerial,&dwMaxCL,&dwFSFlags,szFileSystem,255) )
 		vResult = szBuffer;
 	else
 		SetFuncErrorCode(1);
@@ -1961,7 +1961,7 @@ AUT_RESULT AutoIt_Script::F_DriveSetLabel(VectorVariant &vParams, Variant &vResu
 
 	SetErrorMode(SEM_FAILCRITICALERRORS);		// So a:\ does not ask for disk
 
-	if ( !SetVolumeLabel(sTemp.c_str(),vParams[1].szValue()) )
+	if ( !SetVolumeLabelA(sTemp.c_str(),vParams[1].szValue()) )
 		vResult = 0;							// Default is 1
 
 	return AUT_OK;
@@ -1981,7 +1981,7 @@ AUT_RESULT AutoIt_Script::F_FileCreateShortcut(VectorVariant &vParams, Variant &
 	bool			bShift, bControl, bAlt, bWin;
 	UINT			mods = 0;
 	UINT			vk;
-	IShellLink*		psl;
+	IShellLinkA*		psl;
 	IPersistFile*	ppf;
 	WORD			wsz[MAX_PATH];
 	AString			sLink = vParams[1].szValue();
@@ -1991,7 +1991,7 @@ AUT_RESULT AutoIt_Script::F_FileCreateShortcut(VectorVariant &vParams, Variant &
 		sLink += ".lnk";
 
 	CoInitialize(NULL);
-	if( SUCCEEDED(CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (LPVOID *)&psl)) )
+	if( SUCCEEDED(CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLinkA, (LPVOID *)&psl)) )
 	{
 		psl->SetPath(vParams[0].szValue());
 		if ( iNumParams > 2 )
@@ -2052,7 +2052,7 @@ AUT_RESULT AutoIt_Script::F_FileCreateShortcut(VectorVariant &vParams, Variant &
 
 AUT_RESULT AutoIt_Script::F_FileGetShortcut(VectorVariant &vParams, Variant &vResult)
 {
-	IShellLink		*psl;
+	IShellLinkA		*psl;
 	IPersistFile	*ppf;
 	WORD			wsz[MAX_PATH+1];
 	Variant			*pvTemp;
@@ -2073,7 +2073,7 @@ AUT_RESULT AutoIt_Script::F_FileGetShortcut(VectorVariant &vParams, Variant &vRe
 	if (Util_DoesFileExist(sLink.c_str()))
 	{
 		CoInitialize(NULL);
-		if( SUCCEEDED(CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (LPVOID *)&psl)) )
+		if( SUCCEEDED(CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLinkA, (LPVOID *)&psl)) )
 		{
 			if (SUCCEEDED(psl->QueryInterface( IID_IPersistFile, (LPVOID *) &ppf)))
 			{
@@ -2234,7 +2234,7 @@ AUT_RESULT AutoIt_Script::F_FileInstall(VectorVariant &vParams, Variant &vResult
 
 AUT_RESULT AutoIt_Script::F_FileRecycle(VectorVariant &vParams, Variant &vResult)
 {
-	SHFILEOPSTRUCT	FileOp;
+	SHFILEOPSTRUCTA	FileOp;
 
 	char			szFileTemp[_MAX_PATH+2];
 
@@ -2254,7 +2254,7 @@ AUT_RESULT AutoIt_Script::F_FileRecycle(VectorVariant &vParams, Variant &vResult
 	FileOp.pFrom = szFileTemp;
 	FileOp.wFunc = FO_DELETE;
 	FileOp.fFlags = FOF_SILENT | FOF_ALLOWUNDO | FOF_NOCONFIRMATION;
-	if ( SHFileOperation(&FileOp) )
+	if ( SHFileOperationA(&FileOp) )
 		vResult = 0;								// Error, default is 1
 
 	return AUT_OK;
@@ -2271,13 +2271,13 @@ AUT_RESULT AutoIt_Script::F_FileRecycle(VectorVariant &vParams, Variant &vResult
 
 AUT_RESULT AutoIt_Script::F_FileRecycleEmpty(VectorVariant &vParams, Variant &vResult)
 {
-typedef HRESULT (WINAPI *MySHEmptyRecycleBin)(HWND, LPCTSTR, DWORD);
+typedef HRESULT (WINAPI *MySHEmptyRecycleBin)(HWND, LPCSTR, DWORD);
 
 	const char			*szPath = NULL;
 	MySHEmptyRecycleBin	lpfnEmpty;
 	HINSTANCE			hinstLib;
 
-	hinstLib = LoadLibrary("shell32.dll");
+	hinstLib = LoadLibraryW(L"shell32.dll");
 	if (hinstLib == NULL)
 	{
 		vResult = 0;
@@ -2314,8 +2314,8 @@ AUT_RESULT AutoIt_Script::F_FileGetAttrib (VectorVariant &vParams, Variant &vRes
 
 	//aRet = "";
 
-	dwTemp = GetFileAttributes(vParams[0].szValue());
-	if ( dwTemp != (DWORD)-1 )
+	dwTemp = GetFileAttributesA(vParams[0].szValue());
+	if ( dwTemp != INVALID_FILE_ATTRIBUTES )
 	{
 		if (dwTemp & FILE_ATTRIBUTE_READONLY)
 			aRet += "R";
@@ -2361,7 +2361,7 @@ AUT_RESULT AutoIt_Script::F_FileSetAttrib (VectorVariant &vParams, Variant &vRes
 	int			nPos = 0;
 	int			nOp = 1;						// Default is +
 	bool		bRecurse;
-	char		szOldWorkingDir[_MAX_PATH+1];
+	wchar_t		szOldWorkingDir[_MAX_PATH+1];
 	char		szPath[_MAX_PATH+1];
 	char		szDrive[_MAX_PATH+1];
 	char		szDir[_MAX_PATH+1];
@@ -2426,7 +2426,7 @@ AUT_RESULT AutoIt_Script::F_FileSetAttrib (VectorVariant &vParams, Variant &vRes
 	Util_StripTrailingDir(szPath);
 
 	// Get the FULL pathname including drive directory etc
-	GetFullPathName(szPath, _MAX_PATH, szPath, &szFilePart);
+	GetFullPathNameA(szPath, _MAX_PATH, szPath, &szFilePart);
 
 	// Split the target into bits
 	_splitpath( szPath, szDrive, szDir, szFile, szExt );
@@ -2434,19 +2434,19 @@ AUT_RESULT AutoIt_Script::F_FileSetAttrib (VectorVariant &vParams, Variant &vRes
 	strcat(szFile, szExt);
 
 	// Get a copy of the current working directory and then change it to match our requested path
-	GetCurrentDirectory(_MAX_PATH, szOldWorkingDir);
-	SetCurrentDirectory(szDrive);
+	GetCurrentDirectoryW(_MAX_PATH, szOldWorkingDir);
+	SetCurrentDirectoryA(szDrive);
 
 
 	// Is the requested filename a directory?
 	if (Util_IsDir(szFile))
 	{
-		dwTemp = GetFileAttributes(szFile);
+		dwTemp = GetFileAttributesA(szFile);
 		dwTemp = dwTemp | dwAdd;
 		dwTemp = dwTemp & (~dwRemove);
-		if (!SetFileAttributes(szFile, dwTemp))
+		if (!SetFileAttributesA(szFile, dwTemp))
 		{
-			SetCurrentDirectory(szOldWorkingDir);	// Restore working directory
+			SetCurrentDirectoryW(szOldWorkingDir);	// Restore working directory
 			vResult = 0;						// Error setting attribs
 			return AUT_OK;
 		}
@@ -2455,7 +2455,7 @@ AUT_RESULT AutoIt_Script::F_FileSetAttrib (VectorVariant &vParams, Variant &vRes
 			return AUT_OK;
 		else
 		{
-			SetCurrentDirectory(szFile);	// Go into the directory
+			SetCurrentDirectoryA(szFile);	// Go into the directory
 			strcpy(szFile, "*.*");			// Match all
 		}
 	}
@@ -2464,7 +2464,7 @@ AUT_RESULT AutoIt_Script::F_FileSetAttrib (VectorVariant &vParams, Variant &vRes
 	if (FileSetAttrib_recurse(szFile, dwAdd, dwRemove, bRecurse) == false)
 		vResult = 0;							// Default is 1
 
-	SetCurrentDirectory(szOldWorkingDir);	// Restore working directory
+	SetCurrentDirectoryW(szOldWorkingDir);	// Restore working directory
 
 	return AUT_OK;
 
@@ -2479,21 +2479,21 @@ AUT_RESULT AutoIt_Script::F_FileSetAttrib (VectorVariant &vParams, Variant &vRes
 
 bool AutoIt_Script::FileSetAttrib_recurse (const char *szIn, DWORD dwAdd, DWORD dwRemove, bool bRecurse)
 {
-	WIN32_FIND_DATA	findData;
+	WIN32_FIND_DATAA	findData;
 	DWORD			dwTemp;
 
 	// Does the source file exist?
-	HANDLE hSearch = FindFirstFile(szIn, &findData);
+	HANDLE hSearch = FindFirstFileA(szIn, &findData);
 
 	while (hSearch != INVALID_HANDLE_VALUE)
 	{
 		// Make sure the returned handle is not . or ..
 		if ( strcmp(findData.cFileName, ".") && strcmp(findData.cFileName, "..") )
 		{
-			dwTemp = GetFileAttributes(findData.cFileName);
+			dwTemp = GetFileAttributesA(findData.cFileName);
 			dwTemp = dwTemp | dwAdd;
 			dwTemp = dwTemp & (~dwRemove);
-			if (!SetFileAttributes(findData.cFileName, dwTemp))
+			if (!SetFileAttributesA(findData.cFileName, dwTemp))
 			{
 				FindClose(hSearch);
 				return false;
@@ -2501,7 +2501,7 @@ bool AutoIt_Script::FileSetAttrib_recurse (const char *szIn, DWORD dwAdd, DWORD 
 
 		} // End If
 
-		if (FindNextFile(hSearch, &findData) == FALSE)
+		if (FindNextFileA(hSearch, &findData) == FALSE)
 			break;
 
 	} // End while
@@ -2514,7 +2514,7 @@ bool AutoIt_Script::FileSetAttrib_recurse (const char *szIn, DWORD dwAdd, DWORD 
 
 
 	// Redo the search of this directory with *.* to find all the directories
-	hSearch = FindFirstFile("*.*", &findData);
+	hSearch = FindFirstFileA("*.*", &findData);
 
 	while (hSearch != INVALID_HANDLE_VALUE)
 	{
@@ -2522,7 +2522,7 @@ bool AutoIt_Script::FileSetAttrib_recurse (const char *szIn, DWORD dwAdd, DWORD 
 		if ( (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY
 			&& strcmp(findData.cFileName, ".") && strcmp(findData.cFileName, "..") )
 		{
-			SetCurrentDirectory(findData.cFileName);	// Move into new directory
+			SetCurrentDirectoryA(findData.cFileName);	// Move into new directory
 
 			if (FileSetAttrib_recurse(szIn, dwAdd, dwRemove, bRecurse) == false)
 			{
@@ -2530,11 +2530,11 @@ bool AutoIt_Script::FileSetAttrib_recurse (const char *szIn, DWORD dwAdd, DWORD 
 				return false;
 			}
 
-			SetCurrentDirectory("..");			// Return from directory
+			SetCurrentDirectoryA("..");			// Return from directory
 
 		} // End If
 
-		if (FindNextFile(hSearch, &findData) == FALSE)
+		if (FindNextFileA(hSearch, &findData) == FALSE)
 			break;
 
 	} // End while
@@ -2581,10 +2581,10 @@ AUT_RESULT AutoIt_Script::F_FileGetVersion (VectorVariant &vParams, Variant &vRe
 
 AUT_RESULT	AutoIt_Script::F_FileFindFirstFile(VectorVariant &vParams, Variant &vResult)
 {
-	WIN32_FIND_DATA		wfd;
+	WIN32_FIND_DATAA		wfd;
 	int					nFreeHandle;
 
-	HANDLE hFind = FindFirstFile(vParams[0].szValue(), &wfd);
+	HANDLE hFind = FindFirstFileA(vParams[0].szValue(), &wfd);
 
 	if ( hFind == INVALID_HANDLE_VALUE )
 	{
@@ -2632,7 +2632,7 @@ AUT_RESULT	AutoIt_Script::F_FileFindFirstFile(VectorVariant &vParams, Variant &v
 
 AUT_RESULT	AutoIt_Script::F_FileFindNextFile(VectorVariant &vParams, Variant &vResult)
 {
-	WIN32_FIND_DATA		wfd;
+	WIN32_FIND_DATAA		wfd;
 	int					nHandle = vParams[0].nValue();
 
 	// Does this file handle exist?
@@ -2659,7 +2659,7 @@ AUT_RESULT	AutoIt_Script::F_FileFindNextFile(VectorVariant &vParams, Variant &vR
 	}
 
 	// Get the next file
-	if ( !FindNextFile(m_FileHandleDetails[nHandle]->hFind, &wfd) )
+	if ( !FindNextFileA(m_FileHandleDetails[nHandle]->hFind, &wfd) )
 	{
 		SetFuncErrorCode(1);					// No more files
 		vResult = "";
@@ -2701,7 +2701,7 @@ AUT_RESULT AutoIt_Script::F_FileGetShortName(VectorVariant &vParams, Variant &vR
 {
 	char	szBuffer[_MAX_PATH+1];
 
-	if ( GetShortPathName(vParams[0].szValue(),szBuffer,_MAX_PATH) )
+	if ( GetShortPathNameA(vParams[0].szValue(),szBuffer,_MAX_PATH) )
 		vResult = szBuffer;
 	else
 	{
@@ -2836,7 +2836,7 @@ AUT_RESULT AutoIt_Script::F_FileMove(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT AutoIt_Script::F_FileChangeDir(VectorVariant &vParams, Variant &vResult)
 {
-	if ( SetCurrentDirectory(vParams[0].szValue()) == 0 )
+	if ( SetCurrentDirectoryA(vParams[0].szValue()) == 0 )
 		vResult = 0;						// Failed, default is 1
 	return AUT_OK;
 
@@ -2934,7 +2934,7 @@ AUT_RESULT AutoIt_Script::F_DirGetSize(VectorVariant &vParams, Variant &vResult)
 
 bool AutoIt_Script::GetDirSize(const char *szInputPath, __int64 &nSize, __int64 &nFiles, __int64 &nDirs,  bool bExt, bool bRec)
 {
-	WIN32_FIND_DATA	FindFileData;
+	WIN32_FIND_DATAA	FindFileData;
 	HANDLE			hFind;
 	AString			sTemp	= szInputPath;
 	AString			sPathbak= sTemp;
@@ -2942,7 +2942,7 @@ bool AutoIt_Script::GetDirSize(const char *szInputPath, __int64 &nSize, __int64 
 	int				nMsg;
 	bool			bRes = true;
 
-	hFind = FindFirstFile(sTemp.c_str(),&FindFileData);
+	hFind = FindFirstFileA(sTemp.c_str(),&FindFileData);
 
 	while (hFind != INVALID_HANDLE_VALUE)
 	{
@@ -2984,7 +2984,7 @@ bool AutoIt_Script::GetDirSize(const char *szInputPath, __int64 &nSize, __int64 
 					nFiles++;
 			}
 		}
-		if (!FindNextFile(hFind,&FindFileData))
+		if (!FindNextFileA(hFind,&FindFileData))
 			break;
 	}
 	FindClose(hFind);

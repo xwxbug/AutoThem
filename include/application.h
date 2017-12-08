@@ -47,8 +47,9 @@
 
 
 // Class and window titles
-#define AUT_APPCLASS		"AutoIt v3"
-#define AUT_APPTITLE		"AutoIt v3"
+#define AUT_APPCLASSA		"AutoIt v3"
+#define AUT_APPCLASS		L"AutoIt v3"
+#define AUT_APPTITLE		L"AutoIt v3"
 
 // Windows timers
 #define AUT_MAIN_TIMER_ID		1

@@ -448,21 +448,31 @@ _QMATH_INLINE long qmathFist3101(float inval)
 #define M_SQRT2    (1.41421356237309504880)
 #define M_SQRT_2   (0.707106781186547524401)
 
-
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathSin(double __x)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 4]
 	__asm fsin
 	__asm ret		8
+#else
+	return sin(__x);
+#endif
 }
 
 
 static double einhalb = 0.5;
 
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathAsin(double __x)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 4]
 	__asm fld		st
 	__asm fabs
@@ -492,21 +502,35 @@ asin_exit:
 	__asm fsqrt
 	__asm fpatan
 	__asm ret		8
+#else
+	return asin(__x);
+#endif
 }
 
 
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathCos(double __x)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 4]
 	__asm fcos
 	__asm ret		8
+#else
+	return cos(__x);
+#endif
 }
 
 
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathAcos(double __x)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 4]
 	__asm fld1
 	__asm fchs
@@ -535,44 +559,72 @@ acos_exit:
 	__asm fpatan
 	__asm fadd		st(0), st(0)
 	__asm ret		8
+#else
+	return acos(__x);
+#endif
 }
 
 
 /* J.Bennett - added fstp in tan function to remove 1.0 it pushes onto the stack */
 
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathTan(double __x)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 4]
 	__asm fptan
 	__asm fstp		st(0)
 	__asm ret		8
+#else
+	return tan(__x);
+#endif
 }
 
 
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathAtan(double __x)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 4]
 	__asm fld1
 	__asm fpatan
 	__asm ret		8
+#else
+	return atan(__x);
+#endif
 }
 
 
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathAtan2(double __y, double __x)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp +  4]
 	__asm fld		qword ptr [esp + 12]
 	__asm fpatan
 	__asm ret		16
+#else
+	return atan2(__x,__y);
+#endif
 }
 
 
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathExp(double __x)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 4];
 	__asm fldl2e
 	__asm fmulp		st(1), st
@@ -585,10 +637,16 @@ double _QMATH_LINK qmathExp(double __x)
 	__asm fxch
 	__asm fstp		st
 	__asm ret		8
+#else
+	return exp(__x);
+#endif
 }
 
-
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathExp2(double __x)
 {
 	__asm fld		qword ptr [esp + 4];
@@ -602,9 +660,13 @@ double _QMATH_LINK qmathExp2(double __x)
 	__asm fstp		st
 	__asm ret		8
 }
+#endif
 
-
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathExp10(double __x)
 {
 	__asm fld		qword ptr [esp + 4];
@@ -620,20 +682,30 @@ double _QMATH_LINK qmathExp10(double __x)
 	__asm fstp		st
 	__asm ret		8
 }
+#endif
 
-
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathLog(double __x)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 4]
 	__asm fldln2
 	__asm fxch
 	__asm fyl2x
 	__asm ret		8
+#else
+	return log(__x);
+#endif
 }
 
-
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathLog2(double __x)
 {
 	__asm fld		qword ptr [esp + 4]
@@ -642,9 +714,13 @@ double _QMATH_LINK qmathLog2(double __x)
 	__asm fyl2x
 	__asm ret		8
 }
+#endif
 
-
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathLog10(double __x)
 {
 	__asm fld		qword ptr [esp + 4]
@@ -653,20 +729,31 @@ double _QMATH_LINK qmathLog10(double __x)
 	__asm fyl2x
 	__asm ret		8
 }
+#endif
 
-
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathFabs(double __x)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 4]
 	__asm fabs
 	__asm ret		8
+#else
+	return fabs(__x);
+#endif
 }
 
 
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathPow(double __x, double __y)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 12]
 	__asm fld		qword ptr [esp +  4]
 	__asm ftst
@@ -686,12 +773,19 @@ pow_zero:
 
 	__asm fstp		st(1)
 	__asm ret		16
+#else
+	return pow(__x,__y);
+#endif
 }
 
 
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathCeil(double __x)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 4]
 	__asm fchs
 	__asm fld1
@@ -713,12 +807,19 @@ ceil_exit:
 	__asm fchs
 	__asm pop		eax
 	__asm ret		8
+#else
+	return ceil(__x);
+#endif
 }
 
 
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathFloor(double __x)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 4]
 	__asm fld1
 	__asm fld		st(1)
@@ -738,33 +839,54 @@ floor_exit:
 	__asm fstp		st(1)
 	__asm pop		eax
 	__asm ret		8
+#else
+	return floor(__x);
+#endif
 }
 
 
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathFmod(double __x, double __y)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 12]
 	__asm fld		qword ptr [esp +  4]
 	__asm fprem
 	__asm fxch
 	__asm fstp		st
 	__asm ret		16
+#else
+	return fmod(__x,__y);
+#endif
 }
 
 
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathSqrt(double __x)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 4]
 	__asm fsqrt
 	__asm ret		8
+#else
+	return sqrt(__x);
+#endif
 }
 
 
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathHypot(double __x, double __y)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 12]
 	__asm fld		qword ptr [esp +  4]
 	__asm fmul		st, st
@@ -773,12 +895,18 @@ double _QMATH_LINK qmathHypot(double __x, double __y)
 	__asm faddp		st(1), st
 	__asm fsqrt
 	__asm ret		16
+#else
+	return hypot(__x,__y);
+#endif
 }
 
-
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathAcosh(double __x)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 4]
 	__asm fld		st
 	__asm fmul		st, st
@@ -790,12 +918,20 @@ double _QMATH_LINK qmathAcosh(double __x)
 	__asm fxch
 	__asm fyl2x
 	__asm ret		8
+#else
+//ACosH = Log(value + Sqr(value * value - 1))
+	return log(__x+sqrt(__x*__x-1));
+#endif
 }
 
 
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathAsinh(double __x)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 4]
 	__asm fld		st
 	__asm fmul		st, st
@@ -807,12 +943,20 @@ double _QMATH_LINK qmathAsinh(double __x)
 	__asm fxch
 	__asm fyl2x
 	__asm ret		8
+#else
+//    ASinH = Log(value + Sqr(value * value + 1))
+	return log(__x+sqrt(__x*__x+1));
+#endif
 }
 
 
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathAtanh(double __x)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 4]
 	__asm fld1
 	__asm fsub		st, st(1)
@@ -828,12 +972,20 @@ double _QMATH_LINK qmathAtanh(double __x)
 	__asm fmulp		st(1), st
 	__asm pop		eax
 	__asm ret		8
+#else
+//ATanH = Log((1 / value + 1) / (1 / value - 1)) / 2
+	return log((1 / __x + 1) / (1 / __x - 1)) / 2;
+#endif
 }
 
 
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathCosh(double __x)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 4]
 	__asm fldl2e
 	__asm fmulp		st(1), st
@@ -854,12 +1006,19 @@ double _QMATH_LINK qmathCosh(double __x)
 	__asm fmulp		st(1), st
 	__asm pop		eax
 	__asm ret		8
+#else
+	return cosh(__x);
+#endif
 }
 
 
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathSinh(double __x)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 4]
 	__asm fldl2e
 	__asm fmulp		st(1), st
@@ -880,12 +1039,19 @@ double _QMATH_LINK qmathSinh(double __x)
 	__asm fmulp		st(1), st
 	__asm pop		eax
 	__asm ret		8
+#else
+	return sinh(__x);
+#endif
 }
 
 
-_QMATH_NAKED _QMATH_INLINE
+#ifndef _WIN64
+_QMATH_NAKED 
+#endif
+_QMATH_INLINE
 double _QMATH_LINK qmathTanh(double __x)
 {
+#ifndef _WIN64
 	__asm fld		qword ptr [esp + 4]
 	__asm fld		st
 	__asm mov		eax, 0x40000000
@@ -910,6 +1076,9 @@ double _QMATH_LINK qmathTanh(double __x)
 	__asm fdivrp	st(1), st
 	__asm pop		eax
 	__asm ret		8
+#else
+	return tanh(__x);
+#endif
 }
 
 

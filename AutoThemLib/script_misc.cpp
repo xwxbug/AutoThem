@@ -137,7 +137,7 @@ AUT_RESULT AutoIt_Script::F_AdlibEnable(VectorVariant &vParams, Variant &vResult
 
 AUT_RESULT AutoIt_Script::F_AutoItWinSetTitle(VectorVariant &vParams, Variant &vResult)
 {
-	SetWindowText(g_hWnd, vParams[0].szValue());
+	SetWindowTextA(g_hWnd, vParams[0].szValue());
 	return AUT_OK;
 
 } // AutoItWinSetTitle()
@@ -151,7 +151,7 @@ AUT_RESULT AutoIt_Script::F_AutoItWinGetTitle(VectorVariant &vParams, Variant &v
 {
 	char szTemp1[AUT_WINTEXTBUFFER+1];
 
-	GetWindowText(g_hWnd, szTemp1, AUT_WINTEXTBUFFER);
+	GetWindowTextA(g_hWnd, szTemp1, AUT_WINTEXTBUFFER);
 	vResult = szTemp1;
 	return AUT_OK;
 
@@ -171,7 +171,7 @@ typedef void (CALLBACK *BlockInput)(BOOL);
 	// We must dynamically load the function to retain compatibility with Win95
 
     // Get a handle to the DLL module that contains BlockInput
-	HINSTANCE hinstLib = LoadLibrary("user32.dll");
+	HINSTANCE hinstLib = LoadLibraryW(L"user32.dll");
 
     // If the handle is valid, try to get the function address.
 	if (hinstLib != NULL)
@@ -204,7 +204,7 @@ AUT_RESULT AutoIt_Script::F_EnvGet(VectorVariant &vParams, Variant &vResult)
 	char	szEnvValue[AUT_MAX_ENVSIZE+1];		// Env variable value
 
 	szEnvValue[0] = '\0';						// Terminate in case the Get function fails
-	GetEnvironmentVariable(vParams[0].szValue(), szEnvValue, AUT_MAX_ENVSIZE);
+	GetEnvironmentVariableA(vParams[0].szValue(), szEnvValue, AUT_MAX_ENVSIZE);
 
 	vResult = szEnvValue;
 
@@ -220,9 +220,9 @@ AUT_RESULT AutoIt_Script::F_EnvGet(VectorVariant &vParams, Variant &vResult)
 AUT_RESULT AutoIt_Script::F_EnvSet(VectorVariant &vParams, Variant &vResult)
 {
 	if (vParams.size() >= 2)
-		SetEnvironmentVariable(vParams[0].szValue(), vParams[1].szValue());
+		SetEnvironmentVariableA(vParams[0].szValue(), vParams[1].szValue());
 	else
-		SetEnvironmentVariable(vParams[0].szValue(), NULL);
+		SetEnvironmentVariableA(vParams[0].szValue(), NULL);
 
 	return AUT_OK;
 
@@ -235,9 +235,9 @@ AUT_RESULT AutoIt_Script::F_EnvSet(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT AutoIt_Script::F_EnvUpdate(VectorVariant &vParams, Variant &vResult)
 {
-    ULONG	nResult;
+    DWORD_PTR	nResult;
 
-	if(SendMessageTimeout(HWND_BROADCAST,WM_SETTINGCHANGE,0,(LPARAM)"Environment",SMTO_BLOCK,15000,&nResult)==0)
+	if(SendMessageTimeoutW(HWND_BROADCAST,WM_SETTINGCHANGE,0,(LPARAM)L"Environment",SMTO_BLOCK,15000,&nResult)==0)
 		SetFuncErrorCode(1);
 
 	return AUT_OK;
@@ -1105,7 +1105,7 @@ AUT_RESULT AutoIt_Script::Splash(VectorVariant &vParams, uint iNumParams, int nF
 	AdjustWindowRectEx (&rect, style, FALSE, xstyle);
 
 	// CREATE Main Splash Window
-	g_hWndSplash = CreateWindowEx(xstyle,AUT_APPCLASS,vParams[0].szValue(),
+	g_hWndSplash = CreateWindowExA(xstyle,AUT_APPCLASSA,vParams[0].szValue(),
 		style,L,T,rect.right-rect.left,rect.bottom-rect.top,g_hWnd,NULL,NULL,NULL);
 
 	GetClientRect(g_hWndSplash,&rect);	// get the client size
@@ -1121,10 +1121,10 @@ AUT_RESULT AutoIt_Script::Splash(VectorVariant &vParams, uint iNumParams, int nF
 		HGLOBAL		hGlobal;
 
 		// CREATE static full size of client area
-		hWnd = CreateWindowEx(0,"static",NULL,WS_CHILD|WS_VISIBLE|SS_BITMAP
+		hWnd = CreateWindowExW(0,L"static",NULL,WS_CHILD|WS_VISIBLE|SS_BITMAP
 			,0,0,rect.right-rect.left,rect.bottom-rect.top,g_hWndSplash,NULL,NULL,NULL);
 		// JPG,BMP,WMF,ICO,GIF FILE HERE
-		hFile=CreateFile(vParams[1].szValue(),GENERIC_READ,0,NULL,OPEN_EXISTING,0,NULL);
+		hFile=CreateFileA(vParams[1].szValue(),GENERIC_READ,0,NULL,OPEN_EXISTING,0,NULL);
 
 		if ( hFile == INVALID_HANDLE_VALUE )
 		{
@@ -1169,12 +1169,12 @@ AUT_RESULT AutoIt_Script::Splash(VectorVariant &vParams, uint iNumParams, int nF
 		HDC		h_dc;
 
 		// CREATE static label full size of client area
-		hWnd = CreateWindowEx(0,"static",vParams[1].szValue(),lblstyle,
+		hWnd = CreateWindowExA(0,"static",vParams[1].szValue(),lblstyle,
 			0,0,rect.right-rect.left,rect.bottom-rect.top,g_hWndSplash,NULL,NULL,NULL);
 
-		h_dc = CreateDC("DISPLAY", NULL, NULL, NULL);					//
+		h_dc = CreateDCW(L"DISPLAY", NULL, NULL, NULL);					//
 		SelectObject(h_dc,(HFONT)GetStockObject(DEFAULT_GUI_FONT));		// Get Default Font Name
-		GetTextFace(h_dc, 64, szFont);									//
+		GetTextFaceA(h_dc, 64, szFont);									//
 		CyPixels = GetDeviceCaps(h_dc,LOGPIXELSY);						// For Some Font Size Math
 		DeleteDC(h_dc);
 
@@ -1194,7 +1194,7 @@ AUT_RESULT AutoIt_Script::Splash(VectorVariant &vParams, uint iNumParams, int nF
 			nWeight = vParams[9].nValue();				// Font Weight
 		}
 
-		hfFont = CreateFont(0-(nSize*CyPixels)/72,0,0,0,nWeight,0,0,0,DEFAULT_CHARSET,
+		hfFont = CreateFontA(0-(nSize*CyPixels)/72,0,0,0,nWeight,0,0,0,DEFAULT_CHARSET,
 			OUT_TT_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,FF_DONTCARE,szFont);		// Create Font
 		SendMessage(hWnd,WM_SETFONT,(WPARAM)hfFont,MAKELPARAM(TRUE,0));					// Do Font
 	}
@@ -1309,33 +1309,33 @@ AUT_RESULT	AutoIt_Script::Progress(VectorVariant &vParams, uint iNumParams, int 
 	AdjustWindowRectEx (&rect, style, FALSE, xstyle);
 
 	// CREATE Main Progress Window
-	g_hWndProgress = CreateWindowEx(xstyle,AUT_APPCLASS,vParams[0].szValue(),
+	g_hWndProgress = CreateWindowExA(xstyle,AUT_APPCLASSA,vParams[0].szValue(),
 		style,L,T,rect.right-rect.left,rect.bottom-rect.top,g_hWnd,NULL,NULL,NULL);
 
 	GetClientRect(g_hWndProgress,&rect);				// for some math
 
 	// CREATE Main label
-	g_hWndProgLblA = CreateWindowEx(0,"static",vParams[1].szValue(),WS_CHILD|WS_VISIBLE|SS_LEFT,
+	g_hWndProgLblA = CreateWindowExA(0,"static",vParams[1].szValue(),WS_CHILD|WS_VISIBLE|SS_LEFT,
 		(rect.right-rect.left-281),4,1280,24,g_hWndProgress,NULL,NULL,NULL);
 
-	h_dc = CreateDC("DISPLAY", NULL, NULL, NULL);					//
+	h_dc = CreateDCW(L"DISPLAY", NULL, NULL, NULL);					//
 	SelectObject(h_dc,(HFONT)GetStockObject(DEFAULT_GUI_FONT));		// Get Default Font Name
-	GetTextFace(h_dc, 64, szFont);									//
+	GetTextFaceA(h_dc, 64, szFont);									//
 	CyPixels = GetDeviceCaps(h_dc,LOGPIXELSY);			// For Some Font Size Math
 	DeleteDC(h_dc);
 
-	hfFont = CreateFont(0-(10*CyPixels)/72,0,0,0,600,0,0,0,DEFAULT_CHARSET,				// Create a bigger
+	hfFont = CreateFontA(0-(10*CyPixels)/72,0,0,0,600,0,0,0,DEFAULT_CHARSET,				// Create a bigger
 		OUT_TT_PRECIS,CLIP_DEFAULT_PRECIS,PROOF_QUALITY,FF_DONTCARE,szFont);			// bolder default
 	SendMessage(g_hWndProgLblA,WM_SETFONT,(WPARAM)hfFont,MAKELPARAM(TRUE,0));			// GUI font.
 
 	// CREATE Progress control
-	g_hWndProgBar = CreateWindowEx(WS_EX_CLIENTEDGE,"msctls_progress32",NULL,WS_CHILD|WS_VISIBLE|PBS_SMOOTH,
+	g_hWndProgBar = CreateWindowExW(WS_EX_CLIENTEDGE,L"msctls_progress32",NULL,WS_CHILD|WS_VISIBLE|PBS_SMOOTH,
         (rect.right-rect.left-260)/2,30,260,20, g_hWndProgress, NULL,NULL,NULL);
 	SendMessage(g_hWndProgBar,PBM_SETRANGE,0,MAKELONG(0,100));	//
 	SendMessage(g_hWndProgBar,PBM_SETSTEP,1,0);					// set some characteristics
 
 	// CREATE Sub label
-	g_hWndProgLblB = CreateWindowEx(0,"static",sLabelB.c_str(),WS_CHILD|WS_VISIBLE|SS_LEFT,
+	g_hWndProgLblB = CreateWindowExA(0,"static",sLabelB.c_str(),WS_CHILD|WS_VISIBLE|SS_LEFT,
 		(rect.right-rect.left-280),55,1280,50,g_hWndProgress,NULL,NULL,NULL);
 	SendMessage(g_hWndProgLblB,WM_SETFONT,(WPARAM)GetStockObject(DEFAULT_GUI_FONT),MAKELPARAM(TRUE,0));
 
@@ -1613,7 +1613,7 @@ AUT_RESULT AutoIt_Script::F_TrayTip(VectorVariant &vParams, Variant &vResult)
 		else
 			nic.dwInfoFlags = 0;
 
-		Shell_NotifyIcon(NIM_MODIFY, &nic);
+		Shell_NotifyIconA(NIM_MODIFY, &nic);
 	}
 	return AUT_OK;
 
@@ -2080,9 +2080,16 @@ AUT_RESULT AutoIt_Script::F_MemGetStats(VectorVariant &vParams, Variant &vResult
 AUT_RESULT AutoIt_Script::F_MsgBox(VectorVariant &vParams, Variant &vResult)
 {
 	if (vParams.size() == 4)
-		vResult = Util_MessageBoxEx(NULL, vParams[2].szValue(), vParams[1].szValue(), (UINT)vParams[0].nValue() | MB_SETFOREGROUND, vParams[3].nValue() * 1000);
+	{
+		wchar_t* sz_title = Util_ANSItoUNICODE(vParams[1].szValue());
+		wchar_t* sz_text = Util_ANSItoUNICODE(vParams[2].szValue());
+		vResult = Util_MessageBoxEx(NULL, sz_text,sz_title, (UINT)vParams[0].nValue() | MB_SETFOREGROUND, vParams[3].nValue() * 1000);
+		delete[]sz_title;
+		delete[]sz_text;
+	}
+
 	else
-		vResult = MessageBox(NULL, vParams[2].szValue(), vParams[1].szValue(), (UINT)vParams[0].nValue() | MB_SETFOREGROUND);
+		vResult = MessageBoxA(NULL, vParams[2].szValue(), vParams[1].szValue(), (UINT)vParams[0].nValue() | MB_SETFOREGROUND);
 	return AUT_OK;
 
 } // F_MsgBox()
