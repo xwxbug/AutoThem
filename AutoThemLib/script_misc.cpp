@@ -108,14 +108,14 @@ AUT_RESULT AutoIt_Script::F_AdlibEnable(VectorVariant &vParams, Variant &vResult
 	m_bAdlibEnabled	= false;			// Disable by default in case of error
 
 	// Check that this user function exists
-	if (Parser_FindUserFunction(vParams[0].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
+	if (Parser_FindUserFunction(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
 	{
 		FatalError(IDS_AUT_E_UNKNOWNUSERFUNC);
 		return AUT_ERR;
 	}
 	else
 	{
-		m_sAdlibFuncName	= vParams[0].szValue();
+		m_sAdlibFuncName	= Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str();
 		m_tAdlibTimerStarted= timeGetTime();
 
 		if (vParams.size() == 2 && vParams[1].nValue() > 0)
@@ -137,7 +137,7 @@ AUT_RESULT AutoIt_Script::F_AdlibEnable(VectorVariant &vParams, Variant &vResult
 
 AUT_RESULT AutoIt_Script::F_AutoItWinSetTitle(VectorVariant &vParams, Variant &vResult)
 {
-	SetWindowTextA(g_hWnd, vParams[0].szValue());
+	SetWindowTextW(g_hWnd, vParams[0].szValue());
 	return AUT_OK;
 
 } // AutoItWinSetTitle()
@@ -149,9 +149,9 @@ AUT_RESULT AutoIt_Script::F_AutoItWinSetTitle(VectorVariant &vParams, Variant &v
 
 AUT_RESULT AutoIt_Script::F_AutoItWinGetTitle(VectorVariant &vParams, Variant &vResult)
 {
-	char szTemp1[AUT_WINTEXTBUFFER+1];
+	wchar_t szTemp1[AUT_WINTEXTBUFFER+1];
 
-	GetWindowTextA(g_hWnd, szTemp1, AUT_WINTEXTBUFFER);
+	GetWindowTextW(g_hWnd, szTemp1, AUT_WINTEXTBUFFER);
 	vResult = szTemp1;
 	return AUT_OK;
 
@@ -201,10 +201,10 @@ typedef void (CALLBACK *BlockInput)(BOOL);
 
 AUT_RESULT AutoIt_Script::F_EnvGet(VectorVariant &vParams, Variant &vResult)
 {
-	char	szEnvValue[AUT_MAX_ENVSIZE+1];		// Env variable value
+	wchar_t	szEnvValue[AUT_MAX_ENVSIZE+1];		// Env variable value
 
-	szEnvValue[0] = '\0';						// Terminate in case the Get function fails
-	GetEnvironmentVariableA(vParams[0].szValue(), szEnvValue, AUT_MAX_ENVSIZE);
+	szEnvValue[0] = 0;							// Terminate in case the Get function fails
+	GetEnvironmentVariableW(vParams[0].szValue(), szEnvValue, AUT_MAX_ENVSIZE);
 
 	vResult = szEnvValue;
 
@@ -220,9 +220,9 @@ AUT_RESULT AutoIt_Script::F_EnvGet(VectorVariant &vParams, Variant &vResult)
 AUT_RESULT AutoIt_Script::F_EnvSet(VectorVariant &vParams, Variant &vResult)
 {
 	if (vParams.size() >= 2)
-		SetEnvironmentVariableA(vParams[0].szValue(), vParams[1].szValue());
+		SetEnvironmentVariableW(vParams[0].szValue(), vParams[1].szValue());
 	else
-		SetEnvironmentVariableA(vParams[0].szValue(), NULL);
+		SetEnvironmentVariableW(vParams[0].szValue(), NULL);
 
 	return AUT_OK;
 
@@ -290,26 +290,26 @@ AUT_RESULT AutoIt_Script::F_ClipPut(VectorVariant &vParams, Variant &vResult)
 {
 	// ClipPut(<text>)
 
-	HGLOBAL hClipMem = GlobalAlloc(GMEM_MOVEABLE, strlen(vParams[0].szValue())+1);
+	HGLOBAL hClipMem = GlobalAlloc(GMEM_MOVEABLE, (wcslen(vParams[0].szValue())+1)*4);
 	if (hClipMem == NULL)
 	{
 		vResult = 0;							// Default is 1
 		return AUT_OK;
 	}
 
-	PSTR pClipMem = (char *)GlobalLock(hClipMem);
+	PWSTR pClipMem = (wchar_t *)GlobalLock(hClipMem);
 	if (pClipMem == NULL)
 	{
 		vResult = 0;							// Default is 1
 		return AUT_OK;
 	}
 
-	strcpy( pClipMem, vParams[0].szValue() );	// Store the data
+	wcscpy( pClipMem, vParams[0].szValue() );	// Store the data
 	GlobalUnlock(hClipMem);
 
 	OpenClipboard(g_hWnd);
 	EmptyClipboard();
-	SetClipboardData(CF_TEXT, hClipMem);
+	SetClipboardData(CF_UNICODETEXT, hClipMem);
 	CloseClipboard();
 
 	return AUT_OK;
@@ -336,11 +336,11 @@ AUT_RESULT AutoIt_Script::F_HttpSetProxy(VectorVariant &vParams, Variant &vResul
 		m_nHttpProxyMode = AUT_PROXY_REGISTRY;
 
 	if (iNumParams > 1)
-		m_sHttpProxy = vParams[1].szValue();
+		m_sHttpProxy = Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str();
 	if (iNumParams > 2)
-		m_sHttpProxyUser = vParams[2].szValue();
+		m_sHttpProxyUser = Util_UNICODEtoANSIStr(vParams[2].szValue()).c_str();
 	if (iNumParams > 3)
-		m_sHttpProxyPwd = vParams[3].szValue();
+		m_sHttpProxyPwd = Util_UNICODEtoANSIStr(vParams[3].szValue()).c_str();
 
 	return AUT_OK;
 
@@ -366,11 +366,11 @@ AUT_RESULT AutoIt_Script::F_FtpSetProxy(VectorVariant &vParams, Variant &vResult
 		m_nFtpProxyMode = AUT_PROXY_REGISTRY;
 
 	if (iNumParams > 1)
-		m_sFtpProxy = vParams[1].szValue();
+		m_sFtpProxy = Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str();
 	if (iNumParams > 2)
-		m_sFtpProxyUser = vParams[2].szValue();
+		m_sFtpProxyUser = Util_UNICODEtoANSIStr(vParams[2].szValue()).c_str();
 	if (iNumParams > 3)
-		m_sFtpProxyPwd = vParams[3].szValue();
+		m_sFtpProxyPwd = Util_UNICODEtoANSIStr(vParams[3].szValue()).c_str();
 
 	return AUT_OK;
 
@@ -1105,7 +1105,7 @@ AUT_RESULT AutoIt_Script::Splash(VectorVariant &vParams, uint iNumParams, int nF
 	AdjustWindowRectEx (&rect, style, FALSE, xstyle);
 
 	// CREATE Main Splash Window
-	g_hWndSplash = CreateWindowExA(xstyle,AUT_APPCLASSA,vParams[0].szValue(),
+	g_hWndSplash = CreateWindowExW(xstyle,AUT_APPCLASS,vParams[0].szValue(),
 		style,L,T,rect.right-rect.left,rect.bottom-rect.top,g_hWnd,NULL,NULL,NULL);
 
 	GetClientRect(g_hWndSplash,&rect);	// get the client size
@@ -1124,7 +1124,7 @@ AUT_RESULT AutoIt_Script::Splash(VectorVariant &vParams, uint iNumParams, int nF
 		hWnd = CreateWindowExW(0,L"static",NULL,WS_CHILD|WS_VISIBLE|SS_BITMAP
 			,0,0,rect.right-rect.left,rect.bottom-rect.top,g_hWndSplash,NULL,NULL,NULL);
 		// JPG,BMP,WMF,ICO,GIF FILE HERE
-		hFile=CreateFileA(vParams[1].szValue(),GENERIC_READ,0,NULL,OPEN_EXISTING,0,NULL);
+		hFile=CreateFileW(vParams[1].szValue(),GENERIC_READ,0,NULL,OPEN_EXISTING,0,NULL);
 
 		if ( hFile == INVALID_HANDLE_VALUE )
 		{
@@ -1169,7 +1169,7 @@ AUT_RESULT AutoIt_Script::Splash(VectorVariant &vParams, uint iNumParams, int nF
 		HDC		h_dc;
 
 		// CREATE static label full size of client area
-		hWnd = CreateWindowExA(0,"static",vParams[1].szValue(),lblstyle,
+		hWnd = CreateWindowExW(0,L"static",vParams[1].szValue(),lblstyle,
 			0,0,rect.right-rect.left,rect.bottom-rect.top,g_hWndSplash,NULL,NULL,NULL);
 
 		h_dc = CreateDCW(L"DISPLAY", NULL, NULL, NULL);					//
@@ -1180,8 +1180,8 @@ AUT_RESULT AutoIt_Script::Splash(VectorVariant &vParams, uint iNumParams, int nF
 
 		if ( iNumParams>=8 )
 		{
-			if ( strlen(vParams[7].szValue()) >= 1 )
-			strcpy(szFont,vParams[7].szValue());		// Font Name
+			if ( wcslen(vParams[7].szValue()) >= 1 )
+			strcpy(szFont,Util_UNICODEtoANSIStr(vParams[7].szValue()).c_str());		// Font Name
 		}
 		if ( iNumParams>=9 )
 		{
@@ -1263,7 +1263,7 @@ AUT_RESULT	AutoIt_Script::Progress(VectorVariant &vParams, uint iNumParams, int 
 	int			W, H, CyPixels;								// Window Width and Height
 	int			style = WS_DISABLED|WS_POPUP|WS_CAPTION;	// Default window style
 	int			xstyle = WS_EX_TOPMOST;
-	AString		sLabelB = "";
+	std::wstring	sLabelB;
 	RECT		rect;
 	HDC			h_dc;
 	HFONT		hfFont;
@@ -1309,13 +1309,13 @@ AUT_RESULT	AutoIt_Script::Progress(VectorVariant &vParams, uint iNumParams, int 
 	AdjustWindowRectEx (&rect, style, FALSE, xstyle);
 
 	// CREATE Main Progress Window
-	g_hWndProgress = CreateWindowExA(xstyle,AUT_APPCLASSA,vParams[0].szValue(),
+	g_hWndProgress = CreateWindowExW(xstyle,AUT_APPCLASS,vParams[0].szValue(),
 		style,L,T,rect.right-rect.left,rect.bottom-rect.top,g_hWnd,NULL,NULL,NULL);
 
 	GetClientRect(g_hWndProgress,&rect);				// for some math
 
 	// CREATE Main label
-	g_hWndProgLblA = CreateWindowExA(0,"static",vParams[1].szValue(),WS_CHILD|WS_VISIBLE|SS_LEFT,
+	g_hWndProgLblA = CreateWindowExW(0,L"static",vParams[1].szValue(),WS_CHILD|WS_VISIBLE|SS_LEFT,
 		(rect.right-rect.left-281),4,1280,24,g_hWndProgress,NULL,NULL,NULL);
 
 	h_dc = CreateDCW(L"DISPLAY", NULL, NULL, NULL);					//
@@ -1335,7 +1335,7 @@ AUT_RESULT	AutoIt_Script::Progress(VectorVariant &vParams, uint iNumParams, int 
 	SendMessage(g_hWndProgBar,PBM_SETSTEP,1,0);					// set some characteristics
 
 	// CREATE Sub label
-	g_hWndProgLblB = CreateWindowExA(0,"static",sLabelB.c_str(),WS_CHILD|WS_VISIBLE|SS_LEFT,
+	g_hWndProgLblB = CreateWindowExW(0,L"static",sLabelB.c_str(),WS_CHILD|WS_VISIBLE|SS_LEFT,
 		(rect.right-rect.left-280),55,1280,50,g_hWndProgress,NULL,NULL,NULL);
 	SendMessage(g_hWndProgLblB,WM_SETFONT,(WPARAM)GetStockObject(DEFAULT_GUI_FONT),MAKELPARAM(TRUE,0));
 
@@ -1481,11 +1481,11 @@ AUT_RESULT AutoIt_Script::F_InputBox(VectorVariant &vParams, Variant &vResult)
 				} // for i
 
 		case 3: // with default
-			aDlg.m_strInputText = Util_ANSItoUNICODEStr(vParams[2].szValue());
+			aDlg.m_strInputText = vParams[2].szValue();
 
 		case 2:	// title and prompt only
-			aDlg.m_title = Util_ANSItoUNICODEStr(vParams[0].szValue());
-			aDlg.m_strPrompt = Util_ANSItoUNICODEStr(vParams[1].szValue());
+			aDlg.m_title = vParams[0].szValue();
+			aDlg.m_strPrompt = vParams[1].szValue();
 			iRetVal = aDlg.DoModal(g_hInstance, NULL);
 
 			if (iRetVal==IDOK)
@@ -1579,42 +1579,26 @@ AUT_RESULT AutoIt_Script::F_TimerDiff(VectorVariant &vParams, Variant &vResult)
 AUT_RESULT AutoIt_Script::F_TrayTip(VectorVariant &vParams, Variant &vResult)
 {
 	uint	iNumParams = vParams.size();
+	NOTIFYICONDATAW nic;
+	nic.cbSize = sizeof(nic);
+	nic.uFlags = 0x00000010;	// NIF_INFO
+	nic.hWnd = g_hWnd;
+	nic.uID = AUT_NOTIFY_ICON_ID;
 
-	if (g_oVersion.IsWin2000orLater()) {
+	wcsncpy(nic.szInfoTitle, vParams[0].szValue(), 63); // Emtpy title means no title.
+	nic.szInfoTitle[63] = '\0';
 
-		struct MYNOTIFYICONDATA : public _NOTIFYICONDATAA { // Not wide character compliant.
-			DWORD dwState;
-		    DWORD dwStateMask;
-			CHAR   szTip[64];			// Padding the size, do not use, may cause problems.
-			CHAR  szInfo[256];
-			union {
-				UINT  uTimeout;
-				UINT  uVersion;
-			};
-			CHAR  szInfoTitle[64];
-			DWORD dwInfoFlags;
-		} nic;
+	wcsncpy(nic.szInfo, vParams[1].szValue(), 255);	// Empty string doesn't display a balloon, so that's okay.
+	nic.szInfo[255] = '\0';
 
-		nic.cbSize	= sizeof(nic);
-		nic.uFlags = 0x00000010;	// NIF_INFO
-		nic.hWnd = g_hWnd;
-		nic.uID = AUT_NOTIFY_ICON_ID;
+	nic.uTimeout = vParams[2].nValue() * 1000;
 
-		strncpy(nic.szInfoTitle, vParams[0].szValue(), 63); // Emtpy title means no title.
-		nic.szInfoTitle[63] = '\0';
+	if (iNumParams > 3)
+		nic.dwInfoFlags = vParams[3].nValue();
+	else
+		nic.dwInfoFlags = 0;
 
-		strncpy(nic.szInfo, vParams[1].szValue(), 255);	// Empty string doesn't display a balloon, so that's okay.
-		nic.szInfo[255] = '\0';
-
-		nic.uTimeout = vParams[2].nValue() * 1000;
-
-		if (iNumParams > 3)
-			nic.dwInfoFlags = vParams[3].nValue();
-		else
-			nic.dwInfoFlags = 0;
-
-		Shell_NotifyIconA(NIM_MODIFY, &nic);
-	}
+	Shell_NotifyIconW(NIM_MODIFY, &nic);
 	return AUT_OK;
 
 } // TrayTip()
@@ -1649,7 +1633,7 @@ AUT_RESULT AutoIt_Script::F_Sleep(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT AutoIt_Script::F_AutoItSetOption(VectorVariant &vParams, Variant &vResult)
 {
-	const char *szOption = vParams[0].szValue();
+	const char *szOption = Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str();
 	int			nValue = vParams[1].nValue();
 
 	if ( !stricmp(szOption, "CaretCoordMode") )				// CaretCoordMode
@@ -1806,7 +1790,7 @@ AUT_RESULT AutoIt_Script::F_AutoItSetOption(VectorVariant &vParams, Variant &vRe
 	else if ( !stricmp(szOption, "OnExitFunc") )			// OnExitFunc
 	{
 		vResult = m_sOnExitFunc.c_str();	// Store current value
-		m_sOnExitFunc = vParams[1].szValue();
+		m_sOnExitFunc = Util_UNICODEtoANSIStr( vParams[1].szValue()).c_str();
 
 	}
 	else if ( !stricmp(szOption, "PixelCoordMode") )		// PixelCoordMode
@@ -1946,7 +1930,7 @@ AUT_RESULT AutoIt_Script::F_HotKeySet(VectorVariant &vParams, Variant &vResult)
 
 
 	// Unless blank, check that the requested user function exists
-	if (iNumParams >= 2 && Parser_FindUserFunction(vParams[1].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
+	if (iNumParams >= 2 && Parser_FindUserFunction(Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
 	{
 		FatalError(IDS_AUT_E_UNKNOWNUSERFUNC);
 		return AUT_ERR;
@@ -1954,7 +1938,7 @@ AUT_RESULT AutoIt_Script::F_HotKeySet(VectorVariant &vParams, Variant &vResult)
 
 
 	// Get the virtual key code and modifiers
-	if (m_oSendKeys.GetSingleVKandMods(vParams[0].szValue(), vk, bShift, bControl, bAlt, bWin) == false)
+	if (m_oSendKeys.GetSingleVKandMods(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str(), vk, bShift, bControl, bAlt, bWin) == false)
 	{
 		vResult = 0;							// Error, default is 1
 		return AUT_OK;
@@ -1988,7 +1972,7 @@ AUT_RESULT AutoIt_Script::F_HotKeySet(VectorVariant &vParams, Variant &vResult)
 					m_HotKeyDetails[nFreeHandle] = NULL;	// Mark as empty
 				}
 				else
-					m_HotKeyDetails[nFreeHandle]->sFunction = vParams[1].szValue();	// Reuse
+					m_HotKeyDetails[nFreeHandle]->sFunction = Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str();	// Reuse
 
 				return AUT_OK;
 			}
@@ -2011,7 +1995,7 @@ AUT_RESULT AutoIt_Script::F_HotKeySet(VectorVariant &vParams, Variant &vResult)
 			m_HotKeyDetails[nFreeHandle] = new HotKeyDetails;	// Create new entry
 			m_HotKeyDetails[nFreeHandle]->wParam = 0x0000 + nFreeHandle;
 			m_HotKeyDetails[nFreeHandle]->lParam = lParam;
-			m_HotKeyDetails[nFreeHandle]->sFunction = vParams[1].szValue();
+			m_HotKeyDetails[nFreeHandle]->sFunction = Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str();
 
 			if (!RegisterHotKey(g_hWnd, (int)m_HotKeyDetails[nFreeHandle]->wParam, mods, vk))
 			{
@@ -2081,15 +2065,15 @@ AUT_RESULT AutoIt_Script::F_MsgBox(VectorVariant &vParams, Variant &vResult)
 {
 	if (vParams.size() == 4)
 	{
-		wchar_t* sz_title = Util_ANSItoUNICODE(vParams[1].szValue());
-		wchar_t* sz_text = Util_ANSItoUNICODE(vParams[2].szValue());
+		const wchar_t* sz_title = vParams[1].szValue();
+		const wchar_t* sz_text = vParams[2].szValue();
 		vResult = Util_MessageBoxEx(NULL, sz_text,sz_title, (UINT)vParams[0].nValue() | MB_SETFOREGROUND, vParams[3].nValue() * 1000);
 		delete[]sz_title;
 		delete[]sz_text;
 	}
 
 	else
-		vResult = MessageBoxA(NULL, vParams[2].szValue(), vParams[1].szValue(), (UINT)vParams[0].nValue() | MB_SETFOREGROUND);
+		vResult = MessageBoxW(NULL, vParams[2].szValue(), vParams[1].szValue(), (UINT)vParams[0].nValue() | MB_SETFOREGROUND);
 	return AUT_OK;
 
 } // F_MsgBox()
@@ -2104,12 +2088,12 @@ AUT_RESULT AutoIt_Script::F_Send(VectorVariant &vParams, Variant &vResult)
 	if (vParams.size() == 2)
 	{
 		if (vParams[1].nValue() == 0)
-			m_oSendKeys.Send(vParams[0].szValue());		// Normal send
+			m_oSendKeys.Send(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str());		// Normal send
 		else
-			m_oSendKeys.SendRaw(vParams[0].szValue());	// Raw send
+			m_oSendKeys.SendRaw(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str());	// Raw send
 	}
 	else
-		m_oSendKeys.Send(vParams[0].szValue());	// Normal send
+		m_oSendKeys.Send(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str());	// Normal send
 
 	return AUT_OK;
 
@@ -2179,7 +2163,7 @@ AUT_RESULT AutoIt_Script::F_Call(VectorVariant &vParams, Variant &vResult)
 	int nTemp1, nTemp2, nTemp3, nTemp4;
 
 	// Check that this user function exists
-	if (Parser_FindUserFunction(vParams[0].szValue(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
+	if (Parser_FindUserFunction(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str(), nTemp1, nTemp2, nTemp3, nTemp4) == false)
 	{
 		SetFuncErrorCode(1);				// Silent error even though function not valid
 		return AUT_OK;						// As will probably be used this way
@@ -2203,10 +2187,10 @@ AUT_RESULT AutoIt_Script::F_Eval(VectorVariant &vParams, Variant &vResult)
 {
 	bool	bConst = false;
 
- 	if (g_oVarTable.isDeclared(vParams[0].szValue()))
+ 	if (g_oVarTable.isDeclared(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str()))
  	{
  		Variant *pvTemp;
- 		g_oVarTable.GetRef(vParams[0].szValue(), &pvTemp, bConst);
+ 		g_oVarTable.GetRef(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str(), &pvTemp, bConst);
  		vResult = *pvTemp;
  		return AUT_OK;
  	}
@@ -2249,11 +2233,11 @@ AUT_RESULT AutoIt_Script::F_Assign(VectorVariant &vParams, Variant &vResult)
 	}
 
 	// Get a reference to the variable in the requested scope, if it doesn't exist, then create it.
-	g_oVarTable.GetRef(vParams[0].szValue(), &pvTemp, bConst, nReqScope);
+	g_oVarTable.GetRef(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str(), &pvTemp, bConst, nReqScope);
 	if (pvTemp == NULL)
 	{
 		if (bCreate)
-			g_oVarTable.Assign(vParams[0].szValue(), vParams[1], false, nReqScope);
+			g_oVarTable.Assign(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str(), vParams[1], false, nReqScope);
 		else
 			vResult = 0;						// Default is 1
 	}
@@ -2271,7 +2255,7 @@ AUT_RESULT AutoIt_Script::F_Assign(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT AutoIt_Script::F_IsDeclared(VectorVariant &vParams, Variant &vResult)
 {
- 	vResult = g_oVarTable.isDeclared(vParams[0].szValue());
+ 	vResult = g_oVarTable.isDeclared(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str());
  	return AUT_OK;
 
 } // IsDeclared()
@@ -2286,7 +2270,7 @@ AUT_RESULT AutoIt_Script::F_IsDeclared(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT AutoIt_Script::F_ConsoleWrite(VectorVariant &vParams, Variant &vResult)
 {
-	printf("%s", vParams[0].szValue());
+	printf("%s", Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str());
 	fflush(stdout);
 
 	return AUT_OK;

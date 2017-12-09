@@ -257,17 +257,16 @@ AUT_RESULT AutoIt_Script::F_Number(VectorVariant &vParams, Variant &vResult)
 		vResult = vParams[0];					// Already numerical
 	else
 	{
-		const char *szTemp = vParams[0].szValue();
-
-		if (strstr(szTemp, "."))				// Contains a decimal point?
-			vResult  = atof(szTemp);			// Convert to double
+		const wchar_t *szTemp = vParams[0].szValue();
+		if (wcsstr(szTemp, L"."))				// Contains a decimal point?
+			vResult  = _wtof(szTemp);			// Convert to double
 		else
 		{
-			__int64 n64Temp = _atoi64(szTemp);
+			__int64 n64Temp = _wtoi64(szTemp);
 			if (n64Temp > INT_MAX || n64Temp < INT_MIN)
 				vResult  = n64Temp;				// Store as int64
 			else
-				vResult  = atoi(szTemp);		// Store as int32
+				vResult  = _wtoi(szTemp);		// Store as int32
 		}
 	}
 

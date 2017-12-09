@@ -168,7 +168,7 @@ void AutoIt_Script::ProcessWaitInit(VectorVariant &vParams, uint iNumParams)
 	// Parameters are processname, timeout - only processname is mandatory
 
 	// Setup the search for title/text
-	m_sProcessSearchTitle =vParams[0].szValue();
+	m_sProcessSearchTitle = Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str();
 
 	if (iNumParams == 2)
 		m_nProcessWaitTimeout	= vParams[1].nValue() * 1000;	// Timeout
@@ -193,7 +193,7 @@ AUT_RESULT AutoIt_Script::F_ProcessExists(VectorVariant &vParams, Variant &vResu
 	DWORD	dwPid;
 	bool	bResult = false;
 
-	if (Util_DoesProcessExist(vParams[0].szValue(), dwPid, bResult) == false)
+	if (Util_DoesProcessExist(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str(), dwPid, bResult) == false)
 	{
 		FatalError(IDE_AUT_E_PROCESSNT);
 		return AUT_ERR;
@@ -256,7 +256,7 @@ AUT_RESULT AutoIt_Script::F_ProcessClose(VectorVariant &vParams, Variant &vResul
 	DWORD	dwPid;
 	bool	bResult = false;
 
-	if (Util_DoesProcessExist(vParams[0].szValue(), dwPid, bResult) == false)
+	if (Util_DoesProcessExist(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str(), dwPid, bResult) == false)
 	{
 		FatalError(IDE_AUT_E_PROCESSNT);
 		return AUT_ERR;
@@ -318,9 +318,9 @@ AUT_RESULT AutoIt_Script::F_RunAsSet(VectorVariant &vParams, Variant &vResult)
 
 	// Now, convert to wide character versions to enable easier calling of the
 	// CreateProcessAsUser() function which only accepts wide chars
-	m_wszRunUser	= Util_ANSItoUNICODE(vParams[0].szValue());
-	m_wszRunDom		= Util_ANSItoUNICODE(vParams[1].szValue());
-	m_wszRunPwd		= Util_ANSItoUNICODE(vParams[2].szValue());
+	m_wszRunUser	= Util_StrCpyAlloc(vParams[0].szValue());
+	m_wszRunDom		= Util_StrCpyAlloc(vParams[1].szValue());
+	m_wszRunPwd		= Util_StrCpyAlloc(vParams[2].szValue());
 
 
 	// Set logon flags
@@ -414,10 +414,10 @@ AUT_RESULT AutoIt_Script::Run(int nFunction, VectorVariant &vParams, uint iNumPa
 
 
 	// Must contain at least one parameter
-	strcpy(szRun, vParams[0].szValue());
+	strcpy(szRun, Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str());
 
 	if (iNumParams >= 2)						// Has working dir
-		strcpy(szDir, vParams[1].szValue());		// Get working directory, if blank get the current working dir
+		strcpy(szDir, Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str());		// Get working directory, if blank get the current working dir
 	else
 		szDir[0] = '\0';
 
@@ -566,7 +566,7 @@ AUT_RESULT AutoIt_Script::F_ProcessSetPriority(VectorVariant &vParams, Variant &
 	vResult = 0;
 	SetFuncErrorCode(1);
 
-	Util_DoesProcessExist(vParams[0].szValue(), dwPid, bRes);
+	Util_DoesProcessExist(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str(), dwPid, bRes);
 	if (!bRes)
 		return AUT_OK;
 
@@ -722,7 +722,7 @@ AUT_RESULT AutoIt_Script::F_ProcessList(VectorVariant &vParams, Variant &vResult
 				strcat(szFile, szExt);
 
 				// Only make a note of matching process names
-				if ( vParams.size() == 0 || ( vParams.size() && !stricmp(szFile, vParams[0].szValue()) ) )
+				if ( vParams.size() == 0 || ( vParams.size() && !stricmp(szFile, Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str())))
 				{
 					piProc[count].sName = szFile;
 					piProc[count].dwPid = idProcessArray[i];
@@ -773,7 +773,7 @@ AUT_RESULT AutoIt_Script::F_ProcessList(VectorVariant &vParams, Variant &vResult
 			strcat(szFile, szExt);
 
 			// Only make a note of matching process names
-			if ( vParams.size() == 0 || ( vParams.size() && !stricmp(szFile, vParams[0].szValue()) ) )
+			if ( vParams.size() == 0 || ( vParams.size() && !stricmp(szFile, Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str())) )
 			{
 				piProc[count].sName = szFile;
 				piProc[count].dwPid = proc.th32ProcessID;

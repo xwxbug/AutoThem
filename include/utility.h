@@ -74,31 +74,39 @@ int		Util_MessageBoxEx(HWND hWnd, LPCTSTR lpText, LPCTSTR lpCaption, UINT uType,
 unsigned int _stdcall Util_TimeoutMsgBoxThread(void *pParam);
 BOOL	CALLBACK Util_FindMsgBoxProc(HWND hwnd, LPARAM lParam);
 
-void	Util_StripCR(char *szText);
+void	Util_StripCR(char *		szText);
+void	Util_StripCR(wchar_t *	szText);
 void	Util_AddCR(const char *szInput, char *szOutput);
-unsigned int Util_AddCRSize(const char *szText);
+void	Util_AddCR(const wchar_t *szInput, wchar_t *szOutput);
+unsigned int Util_AddCRSize(const char *	szText);
+unsigned int Util_AddCRSize(const wchar_t *	szText);
 
 void	Util_StripTrailingDir(char*		szPath);
 void	Util_StripTrailingDir(wchar_t*	szPath);
 
-bool	Util_GetFileVersion(char *szFile, char *szVersion);
+bool	Util_GetFileVersion(char *		szFile, char *		szVersion);
+bool	Util_GetFileVersion(wchar_t *	szFile, wchar_t *	szVersion);
 
-bool	Util_DoesFileExist(const char *szFilename);
-bool	Util_IsDir(const char *szPath);
+bool	Util_DoesFileExist(const char *		szFilename);
+bool	Util_DoesFileExist(const wchar_t *	szFilename);
+bool	Util_IsDir(const char *		szPath);
+bool	Util_IsDir(const wchar_t *	szPath);
 void	Util_GetFullPathName(const char*	szIn, char*		szOut);
 void	Util_GetFullPathName(const wchar_t* szIn, wchar_t*	szOut);
 bool	Util_GetLongFileName(const char*	szIn, char*		szOut);
 bool	Util_GetLongFileName(const wchar_t* szIn, wchar_t*	szOut);
 bool	Util_IsDifferentVolumes(const char *szPath1, const char *szPath2);
+bool	Util_IsDifferentVolumes(const wchar_t *szPath1, const wchar_t *szPath2);
 bool	Util_DeleteFile(const char *szFilename);
 bool	Util_FileSetTime(const char *szFilename, FILETIME *ft, int nWhichTime);
 bool	Util_CopyFile(const char *szInputSource, const char *szInputDest, bool bOverwrite, bool bMove);
 void	Util_ExpandFilenameWildcard(const char *szSource, const char *szDest, char *szExpandedDest);
 void	Util_ExpandFilenameWildcardPart(const char *szSource, const char *szDest, char *szExpanded);
-bool	Util_CreateDir(const char *szDirName);
-bool	Util_RemoveDir (const char *szInputSource, bool bRecurse);
-bool	Util_CopyDir (const char *szInputSource, const char *szInputDest, bool bOverwrite);
-bool	Util_MoveDir (const char *szInputSource, const char *szInputDest, bool bOverwrite);
+bool	Util_CreateDir(const wchar_t *szDirName);
+bool	Util_RemoveDir(const char *		szInputSource, bool bRecurse);
+bool	Util_RemoveDir(const wchar_t *	szInputSource, bool bRecurse);
+bool	Util_CopyDir (const wchar_t *szInputSource, const wchar_t *szInputDest, bool bOverwrite);
+bool	Util_MoveDir (const wchar_t *szInputSource, const wchar_t *szInputDest, bool bOverwrite);
 
 void	Util_AddTextToBuffer(const char *szText, char *szBuffer, unsigned int iBufSize);
 
@@ -112,22 +120,24 @@ void	Util_GetIPAddress(int nAdapter, char *szInetBuf);
 void	Util_VariantArrayDim(Variant *pvVariant, unsigned int iElements);
 Variant * Util_VariantArrayGetRef(Variant *pvVariant, unsigned int iElement);
 
-void	Util_SoundPlay(const char *szFilename, bool bWait);
+void	Util_SoundPlay(const wchar_t *szFilename, bool bWait);
 
 BOOL	Util_Shutdown(int nFlag);
 BOOL	Util_ShutdownHandler(HWND hwnd, DWORD lParam);
 
 bool	Util_GetInt(const char *szInt, int &pos, int &nValue);
 bool	Util_ConvHex(const UINT uVal, char *szBuffer, const int iDigits);
-bool	Util_ConvDec(const char *szHex, int &nDec);
-
+bool	Util_ConvDec(const char *		szHex, int &nDec);
+bool	Util_ConvDec(const wchar_t *	szHex, int &nDec);
 bool	Util_IsWinHung(HWND hWnd, UINT nTimeOut = 5000);
 void	Util_AttachThreadInput(HWND hWnd, bool bAttach);
 
 int		Util_MouseDown(const char *szButton);
+int		Util_MouseDown(const wchar_t *szButton);
 int 	Util_MouseUp(const char *szButton);
+int 	Util_MouseUp(const wchar_t *szButton);
 int		Util_MouseWheel(const char *szDirection);
-
+int		Util_MouseWheel(const wchar_t *szDirection);
 bool	Util_DownloadFile(const char *szUrl, const char *szOutFile, bool &bFatal);
 
 void	Util_Strncpy(char *szBuffer, const char *szString, int nBufSize);
@@ -142,7 +152,8 @@ void	Util_RGBtoBGR(int &nCol);
 	void Util_DebugMsg(const char *szFormat, ...);
 #endif
 
-char *	Util_StrCpyAlloc(const char *szSource);
+char *		Util_StrCpyAlloc(const char *		szSource);
+wchar_t *	Util_StrCpyAlloc(const wchar_t *	szSource);
 
 HICON	Util_LoadIcon(int nID, int nWidth, int nHeight, int nDepth);
 bool	Util_ConvSystemTime(const char *szTime, SYSTEMTIME *st, bool bDate, int nSep);
@@ -154,6 +165,8 @@ std::wstring Util_ANSItoUNICODEStr(const char *szANSI, int nMinLen=0);
 
 char *	Util_UNICODEtoANSI(const wchar_t *szUNI, int nMinLen = 0);
 std::string Util_UNICODEtoANSIStr(const wchar_t *szUNI, int nMinLen=0);
+
+size_t Util_find_string_in_str(const wchar_t* sz_text, const wchar_t *szInput, bool bCaseSense, int nOccurance=1);
 
 template<typename T> inline void Util_VariantArrayAssign(Variant *pvVariant, unsigned int iElement, T tParam)
 {

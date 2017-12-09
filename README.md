@@ -24,8 +24,8 @@ $CmdLineRaw|Y|Y
 Macro Name | autoit(3.3.15.0) | AutoThem(current)
 ---|---|---
 @AppDataCommonDir|Y|Y
-@AppDataDir|Y|N
-@AutoItExe|Y|N
+@AppDataDir|Y|Y
+@AutoItExe|Y|Y
 @AutoItPID|Y|N
 @AutoItVersion|Y|N
 @AutoItX64|Y|N

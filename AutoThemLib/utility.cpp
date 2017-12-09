@@ -578,7 +578,7 @@ void Util_StripCR(char *szText)
 {
 	unsigned int	i = 0, j = 0;
 
-	while (szText[i] != '\0')
+	while (szText[i] != 0)
 	{
 		if (szText[i] == '\r')
 			++i;
@@ -586,10 +586,25 @@ void Util_StripCR(char *szText)
 			szText[j++] = szText[i++];
 	}
 
-	szText[j] = '\0';							// Terminate
+	szText[j] = 0;							// Terminate
 
 } // Util_StripCR
 
+
+void Util_StripCR(wchar_t * szText)
+{
+	unsigned int	i = 0, j = 0;
+
+	while (szText[i] != 0)
+	{
+		if (szText[i] == L'\r')
+			++i;
+		else
+			szText[j++] = szText[i++];
+	}
+
+	szText[j] = 0;							// Terminate
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Util_AddCR()
@@ -620,6 +635,24 @@ void Util_AddCR(const char *szInput, char *szOutput)
 } // Util_AddCR
 
 
+void Util_AddCR(const wchar_t *szInput, wchar_t *szOutput)
+{
+	unsigned int	i = 0, j = 0;
+
+	while (szInput[i] != 0)
+	{
+		if (szInput[i] == '\n')
+		{
+			szOutput[j++] = '\r';
+			szOutput[j++] = szInput[i++];
+		}
+		else
+			szOutput[j++] = szInput[i++];
+	}
+
+	szOutput[j] = 0;							// Terminate
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Util_AddCRSize()
 //
@@ -642,6 +675,19 @@ unsigned int Util_AddCRSize(const char *szText)
 
 } // Util_AddCRSize
 
+
+unsigned int Util_AddCRSize(const wchar_t * szText)
+{
+	unsigned int	i = 0, j = 0;
+
+	while (szText[i] != 0)
+	{
+		if (szText[i++] == '\n')
+			j++;
+	}
+
+	return (i + 1) + j;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Util_StripTrailingDir()
@@ -749,6 +795,44 @@ bool Util_GetFileVersion(char *szFile, char *szVersion)
 } // Util_GetFileVersion
 
 
+bool Util_GetFileVersion(wchar_t * szFile, wchar_t * szVersion)
+{
+	// Get size of the info block
+	DWORD				dwUnused;
+	DWORD dwSize = GetFileVersionInfoSizeW(szFile, &dwUnused);
+
+	if (dwSize)
+	{
+		VS_FIXEDFILEINFO	*pFFI;
+		UINT				uSize;
+
+		BYTE *pInfo = new BYTE[dwSize];
+
+		// Read the version resource
+		GetFileVersionInfoW(szFile, 0, dwSize, (LPVOID)pInfo);
+
+		// Locate the fixed information
+		if (VerQueryValueW(pInfo, L"\\", (LPVOID *)&pFFI, &uSize) != 0)
+		{
+			//extract the fields you want from pFFI
+			uint iFileMS = (uint)pFFI->dwFileVersionMS;
+			uint iFileLS = (uint)pFFI->dwFileVersionLS;
+			swprintf(szVersion, L"%u.%u.%u.%u", (iFileMS >> 16), (iFileMS & 0xffff), (iFileLS >> 16), (iFileLS & 0xffff));
+
+			//free(pInfo);
+			delete[] pInfo;
+			return true;
+		}
+		else
+		{
+			delete[] pInfo;
+			return false;
+		}
+	}
+	else
+		return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Util_DoesFileExist()
 // Returns true if file or directory exists
@@ -756,11 +840,35 @@ bool Util_GetFileVersion(char *szFile, char *szVersion)
 
 bool Util_DoesFileExist(const char *szFilename)
 {
-	if ( strchr(szFilename,'*')||strchr(szFilename,'?') )
+	if (strchr(szFilename, '*') || strchr(szFilename, '?'))
 	{
 		WIN32_FIND_DATAA	wfd;
 
-	    HANDLE hFile = FindFirstFileA(szFilename, &wfd);
+		HANDLE hFile = FindFirstFileA(szFilename, &wfd);
+
+		if (hFile == INVALID_HANDLE_VALUE)
+			return false;
+
+		FindClose(hFile);
+		return true;
+	}
+	else
+	{
+		if (GetFileAttributesA(szFilename) != INVALID_FILE_ATTRIBUTES)
+			return true;
+		else
+			return false;
+	}
+
+} // Util_DoesFileExist
+
+bool Util_DoesFileExist(const wchar_t *szFilename)
+{
+	if ( wcschr(szFilename,'*')||wcschr(szFilename,'?') )
+	{
+		WIN32_FIND_DATAW	wfd;
+
+	    HANDLE hFile = FindFirstFileW(szFilename, &wfd);
 
 		if ( hFile == INVALID_HANDLE_VALUE )
 			return false;
@@ -770,7 +878,7 @@ bool Util_DoesFileExist(const char *szFilename)
 	}
     else
 	{
-		if ( GetFileAttributesA(szFilename) != INVALID_FILE_ATTRIBUTES )
+		if ( GetFileAttributesW(szFilename) != INVALID_FILE_ATTRIBUTES )
 			return true;
 		else
 			return false;
@@ -794,6 +902,15 @@ bool Util_IsDir(const char *szPath)
 
 } // Util_IsDir
 
+
+bool Util_IsDir(const wchar_t * szPath)
+{
+	DWORD dwTemp = GetFileAttributesW(szPath);
+	if (dwTemp != INVALID_FILE_ATTRIBUTES && (dwTemp & FILE_ATTRIBUTE_DIRECTORY))
+		return true;
+	else
+		return false;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Util_GetFullPathName()
@@ -957,6 +1074,50 @@ bool Util_IsDifferentVolumes(const char *szPath1, const char *szPath2)
 
 } // Util_IsDifferentVolumes()
 
+
+bool Util_IsDifferentVolumes(const wchar_t *szPath1, const wchar_t *szPath2)
+{
+	wchar_t			szP1Drive[_MAX_DRIVE + 1];
+	wchar_t			szP2Drive[_MAX_DRIVE + 1];
+
+	wchar_t			szP1Dir[_MAX_DIR + 1];
+	wchar_t			szP2Dir[_MAX_DIR + 1];
+
+	wchar_t			szFile[_MAX_FNAME + 1];
+	wchar_t			szExt[_MAX_EXT + 1];
+
+	wchar_t			szP1[_MAX_PATH + 1];
+	wchar_t			szP2[_MAX_PATH + 1];
+
+	// Get full pathnames
+	Util_GetFullPathName(szPath1, szP1);
+	Util_GetFullPathName(szPath2, szP2);
+
+	// Split the target into bits
+	_wsplitpath(szP1, szP1Drive, szP1Dir, szFile, szExt);
+	//	Util_WinPrintf("", "%s - %s - %s - %s", szP1Drive, szP1Dir, szFile, szExt);
+	_wsplitpath(szP2, szP2Drive, szP2Dir, szFile, szExt);
+	//	Util_WinPrintf("", "%s - %s - %s - %s", szP2Drive, szP2Dir, szFile, szExt);
+
+	if (szP1Drive[0] == '\0' && szP2Drive[0] == '\0')
+	{
+		// Both paths are UNC, if both directories are also the same then we assume
+		// they are on the same volume (same UNC but different directories may be redirected
+		// so I don't think we can assume they are the same volume in that case.
+		if (!wcsicmp(szP1Dir, szP2Dir))
+			return false;
+		else
+			return true;
+	}
+	else
+	{
+		if (!wcsicmp(szP1Drive, szP2Drive))
+			return false;
+		else
+			return true;
+	}
+
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Util_DeleteFile()
@@ -1243,11 +1404,11 @@ void Util_ExpandFilenameWildcardPart(const char *szSource, const char *szDest, c
 // Recursive directory creation function
 ///////////////////////////////////////////////////////////////////////////////
 
-bool Util_CreateDir(const char *szDirName)
+bool Util_CreateDir(const wchar_t *szDirName)
 {
 	bool	bRes;
 
-	DWORD dwTemp = GetFileAttributesA(szDirName);
+	DWORD dwTemp = GetFileAttributesW(szDirName);
 	if (dwTemp == FILE_ATTRIBUTE_DIRECTORY)
 		return true;							// Directory exists, yay!
 
@@ -1256,9 +1417,9 @@ bool Util_CreateDir(const char *szDirName)
 		if (GetLastError() == ERROR_PATH_NOT_FOUND)
 		{
 			// Create path
-			char *szTemp = Util_StrCpyAlloc(szDirName);
+			wchar_t *szTemp = Util_StrCpyAlloc(szDirName);
 
-			char *psz_Loc = strrchr(szTemp, '\\');	/* find last \ */
+			wchar_t *psz_Loc = wcsrchr(szTemp, L'\\');	/* find last \ */
 			if (psz_Loc == NULL)				// not found
 			{
 				delete [] szTemp;
@@ -1271,7 +1432,7 @@ bool Util_CreateDir(const char *szDirName)
 				delete [] szTemp;
 				if (bRes)
 				{
-					if (CreateDirectoryA(szDirName, NULL))
+					if (CreateDirectoryW(szDirName, NULL))
 						bRes = true;
 					else
 						bRes = false;
@@ -1285,7 +1446,7 @@ bool Util_CreateDir(const char *szDirName)
 			if (GetLastError() == ERROR_FILE_NOT_FOUND)
 			{
 				// Create directory
-				if (CreateDirectoryA(szDirName, NULL))
+				if (CreateDirectoryW(szDirName, NULL))
 					return true;
 				else
 					return false;
@@ -1302,11 +1463,11 @@ bool Util_CreateDir(const char *szDirName)
 // Util_CopyDir()
 ///////////////////////////////////////////////////////////////////////////////
 
-bool Util_CopyDir (const char *szInputSource, const char *szInputDest, bool bOverwrite)
+bool Util_CopyDir (const wchar_t *szInputSource, const wchar_t *szInputDest, bool bOverwrite)
 {
-	SHFILEOPSTRUCTA	FileOp;
-	char			szSource[_MAX_PATH+2];
-	char			szDest[_MAX_PATH+2];
+	SHFILEOPSTRUCTW	FileOp;
+	wchar_t			szSource[_MAX_PATH+2];
+	wchar_t			szDest[_MAX_PATH+2];
 
 	// Get the fullpathnames and strip trailing \s
 	Util_GetFullPathName(szInputSource, szSource);
@@ -1331,11 +1492,11 @@ bool Util_CopyDir (const char *szInputSource, const char *szInputDest, bool bOve
 
 	// To work under old versions AND new version of shell32.dll the source must be specifed
 	// as "dir\*.*" and the destination directory must already exist... Godamn Microsoft and their APIs...
-	strcat(szSource, "\\*.*");
+	wcscat(szSource, L"\\*.*");
 
 	// We must also make source\dest double nulled strings for the SHFileOp API
-	szSource[strlen(szSource)+1] = '\0';
-	szDest[strlen(szDest)+1] = '\0';
+	szSource[wcslen(szSource)+1] = '\0';
+	szDest[wcslen(szDest)+1] = '\0';
 
 	// Setup the struct
 	FileOp.pFrom					= szSource;
@@ -1348,7 +1509,7 @@ bool Util_CopyDir (const char *szInputSource, const char *szInputDest, bool bOve
 	FileOp.wFunc	= FO_COPY;
 	FileOp.fFlags	= FOF_SILENT | FOF_NOCONFIRMMKDIR | FOF_NOCONFIRMATION | FOF_NOERRORUI;
 
-	if ( SHFileOperationA(&FileOp) )
+	if ( SHFileOperationW(&FileOp) )
 		return false;
 
 	return true;
@@ -1360,11 +1521,11 @@ bool Util_CopyDir (const char *szInputSource, const char *szInputDest, bool bOve
 // Util_MoveDir()
 ///////////////////////////////////////////////////////////////////////////////
 
-bool Util_MoveDir (const char *szInputSource, const char *szInputDest, bool bOverwrite)
+bool Util_MoveDir (const wchar_t *szInputSource, const wchar_t *szInputDest, bool bOverwrite)
 {
-	SHFILEOPSTRUCTA	FileOp;
-	char			szSource[_MAX_PATH+2];
-	char			szDest[_MAX_PATH+2];
+	SHFILEOPSTRUCTW	FileOp;
+	wchar_t			szSource[_MAX_PATH+2];
+	wchar_t			szDest[_MAX_PATH+2];
 
 	// Get the fullpathnames and strip trailing \s
 	Util_GetFullPathName(szInputSource, szSource);
@@ -1395,8 +1556,8 @@ bool Util_MoveDir (const char *szInputSource, const char *szInputDest, bool bOve
 	}
 
 	// We must also make source\dest double nulled strings for the SHFileOp API
-	szSource[strlen(szSource)+1] = '\0';
-	szDest[strlen(szDest)+1] = '\0';
+	szSource[wcslen(szSource)+1] = '\0';
+	szDest[wcslen(szDest)+1] = '\0';
 
 	// Setup the struct
 	FileOp.pFrom					= szSource;
@@ -1409,7 +1570,7 @@ bool Util_MoveDir (const char *szInputSource, const char *szInputDest, bool bOve
 	FileOp.wFunc	= FO_MOVE;
 	FileOp.fFlags	= FOF_SILENT | FOF_NOCONFIRMMKDIR | FOF_NOCONFIRMATION | FOF_NOERRORUI;
 
-	if ( SHFileOperationA(&FileOp) )
+	if ( SHFileOperationW(&FileOp) )
 		return false;
 	else
 		return true;
@@ -1464,6 +1625,48 @@ bool Util_RemoveDir (const char *szInputSource, bool bRecurse)
 
 } // Util_RemoveDir()
 
+
+bool Util_RemoveDir(const wchar_t * szInputSource, bool bRecurse)
+{
+	SHFILEOPSTRUCTW	FileOp;
+	wchar_t			szSource[_MAX_PATH + 2];
+
+	// Get the fullpathnames and strip trailing \s
+	Util_GetFullPathName(szInputSource, szSource);
+
+	// Ensure source is a directory
+	if (Util_IsDir(szSource) == false)
+		return false;							// Nope
+
+												// If recursion not on just try a standard delete on the directory (the SHFile function WILL
+												// delete a directory even if not empty no matter what flags you give it...)
+	if (bRecurse == false)
+	{
+		if (!RemoveDirectoryW(szSource))
+			return false;
+		else
+			return true;
+	}
+
+	// We must also make double nulled strings for the SHFileOp API
+	szSource[wcslen(szSource) + 1] = '\0';
+
+	// Setup the struct
+	FileOp.pFrom = szSource;
+	FileOp.pTo = NULL;
+	FileOp.hNameMappings = NULL;
+	FileOp.lpszProgressTitle = NULL;
+	FileOp.fAnyOperationsAborted = FALSE;
+	FileOp.hwnd = NULL;
+
+	FileOp.wFunc = FO_DELETE;
+	FileOp.fFlags = FOF_SILENT | FOF_NOCONFIRMMKDIR | FOF_NOCONFIRMATION | FOF_NOERRORUI;
+
+	if (SHFileOperationW(&FileOp))
+		return false;
+
+	return true;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Util_AddTextToBuffer()
@@ -1660,26 +1863,26 @@ BOOL CALLBACK Util_GetClassListProc(HWND hWnd, LPARAM lParam)
 // Asynchronous PlaySound
 ///////////////////////////////////////////////////////////////////////////////
 
-void Util_SoundPlay(const char *szFilename, bool bWait)
+void Util_SoundPlay(const wchar_t *szFilename, bool bWait)
 {
-	AString	sMCI;
-	char	szBuffer[256];
+	std::wstring	sMCI;
+	wchar_t	szBuffer[256];
 
-	sMCI = "open ";
-	sMCI += '"';
+	sMCI = L"open ";
+	sMCI += L'"';
 	sMCI += szFilename;
-	sMCI += '"';
-	sMCI += " alias PlayMe";
+	sMCI += L'"';
+	sMCI += L" alias PlayMe";
 
-	mciSendStringA("status PlayMe mode",szBuffer,sizeof(szBuffer),NULL);
+	mciSendStringW(L"status PlayMe mode",szBuffer,sizeof(szBuffer),NULL);
 
 	if ( !szBuffer[0] == '\0' )
-		mciSendStringA("close PlayMe",NULL,0,NULL);
+		mciSendStringW(L"close PlayMe",NULL,0,NULL);
 
 	if (szFilename[0] == '\0')
 		return;									// No sound to play
 
-	if ( mciSendStringA(sMCI.c_str(),NULL,0,NULL)==0 )
+	if ( mciSendStringW(sMCI.c_str(),NULL,0,NULL)==0 )
 	{
 		if (bWait)
 		{
@@ -1868,6 +2071,43 @@ bool Util_ConvDec(const char *szHex, int &nDec)
 } // Util_ConvDec()
 
 
+bool Util_ConvDec(const wchar_t * szHex, int &nDec)
+{
+	// Really crappy hex conversion
+	size_t i = wcslen(szHex) - 1;
+
+	nDec = 0;
+	int nMult = 1;
+	for (int j = 0; j < 8; ++j)
+	{
+		if (i < 0)
+			break;
+
+		if (szHex[i] >= '0' && szHex[i] <= '9')
+			nDec += (szHex[i] - '0') * nMult;
+		else if (szHex[i] >= 'A' && szHex[i] <= 'F')
+			nDec += (((szHex[i] - 'A')) + 10) * nMult;
+		else if (szHex[i] >= 'a' && szHex[i] <= 'f')
+			nDec += (((szHex[i] - 'a')) + 10) * nMult;
+		else
+		{
+			nDec = 0;					// Set value as 0
+			return false;
+		}
+
+		--i;
+		nMult = nMult * 16;
+	}
+
+	if (i != -1)
+	{
+		nDec = 0;
+		return false;
+	}
+	else
+		return true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Util_IsWinHung()
 //
@@ -1951,6 +2191,44 @@ int Util_MouseDown(const char *szButton)
 } // Util_MouseDown()
 
 
+int Util_MouseDown(const wchar_t *szButton)
+{
+	wchar_t swapped[4];
+	DWORD event = 0;
+
+	if (szButton[0] == '\0' || wcsicmp(szButton, L"LEFT") == 0) // empty string or "left"
+		event = MOUSEEVENTF_LEFTDOWN;
+	else if (wcsicmp(szButton, L"RIGHT") == 0)
+		event = MOUSEEVENTF_RIGHTDOWN;
+	else if (wcsicmp(szButton, L"MIDDLE") == 0)
+		event = MOUSEEVENTF_MIDDLEDOWN;
+	else
+	{
+		Util_RegReadString(HKEY_CURRENT_USER, L"Control Panel\\Mouse", L"SwapMouseButtons", 4, swapped);
+		if (swapped[0] == '1')	// buttons swapped
+		{
+			if (wcsicmp(szButton, L"MAIN") == 0 || wcsicmp(szButton, L"PRIMARY"))
+				event = MOUSEEVENTF_RIGHTDOWN;
+			else if (wcsicmp(szButton, L"MENU") == 0 || wcsicmp(szButton, L"SECONDARY"))
+				event = MOUSEEVENTF_LEFTDOWN;
+		}
+		else
+		{
+			if (wcsicmp(szButton, L"MAIN") == 0 || wcsicmp(szButton, L"PRIMARY"))
+				event = MOUSEEVENTF_LEFTDOWN;
+			else if (wcsicmp(szButton, L"MENU") == 0 || wcsicmp(szButton, L"SECONDARY"))
+				event = MOUSEEVENTF_RIGHTDOWN;
+		}
+	}
+	if (event != 0) {
+		mouse_event(event, 0, 0, 0, 0);
+		return 1;
+	}
+	else
+		return 0;
+
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Util_MouseUp()
 //
@@ -1996,6 +2274,43 @@ int Util_MouseUp(const char *szButton)
 } // Util_MouseUp()
 
 
+int Util_MouseUp(const wchar_t *szButton)
+{
+	wchar_t swapped[4];
+	DWORD event = 0;	// default to 0 in case no strings match
+
+	if (szButton[0] == '\0' || wcsicmp(szButton, L"LEFT") == 0) // empty string or "left"
+		event = MOUSEEVENTF_LEFTUP;
+	else if (wcsicmp(szButton, L"RIGHT") == 0)
+		event = MOUSEEVENTF_RIGHTUP;
+	else if (wcsicmp(szButton, L"MIDDLE") == 0)
+		event = MOUSEEVENTF_MIDDLEUP;
+	else
+	{
+		Util_RegReadString(HKEY_CURRENT_USER, L"Control Panel\\Mouse", L"SwapMouseButtons", 4, swapped);
+		if (swapped[0] = '1')	// buttons swapped
+		{
+			if (wcsicmp(szButton, L"MAIN") == 0 || wcsicmp(szButton, L"PRIMARY"))
+				event = MOUSEEVENTF_RIGHTUP;
+			else if (wcsicmp(szButton, L"MENU") == 0 || wcsicmp(szButton, L"SECONDARY"))
+				event = MOUSEEVENTF_LEFTUP;
+		}
+		else
+		{
+			if (wcsicmp(szButton, L"MAIN") == 0 || wcsicmp(szButton, L"PRIMARY"))
+				event = MOUSEEVENTF_LEFTUP;
+			else if (wcsicmp(szButton, L"MENU") == 0 || wcsicmp(szButton, L"SECONDARY"))
+				event = MOUSEEVENTF_RIGHTUP;
+		}
+	}
+	if (event != 0) {
+		mouse_event(event, 0, 0, 0, 0);
+		return 1;
+	}
+	else
+		return 0;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Util_MouseWheel()
 //
@@ -2015,6 +2330,18 @@ int Util_MouseWheel(const char *szDirection)
 
 } // Util_MouseWheel()
 
+
+int Util_MouseWheel(const wchar_t *szDirection)
+{
+	if (wcsicmp(szDirection, L"UP") == 0)
+		mouse_event(MOUSEEVENTF_WHEEL, 0, 0, +120, 0);
+	else if (wcsicmp(szDirection, L"DOWN") == 0)
+		mouse_event(MOUSEEVENTF_WHEEL, 0, 0, (DWORD)-120, 0);
+	else
+		return 0;
+
+	return 1;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Util_Strncpy()
@@ -2246,6 +2573,14 @@ char * Util_StrCpyAlloc(const char *szSource)
 
 } // Util_StrCpyAlloc()
 
+
+wchar_t * Util_StrCpyAlloc(const wchar_t * szSource)
+{
+	wchar_t *szNew = new wchar_t[wcslen(szSource) + 1];
+	wcscpy(szNew, szSource);
+
+	return szNew;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Util_EnumResCallback()
@@ -2562,3 +2897,77 @@ std::string Util_UNICODEtoANSIStr(const wchar_t *szUNI, int nMinLen)
 	return sz_result;
 
 } // Util_UNICODEtoANSI()
+
+size_t Util_find_string_in_str(const wchar_t* sz_text, const wchar_t *szInput, bool bCaseSense, int nOccurance)
+{
+	int		i, nMatches;
+	int		nInputLen = (int)wcslen(szInput);
+	size_t	nTextLen = wcslen(sz_text);
+
+	if (nOccurance > 0)
+	{
+		i = 0;
+		nMatches = 0;
+		while (nMatches < nOccurance)
+		{
+			for (; i < nTextLen; ++i)
+			{
+				if (bCaseSense)
+				{
+					if (wcsncmp(sz_text + i, szInput, nInputLen) == 0) // if the characters starting at m_szText[i] matches szInput
+					{
+						++nMatches;
+						break;
+					}
+				}
+				else
+				{
+					if (wcsnicmp(sz_text + i, szInput, nInputLen) == 0) // if the characters starting at m_szText[i] matches szInput
+					{
+						++nMatches;
+						break;
+					}
+				}
+			}
+			if (i >= nTextLen) // not found
+				break;
+			else if (nMatches < nOccurance)
+				++i;	// skipped increment
+		}
+	}
+	else if (nOccurance < 0)
+	{
+		i = nTextLen - nInputLen;
+		nMatches = 0;
+		while (nMatches < -nOccurance)
+		{
+			for (; i >= 0; --i)
+			{
+				if (bCaseSense)
+				{
+					if (wcsncmp(sz_text + i, szInput, nInputLen) == 0) // if the characters starting at m_szText[i] matches szInput
+					{
+						++nMatches;
+						break;
+					}
+				}
+				else
+				{
+					if (wcsnicmp(sz_text + i, szInput, nInputLen) == 0) // if the characters starting at m_szText[i] matches szInput
+					{
+						++nMatches;
+						break;
+					}
+				}
+			}
+			if (i < 0) // not found
+				break;
+			else if (nMatches < -nOccurance)
+				--i;	// skipped decrement
+		}
+	}
+	else
+		return nTextLen;
+
+	return i;									// i = index of \0
+}

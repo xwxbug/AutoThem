@@ -96,7 +96,8 @@ public:
 	Variant&	operator=(__int64 nOp2);		// Overloaded = for integers
 	Variant&	operator=(HWND nOp2);			// Overloaded = for HWNDs
 	Variant&	operator=(double fOp2);			// Overloaded = for floats
-	Variant&	operator=(const char *szOp2);	// Overloaded = for strings
+	Variant&	operator=(const char*	 szOp2);	// Overloaded = for strings
+	Variant&	operator=(const wchar_t* szOp2);	// Overloaded = for strings
 	Variant&	operator=(Variant *pOp2);		// Overloaded = for pointers/references
 	Variant&	operator+=(Variant &vOp2);		// Overloaded += (addition/concatenation)
 	Variant&	operator-=(Variant &vOp2);		// Overloaded -= (subtraction)
@@ -113,7 +114,8 @@ public:
 	friend bool operator||(Variant &vOp1, Variant &vOp2);	// Overloaded || for variants
 
 	bool		StringCompare(Variant &vOp2);			// Compare two strings with case sense
-	bool		HexToDec(const char *szHex, int &nDec);	// Convert hex string to an integer
+	bool		HexToDec(const char*	szHex, int &nDec);	// Convert hex string to an integer
+	bool		HexToDec(const wchar_t*	szHex, int &nDec);	// Convert hex string to an integer
 	void		Concat(Variant &vOp2);					// Concats two variants (forces string if possible)
 	void		ChangeToDouble(void);					// Convert variant to a DOUBLE
 	void		ChangeToString(void);					// Convert variant to a STRING
@@ -130,7 +132,7 @@ public:
 
 	// Properties
 	int			type(void) const;					// Returns variant type
-	const char	*szValue(void);						// Returns string value
+	const wchar_t* szValue(void);						// Returns string value
 	double		fValue(void);						// Returns float (double) value
 	int			nValue(void);						// Returns int value
 	__int64		n64Value(void);						// Returns int64 value
@@ -182,9 +184,9 @@ private:
 
 	// There is always a string value even if not a string type so that
 	// szValue() can return a const pointer
-	char		*m_szValue;						// Value of string (NULL = not avail)
-	int			m_nStrLen;						// Length of the string (not including \0 - same as strlen() )
-	int			m_nStrAlloc;					// Amount of bytes allocated for the string
+	wchar_t		*m_szValue;						// Value of string (NULL = not avail)
+	size_t		m_nStrLen;						// Length of the string (not including \0 - same as strlen() )
+	size_t		m_nStrAlloc;					// Amount of bytes allocated for the string
 
 	int			m_nVarType;						// Type of this variant
 

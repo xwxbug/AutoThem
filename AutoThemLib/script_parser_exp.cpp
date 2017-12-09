@@ -185,13 +185,13 @@ char AutoIt_Script::m_PrecOpRules[OPR_MAXOPR][OPR_MAXOPR] = {
 
 void AutoIt_Script::Parser_ExpandEnvString(Variant &vString)
 {
-	AString	sResult;
-	AString sName;
-	char	szValue[AUT_MAX_LINESIZE+1];		// Temp variable value
-	int		nLine = 0;					// In and out string positions
-	char	ch = '\0';							// Current character
-	const	char *szLine = vString.szValue();
-	bool	bModified = false;
+	std::wstring	sResult;
+	std::wstring	sName;
+	wchar_t			szValue[AUT_MAX_LINESIZE+1];		// Temp variable value
+	size_t			nLine = 0;					// In and out string positions
+	wchar_t			ch = '\0';							// Current character
+	const wchar_t * szLine = vString.szValue();
+	bool			bModified = false;
 
 	// Perform loop until we hit the end of the input string
 	while ( (ch = szLine[nLine++]) != '\0')
@@ -209,7 +209,7 @@ void AutoIt_Script::Parser_ExpandEnvString(Variant &vString)
 			else
 			{
 				// This is the real start of an ENV variable, search for the matching % or \0 (error ish)
-				sName = "";
+				sName = L"";
 
 				while ( (szLine[nLine] != '%') && (szLine[nLine] != '\0') )
 					sName += szLine[nLine++];
@@ -219,7 +219,7 @@ void AutoIt_Script::Parser_ExpandEnvString(Variant &vString)
 
 				// Get the value of this variable and copy it to our result string
 				szValue[0] = '\0';				// Term just in case the GetEnv function fails
-				GetEnvironmentVariableA(sName.c_str(), szValue, AUT_MAX_LINESIZE);
+				GetEnvironmentVariableW(sName.c_str(), szValue, AUT_MAX_LINESIZE);
 
 				sResult += szValue;
 			}
@@ -247,9 +247,9 @@ void AutoIt_Script::Parser_ExpandVarString(Variant &vString)
 {
 	AString	sResult;
 	AString sName;
-	int		nLine = 0;					// In and out string positions
+	int		nLine = 0;							// In and out string positions
 	char	ch = '\0';							// Current character
-	const	char *szLine = vString.szValue();
+	const	char *szLine = Util_UNICODEtoANSIStr(vString.szValue()).c_str();
 	bool	bModified = false;
 	Variant	*pvTemp;
 	bool	bConst = false;
@@ -284,7 +284,7 @@ void AutoIt_Script::Parser_ExpandVarString(Variant &vString)
 				// Get the value of this variable and copy it to our result string
 				g_oVarTable.GetRef(sName.c_str(), &pvTemp, bConst);
 				if (pvTemp != NULL)
-					sResult += pvTemp->szValue();
+					sResult += Util_UNICODEtoANSIStr(pvTemp->szValue()).c_str();
 			}
 		}
 		else if ( ch == '@' )
@@ -311,7 +311,7 @@ void AutoIt_Script::Parser_ExpandVarString(Variant &vString)
 
 				// Get the value of this variable and copy it to our result string
 				if ( AUT_SUCCEEDED(Parser_EvaluateMacro(sName.c_str(), vTemp)) )
-					sResult += vTemp.szValue();
+					sResult += Util_UNICODEtoANSIStr(vTemp.szValue()).c_str();
 			}
 		}
 

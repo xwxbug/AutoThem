@@ -66,7 +66,7 @@
 AUT_RESULT AutoIt_Script::F_StringLen(VectorVariant &vParams, Variant &vResult)
 {
 	// $var = StringLen(<string>)
-	vResult = (int)strlen(vParams[0].szValue());
+	vResult = (int)wcslen(vParams[0].szValue());
 	return AUT_OK;
 
 } // StringLen()
@@ -80,13 +80,13 @@ AUT_RESULT AutoIt_Script::F_StringLeft(VectorVariant &vParams, Variant &vResult)
 {
 	// $var = StringLeft(<string>, <count>)
 
-	AString sInput = vParams[0].szValue();
-	int		nCount = vParams[1].nValue();
+	std::wstring sInput = vParams[0].szValue();
+	int			 nCount = vParams[1].nValue();
 
 	if (nCount > sInput.length())
 		nCount = sInput.length();
 
-	AString sResult;
+	std::wstring sResult;
 	sResult.assign( sInput, 0, nCount );
 
 	vResult = sResult.c_str();
@@ -103,13 +103,13 @@ AUT_RESULT AutoIt_Script::F_StringRight(VectorVariant &vParams, Variant &vResult
 {
 	// $var = StringRight(<string>, <count>)
 
-	AString sInput = vParams[0].szValue();
+	std::wstring sInput = vParams[0].szValue();
 	int		nCount = vParams[1].nValue();
 
 	if (nCount > sInput.length())
 		nCount = sInput.length();
 
-	AString	sResult;
+	std::wstring	sResult;
 	sResult.assign( sInput, sInput.length()-nCount, sInput.length() );
 
 	vResult = sResult.c_str();
@@ -126,8 +126,8 @@ AUT_RESULT AutoIt_Script::F_StringMid(VectorVariant &vParams, Variant &vResult)
 {
 	// $var = StringMid(<string>, <start> [, <count>])
 
-	AString sInput = vParams[0].szValue();
-	AString	sResult;
+	std::wstring	sInput = vParams[0].szValue();
+	std::wstring	sResult;
 	int		nCount =-1;
 	int		nStart = vParams[1].nValue() - 1;
 
@@ -153,8 +153,8 @@ AUT_RESULT AutoIt_Script::F_StringTrimLeft(VectorVariant &vParams, Variant &vRes
 {
 	// $var = StringTrimLeft(<string>, <count>)
 
-	AString sInput = vParams[0].szValue();
-	AString	sResult;
+	std::wstring sInput = vParams[0].szValue();
+	std::wstring sResult;
 	int		nEnd = sInput.length();
 	int		nStart = vParams[1].nValue();
 
@@ -180,8 +180,8 @@ AUT_RESULT AutoIt_Script::F_StringTrimRight(VectorVariant &vParams, Variant &vRe
 {
 	// $var = StringTrimRight(<string>, <count>)
 
-	AString sInput = vParams[0].szValue();
-	AString	sResult;
+	std::wstring sInput = vParams[0].szValue();
+	std::wstring sResult;
 	int		nEnd;
 
 	if ( vParams[1].nValue() >= sInput.length() )
@@ -213,7 +213,7 @@ AUT_RESULT AutoIt_Script::F_StringInStr(VectorVariant &vParams, Variant &vResult
 	bool	bCs = false;	// not case sensitive
 
 	// Get the string into our nice string class
-	AString sInput = vParams[0].szValue();
+	AString sInput = Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str();
 
 	switch (vParams.size())
 	{
@@ -234,7 +234,7 @@ AUT_RESULT AutoIt_Script::F_StringInStr(VectorVariant &vParams, Variant &vResult
 
 	case 2:
 		// do the find.
-		nPos = sInput.find_str( vParams[1].szValue(), bCs, nOccur );
+		nPos = sInput.find_str( Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str(), bCs, nOccur );
 	}
 
 	if (nPos == sInput.length())
@@ -255,7 +255,7 @@ AUT_RESULT AutoIt_Script::F_StringLower(VectorVariant &vParams, Variant &vResult
 {
 	// $var = StringLower(<string>)
 
-	AString sString = vParams[0].szValue();
+	AString sString = Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str();
 	sString.tolower();
 
 	vResult =  sString.c_str();
@@ -273,7 +273,7 @@ AUT_RESULT AutoIt_Script::F_StringUpper(VectorVariant &vParams, Variant &vResult
 {
 	// $var = StringUpper(<string>)
 
-	AString sString = vParams[0].szValue();
+	AString sString = Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str();
 	sString.toupper();
 
 	vResult =  sString.c_str();
@@ -290,19 +290,18 @@ AUT_RESULT AutoIt_Script::F_StringUpper(VectorVariant &vParams, Variant &vResult
 AUT_RESULT AutoIt_Script::F_StringStripCR(VectorVariant &vParams, Variant &vResult)
 {
 	// $var = StringStripCR(<string>)
-	char	*szString;
+	wchar_t	*szString;
 	size_t	len;
 
-	len = strlen(vParams[0].szValue());
-	szString = new char[len+1];
+	len = wcslen(vParams[0].szValue());
+	szString = new wchar_t[len+1];
 
-	strcpy(szString, vParams[0].szValue());
+	wcscpy(szString, vParams[0].szValue());
 	Util_StripCR(szString);
 
 	vResult = szString;							// Copy to vResult
 
 	delete [] szString;
-
 	return AUT_OK;
 
 } // StringStripCR()
@@ -315,17 +314,15 @@ AUT_RESULT AutoIt_Script::F_StringStripCR(VectorVariant &vParams, Variant &vResu
 AUT_RESULT AutoIt_Script::F_StringAddCR(VectorVariant &vParams, Variant &vResult)
 {
 	// $var = StringAddCR(<string>)
-	char	*szOut;
+	wchar_t	*szOut;
 
 	// How long will our new string buffer need to be?
-	szOut = new char[Util_AddCRSize(vParams[0].szValue())];
+	szOut = new wchar_t[Util_AddCRSize(vParams[0].szValue())];
 
 	Util_AddCR(vParams[0].szValue(), szOut);
 
 	vResult = szOut;							// Copy to vResult
-
 	delete [] szOut;
-
 	return AUT_OK;
 
 } // StringAddCR()
@@ -343,8 +340,8 @@ AUT_RESULT AutoIt_Script::F_StringAddCR(VectorVariant &vParams, Variant &vResult
 
 AUT_RESULT AutoIt_Script::F_StringReplace(VectorVariant &vParams, Variant &vResult)
 {
-	AString sOutput;
-	AString sTemp;
+	std::wstring sOutput;
+	std::wstring sTemp;
 	bool	bCaseSense;
 	int		nReplacesDone, nReplacesToDo;
 
@@ -355,7 +352,7 @@ AUT_RESULT AutoIt_Script::F_StringReplace(VectorVariant &vParams, Variant &vResu
 	{
 		nPos = vParams[1].nValue() -1;
 		if ( nPos < 0 ||
-				nPos + strlen(vParams[2].szValue()) > strlen(vParams[0].szValue()) )
+				nPos + wcslen(vParams[2].szValue()) > wcslen(vParams[0].szValue()) )
 		{
 			vResult = "";
 			SetFuncErrorCode(1);
@@ -364,7 +361,7 @@ AUT_RESULT AutoIt_Script::F_StringReplace(VectorVariant &vParams, Variant &vResu
 
 		sOutput.assign(vParams[0].szValue(), 0, nPos);
 		sOutput += vParams[2].szValue();
-		sTemp.assign(vParams[0].szValue(), nPos+(int)strlen(vParams[2].szValue()), (int)strlen(vParams[0].szValue()) );
+		sTemp.assign(vParams[0].szValue(), nPos+(int)wcslen(vParams[2].szValue()), (int)wcslen(vParams[0].szValue()) );
 		sOutput += sTemp;
 	}
 	else
@@ -392,16 +389,16 @@ AUT_RESULT AutoIt_Script::F_StringReplace(VectorVariant &vParams, Variant &vResu
 
 
 		// Get the input string into our nice string class
-		AString sInput = vParams[0].szValue();
+		std::wstring sInput =  vParams[0].szValue();
 
 		// Make a note of how long the search string is
-		iSearchStrLen = (int)strlen(vParams[1].szValue());
+		iSearchStrLen = (int)wcslen(vParams[1].szValue());
 
 		bool bLoop = true;
 		nReplacesDone = 0;
 		while (bLoop)
 		{
-			nPos = sInput.find_str(vParams[1].szValue(), bCaseSense);
+			nPos = Util_find_string_in_str(sInput.c_str(), vParams[1].szValue(), bCaseSense);
 			if (nPos == sInput.length())
 			{
 				sTemp.assign(sInput, 0, nPos);		// Copy remaining input
@@ -452,13 +449,14 @@ AUT_RESULT AutoIt_Script::F_StringReplace(VectorVariant &vParams, Variant &vResu
 
 AUT_RESULT AutoIt_Script::F_StringSplit(VectorVariant &vParams, Variant &vResult)
 {
-	int			iCount, iElements, iIndex;
-	int			nPos, nFlag;
-	char const	*pcSearch, *pcDelim, *pcTmp;	// pointer can change, but the pointed at stuff will not.
-	Variant		*pvTemp;
+	int				iCount, iElements, iIndex;
+	int				nPos, nFlag;
+	const wchar_t 	*pcSearch, *pcDelim, *pcTmp;	// pointer can change, but the pointed at stuff will not.
+	Variant	*		pvTemp;
 
 	// For speed, pre-allocate our string class to be same size as input string
-	AString		sElement((int)strlen(vParams[0].szValue()));
+	std::wstring		sElement;
+	sElement.resize(wcslen(vParams[0].szValue())+1);
 
 	if (vParams.size() < 3)
 		nFlag = 0;
@@ -473,7 +471,7 @@ AUT_RESULT AutoIt_Script::F_StringSplit(VectorVariant &vParams, Variant &vResult
 	{
 		iCount   = 0;
 		iIndex   = 1;
-		iElements = (int)strlen(pcSearch);
+		iElements = (int)wcslen(pcSearch);
 		Util_VariantArrayDim(&vResult, iElements+1);    // create the array , String length + 1
 		pvTemp = Util_VariantArrayGetRef(&vResult, 0);  // First element set to length
 		*pvTemp = iElements;
@@ -496,7 +494,7 @@ AUT_RESULT AutoIt_Script::F_StringSplit(VectorVariant &vParams, Variant &vResult
 		nPos = 0;
 		while (pcSearch[nPos] != '\0')
 		{
-			if ( strchr(pcDelim, pcSearch[nPos]) )
+			if ( wcschr(pcDelim, pcSearch[nPos]) )
 					++iCount;						// Increase count
 			++nPos;
 		}
@@ -505,10 +503,10 @@ AUT_RESULT AutoIt_Script::F_StringSplit(VectorVariant &vParams, Variant &vResult
 		iCount=0;
 		while (pcSearch != NULL)
 		{
-			pcSearch = strstr(pcSearch, pcDelim);
+			pcSearch = wcsstr(pcSearch, pcDelim);
 			if (pcSearch != NULL) {
 				++iCount;
-				pcSearch += strlen(pcDelim);	// skip by the length of the delimter
+				pcSearch += wcslen(pcDelim);	// skip by the length of the delimter
 			}
 		}
 		// reset back to starting place
@@ -548,7 +546,7 @@ AUT_RESULT AutoIt_Script::F_StringSplit(VectorVariant &vParams, Variant &vResult
 	iCount	= 0;
 	nPos	= 0;
 	iIndex	= 1;
-	sElement = "";
+	sElement = L"";
 	bool bStored;
 	while (iCount < iElements)
 	{
@@ -556,11 +554,11 @@ AUT_RESULT AutoIt_Script::F_StringSplit(VectorVariant &vParams, Variant &vResult
 		{
 		case 0:
 			bStored = false;
-			if ( strchr(pcDelim, pcSearch[nPos]) )	// This works as \0 is also matched so overrun is prevented
+			if ( wcschr(pcDelim, pcSearch[nPos]) )	// This works as \0 is also matched so overrun is prevented
 			{
 				pvTemp = Util_VariantArrayGetRef(&vResult, iIndex++);	//Next element
 				*pvTemp = sElement.c_str();
-				sElement = "";
+				sElement = L"";
 
 				bStored = true;
 				++iCount;						// Increase count
@@ -573,15 +571,15 @@ AUT_RESULT AutoIt_Script::F_StringSplit(VectorVariant &vParams, Variant &vResult
 			break;
 		case 1:
 			pcTmp = pcSearch;
-			pcSearch = strstr(pcSearch, pcDelim);
+			pcSearch = wcsstr(pcSearch, pcDelim);
 			if (pcSearch != NULL) {
-				sElement = "";
+				sElement = L"";
 
 				// copy all elements up to the beginning of the delimiter into sElement
 				for (;pcTmp != pcSearch; ++pcTmp)
 					sElement += *pcTmp;
 
-				pcSearch += strlen(pcDelim);	// skip by the length of the delimter
+				pcSearch += wcslen(pcDelim);	// skip by the length of the delimter
 			}
 			else
 				sElement = pcTmp;
@@ -611,7 +609,7 @@ AUT_RESULT AutoIt_Script::F_StringSplit(VectorVariant &vParams, Variant &vResult
 AUT_RESULT AutoIt_Script::F_StringStripWS(VectorVariant &vParams, Variant &vResult)
 {
 	int				i, flags=vParams[1].nValue();
-	register char	*pszTmp;
+	wchar_t	*		pszTmp;
 
 	if (flags == 0) {
 		// no changes
@@ -648,8 +646,8 @@ AUT_RESULT AutoIt_Script::F_StringStripWS(VectorVariant &vParams, Variant &vResu
 	}
 	if (flags & 2) {	// strip right
 		pszTmp = Util_StrCpyAlloc(vResult.szValue());
-		strcpy(pszTmp, vResult.szValue());
-		for (i=(int)strlen(pszTmp)-1; i>=0 && Util_IsSpace(pszTmp[i]); --i);	// loop until not whitespace
+		wcscpy(pszTmp, vResult.szValue());
+		for (i=(int)wcslen(pszTmp)-1; i>=0 && Util_IsSpace(pszTmp[i]); --i);	// loop until not whitespace
 		if (pszTmp[i+1]) {	// if I am not looking at the end of the string
 			pszTmp[i+1] = '\0';	// set to be end of string;
 			vResult = pszTmp;
@@ -696,7 +694,7 @@ AUT_RESULT AutoIt_Script::F_StringIsFloat(VectorVariant &vParams, Variant &vResu
 bool AutoIt_Script::StringIsFloat(Variant &vValue)
 {
 	int pos=0;
-	const char *pszValue = vValue.szValue();
+	const wchar_t *pszValue = vValue.szValue();
 
 	// manually built finite-state machine
 	enum parse_state {
@@ -705,7 +703,7 @@ bool AutoIt_Script::StringIsFloat(Variant &vValue)
 
 	if (pszValue == NULL || *pszValue == '\0')	// if string is NULL or empty;
 		return false;
-	else if (strcmp(pszValue, ".")==0 || strcmp(pszValue, "+.")==0 || strcmp(pszValue, "-.")==0)
+	else if (wcscmp(pszValue, L".")==0 || wcscmp(pszValue, L"+.")==0 || wcscmp(pszValue, L"-.")==0)
 		return false;
 
 	while (pszValue[pos]!='\0') {
@@ -771,8 +769,8 @@ AUT_RESULT AutoIt_Script::F_StringIsInt(VectorVariant &vParams, Variant &vResult
 
 bool AutoIt_Script::StringIsInt(Variant &vValue)
 {
-	int			pos = 0;
-	const char *pszValue = vValue.szValue();
+	int				pos = 0;
+	const wchar_t *	pszValue = vValue.szValue();
 
 	// manually built finite-state machine
 	enum parse_state {
@@ -781,7 +779,7 @@ bool AutoIt_Script::StringIsInt(Variant &vValue)
 
 	if (pszValue == NULL || *pszValue == '\0')	// if string is NULL or empty;
 		return false;
-	else if (strcmp(pszValue, "+")==0 || strcmp(pszValue, "-")==0)
+	else if (wcscmp(pszValue, L"+")==0 || wcscmp(pszValue, L"-")==0)
 		return false;
 
 	while (pszValue[pos]!='\0') {
@@ -833,7 +831,7 @@ AUT_RESULT AutoIt_Script::F_StringFormat(VectorVariant &vParams, Variant &vResul
 	// Make a copy of the format spec - we can't just use a pointer to the vParam because
 	// we modify it and that is NOT allowed (it is a const) but the compiler was not warning about
 	// it in this case
-	szFormat = Util_StrCpyAlloc(vParams[0].szValue());
+	szFormat = Util_StrCpyAlloc(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str());
 
 	for (n=1; n<=(int)iNumParam; ++n)				// to loop once more for concatenating after last format specification
 	{											// Append this to our output while not '%'
@@ -888,7 +886,7 @@ AUT_RESULT AutoIt_Script::F_StringFormat(VectorVariant &vParams, Variant &vResul
 						break;
 
 					case 's':
-						strncpy(szTemp, vParams[n].szValue(), 65535);
+						strncpy(szTemp, Util_UNICODEtoANSIStr(vParams[n].szValue()).c_str(), 65535);
 						szTemp[65535] = '\0';		// Make sure it is terminated if larger than 65535
 						sprintf(szTempOutput, &szFormat[i-1], szTemp);
 						break;

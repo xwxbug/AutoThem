@@ -66,13 +66,13 @@
 
 AUT_RESULT AutoIt_Script::F_IniRead(VectorVariant &vParams, Variant &vResult)
 {
-	char	szFileTemp[_MAX_PATH+1];
-	char	szBuffer[65535];					// Max ini file size is 65535 under 95
+	wchar_t	szFileTemp[_MAX_PATH+1];
+	wchar_t	szBuffer[65535];					// Max ini file size is 65535 under 95
 
 	// Get the fullpathname (ini functions need a full path)
 	Util_GetFullPathName(vParams[0].szValue(), szFileTemp);
 
-	GetPrivateProfileStringA(vParams[1].szValue(), vParams[2].szValue(),
+	GetPrivateProfileStringW(vParams[1].szValue(), vParams[2].szValue(),
 							vParams[3].szValue(), szBuffer, 65535, szFileTemp);
 
 	vResult = szBuffer;							// Return the string
@@ -89,14 +89,14 @@ AUT_RESULT AutoIt_Script::F_IniRead(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT AutoIt_Script::F_IniWrite(VectorVariant &vParams, Variant &vResult)
 {
-	char	szFileTemp[_MAX_PATH+1];
+	wchar_t	szFileTemp[_MAX_PATH+1];
 
 	// Get the fullpathname (ini functions need a full path)
 	Util_GetFullPathName(vParams[0].szValue(), szFileTemp);
 
 
-	if (WritePrivateProfileStringA(vParams[1].szValue(), vParams[2].szValue(), vParams[3].szValue(), szFileTemp))
-		WritePrivateProfileStringA(NULL, NULL, NULL, szFileTemp);	// Flush
+	if (WritePrivateProfileStringW(vParams[1].szValue(), vParams[2].szValue(), vParams[3].szValue(), szFileTemp))
+		WritePrivateProfileStringW(NULL, NULL, NULL, szFileTemp);	// Flush
 	else
 		vResult = 0;							// Error, default is 1
 
@@ -112,7 +112,7 @@ AUT_RESULT AutoIt_Script::F_IniWrite(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT AutoIt_Script::F_IniDelete(VectorVariant &vParams, Variant &vResult)
 {
-	char	szFileTemp[_MAX_PATH+1];
+	wchar_t	szFileTemp[_MAX_PATH+1];
 
 	// Get the fullpathname (ini functions need a full path)
 	Util_GetFullPathName(vParams[0].szValue(), szFileTemp);
@@ -121,16 +121,16 @@ AUT_RESULT AutoIt_Script::F_IniDelete(VectorVariant &vParams, Variant &vResult)
 	if (vParams.size() == 2)
 	{
 		// Delete entire section
-		if (WritePrivateProfileStringA(vParams[1].szValue(), NULL, NULL, szFileTemp))
-			WritePrivateProfileStringA(NULL, NULL, NULL, szFileTemp);	// Flush
+		if (WritePrivateProfileStringW(vParams[1].szValue(), NULL, NULL, szFileTemp))
+			WritePrivateProfileStringW(NULL, NULL, NULL, szFileTemp);	// Flush
 		else
 			vResult = 0;
 	}
 	else
 	{
 		// Just delete a key as usual
-		if (WritePrivateProfileStringA(vParams[1].szValue(), vParams[2].szValue(), NULL, szFileTemp))
-			WritePrivateProfileStringA(NULL, NULL, NULL, szFileTemp);	// Flush
+		if (WritePrivateProfileStringW(vParams[1].szValue(), vParams[2].szValue(), NULL, szFileTemp))
+			WritePrivateProfileStringW(NULL, NULL, NULL, szFileTemp);	// Flush
 		else
 			vResult = 0;
 	}
@@ -156,14 +156,14 @@ AUT_RESULT AutoIt_Script::F_IniReadSection(VectorVariant &vParams, Variant &vRes
 		KeyValue() : iKeyStart(0), iKeyEnd(0), iValueStart(0), iValueEnd(0), pNext(NULL) { }
 	};
 
-	char	szFileTemp[_MAX_PATH+1];
+	wchar_t	szFileTemp[_MAX_PATH+1];
 
 	// Get the fullpathname (ini functions need a full path)
 	Util_GetFullPathName(vParams[0].szValue(), szFileTemp);
 
 	int		i;
-	char	szBuffer[32767];	// Temporary buffer, max size of INI _section_ in 95 (See MSDN for GetPrivateProfileSection)
-	int		iRes = GetPrivateProfileSectionA(vParams[1].szValue(), szBuffer, 32767, szFileTemp);
+	wchar_t	szBuffer[32767];	// Temporary buffer, max size of INI _section_ in 95 (See MSDN for GetPrivateProfileSection)
+	int		iRes = GetPrivateProfileSectionW(vParams[1].szValue(), szBuffer, 32767, szFileTemp);
 
 	if (!iRes)
 		SetFuncErrorCode(1);
@@ -229,7 +229,7 @@ AUT_RESULT AutoIt_Script::F_IniReadSection(VectorVariant &vParams, Variant &vRes
 
 			pCurrent = pStart;	// Reset our pointer
 
-			AString sKey, sValue;
+			std::wstring sKey, sValue;
 			for (i = 0; i < count; ++i)
 			{
 				// Key
@@ -269,14 +269,14 @@ AUT_RESULT AutoIt_Script::F_IniReadSectionNames(VectorVariant &vParams, Variant 
 		Section() : iStart(0), iEnd(0), pNext(NULL) { }
 	};
 
-	char	szFileTemp[_MAX_PATH+1];
+	wchar_t	szFileTemp[_MAX_PATH+1];
 
 	// Get the fullpathname (ini functions need a full path)
 	Util_GetFullPathName(vParams[0].szValue(), szFileTemp);
 
 	int		i;
-	char	szBuffer[65535];	// Temporary buffer, max size of INI in 95 (According to F_IniRead above)
-	int		iRes = GetPrivateProfileSectionNamesA(szBuffer, 65535, szFileTemp);
+	wchar_t	szBuffer[65535];	// Temporary buffer, max size of INI in 95 (According to F_IniRead above)
+	int		iRes = GetPrivateProfileSectionNamesW(szBuffer, 65535, szFileTemp);
 
 	if (!iRes)
 		SetFuncErrorCode(1);
@@ -314,7 +314,7 @@ AUT_RESULT AutoIt_Script::F_IniReadSectionNames(VectorVariant &vParams, Variant 
 
 		pCurrent = pStart;	// Reset our pointer
 
-		AString sSection;
+		std::wstring sSection;
 		for (i = 0; i < count; ++i)
 		{
 			sSection.erase();
@@ -368,17 +368,17 @@ AUT_RESULT AutoIt_Script::F_FileOpen(VectorVariant &vParams, Variant &vResult)
 	switch ( nMode )
 	{
 		case 0:									// Read
-			fptr = fopen(vParams[0].szValue(), "rb");
+			fptr = _wfopen(vParams[0].szValue(), L"rb");
 			break;
 
 		case 1:									// Write (append)
-			fptr = fopen(vParams[0].szValue(), "a+b");
+			fptr = _wfopen(vParams[0].szValue(), L"a+b");
 			if (fptr)
 				fseek(fptr, 0, SEEK_END);
 			break;
 
 		case 2:									// Write (erase contents)
-			fptr = fopen(vParams[0].szValue(), "w+b");
+			fptr = _wfopen(vParams[0].szValue(), L"w+b");
 			break;
 
 		default:
@@ -475,7 +475,7 @@ AUT_RESULT AutoIt_Script::F_FileReadLine(VectorVariant &vParams, Variant &vResul
 	if (vParams[0].isString() == true)
 	{
 		// Filename being used - we must open and close this file during this function
-		fptr = fopen(vParams[0].szValue(), "rb");	// Open in read mode (binary)
+		fptr = _wfopen(vParams[0].szValue(), L"rb");	// Open in read mode (binary)
 		if (fptr == NULL)
 		{
 			SetFuncErrorCode(1);					// Not open for reading
@@ -592,7 +592,7 @@ AUT_RESULT AutoIt_Script::F_FileRead(VectorVariant &vParams, Variant &vResult)
 	if (vParams[0].isString() == true)
 	{
 		// Filename being used - we must open and close this file during this function
-		fptr = fopen(vParams[0].szValue(), "rb");	// Open in read mode (binary)
+		fptr = _wfopen(vParams[0].szValue(), L"rb");	// Open in read mode (binary)
 		if (fptr == NULL)
 		{
 			SetFuncErrorCode(1);					// Not open for reading
@@ -703,7 +703,7 @@ AUT_RESULT AutoIt_Script::FileWriteLine(VectorVariant &vParams, Variant &vResult
 	if (vParams[0].isString() == true)
 	{
 		// Filename being used - we must open and close this file during this function
-		fptr = fopen(vParams[0].szValue(), "a+b");	// Open in append mode
+		fptr = _wfopen(vParams[0].szValue(), L"a+b");	// Open in append mode
 		if (fptr == NULL)
 		{
 			vResult = 0;						// Not open for writing
@@ -740,12 +740,12 @@ AUT_RESULT AutoIt_Script::FileWriteLine(VectorVariant &vParams, Variant &vResult
 	}
 
 	// Append the line
-	fputs(vParams[1].szValue(), fptr);
+	fputws(vParams[1].szValue(), fptr);
 
 	if (bWriteLine)
 	{
 		// If the last character sent was NOT a CR or LF then add a standard DOS CRLF
-		nLen = (int)strlen(vParams[1].szValue());
+		nLen = (int)wcslen(vParams[1].szValue());
 		if (nLen)
 		{
 			if (vParams[1].szValue()[nLen-1] != '\r' && vParams[1].szValue()[nLen-1] != '\n')
@@ -885,9 +885,9 @@ AUT_RESULT AutoIt_Script::F_FileGetTime(VectorVariant &vParams, Variant &vResult
 	FILETIME		ftCreationTime,ftLastAccessTime,ftLastWriteTime;
 	int				n=0;
  	char			szTime[14+1];
-	WIN32_FIND_DATAA	findData;
+	WIN32_FIND_DATAW	findData;
 
-	fileIn = FindFirstFileA(vParams[0].szValue(),&findData);
+	fileIn = FindFirstFileW(vParams[0].szValue(),&findData);
 	if (fileIn != INVALID_HANDLE_VALUE)
 	{
 		ftCreationTime		= findData.ftCreationTime;
@@ -978,7 +978,7 @@ AUT_RESULT AutoIt_Script::F_FileSetTime (VectorVariant &vParams, Variant &vResul
 	FILETIME	ft;
 
 	uint		iNumParams = vParams.size();
-	const char	*szTime = vParams[1].szValue();
+	const char	*szTime = Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str();
 	bool		bRecurse;
 	wchar_t		szOldWorkingDir[_MAX_PATH+1];
 	char		szPath[_MAX_PATH+1];
@@ -1022,7 +1022,7 @@ AUT_RESULT AutoIt_Script::F_FileSetTime (VectorVariant &vParams, Variant &vResul
 	LocalFileTimeToFileTime(&ft, &ft);  // added this line to convert to proper UTC date/time
 
 	// Make a copy of the requested filename and remove trailing \s
-	strncpy(szPath, vParams[0].szValue(), _MAX_PATH);
+	strncpy(szPath, Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str(), _MAX_PATH);
 	szPath[_MAX_PATH] = '\0';
 	Util_StripTrailingDir(szPath);
 
@@ -1150,10 +1150,10 @@ AUT_RESULT AutoIt_Script::F_FileGetSize(VectorVariant &vParams, Variant &vResult
 	// Typical, the original version of the function works better than the newer one :)
 	// The FindFirstFile also works on in-use files
 
-	WIN32_FIND_DATAA	findData;
+	WIN32_FIND_DATAW	findData;
 
 	// Does the source file exist?
-	HANDLE hSearch = FindFirstFileA(vParams[0].szValue(), &findData);
+	HANDLE hSearch = FindFirstFileW(vParams[0].szValue(), &findData);
 
 	if (hSearch == INVALID_HANDLE_VALUE)
 	{
@@ -1213,29 +1213,29 @@ AUT_RESULT AutoIt_Script::F_FileSaveDialog(VectorVariant &vParams, Variant &vRes
 
 AUT_RESULT AutoIt_Script::FileDialog(VectorVariant &vParams, Variant &vResult, uint iNumParams, int nFlag)
 {
-	OPENFILENAMEA	ofn;
-	char			szFile[65536] = "";	// initalize entire array with null characters
-	char			szTitle[32768];
-	char			szDir[_MAX_PATH+1];
-	char			szFilter[(_MAX_PATH*2)+1];
-	AString			sFilter, sTemp, RET;
+	OPENFILENAMEW	ofn;
+	wchar_t			szFile[65536] = {0};	// initalize entire array with null characters
+	wchar_t			szTitle[32768] = {0};
+	wchar_t			szDir[_MAX_PATH+1];
+	wchar_t			szFilter[(_MAX_PATH*2)+1];
+	std::wstring	sFilter, sTemp, RET;
 	int				nPos1, nPos2;
 
-	strncpy(szTitle, vParams[0].szValue(), 32767);		// Get the title
+	wcsncpy(szTitle, vParams[0].szValue(), 32767);		// Get the title
 	szTitle[32767] = '\0';
 
-	strncpy(szDir, vParams[1].szValue(), _MAX_PATH);		// Get the directory
+	wcsncpy(szDir, vParams[1].szValue(), _MAX_PATH);		// Get the directory
 	szDir[_MAX_PATH] = '\0';
 
-	strncpy(szFilter, vParams[2].szValue(), _MAX_PATH);		// Get filter
+	wcsncpy(szFilter, vParams[2].szValue(), _MAX_PATH);		// Get filter
 	szFilter[_MAX_PATH] = '\0';
 
 	// Work out the nightmare double nulled c string that we need for the filter
 	// All Files (*.*)\0*.*\0\0
 	sTemp = szFilter;
-
-	nPos1 = sTemp.find_first_of("(");
-	nPos2 = sTemp.find_first_of(")");
+	
+	nPos1 = sTemp.find_first_of(L"(");
+	nPos2 = sTemp.find_first_of(L")");
 
 	if (nPos1 == sTemp.length() || nPos2 == sTemp.length() || nPos2 < nPos1)
 	{
@@ -1244,24 +1244,24 @@ AUT_RESULT AutoIt_Script::FileDialog(VectorVariant &vParams, Variant &vResult, u
 	}
 
 	sFilter.assign(sTemp, nPos1+1, nPos2);
-	nPos1 = (uint)strlen(szFilter);
+	nPos1 = (uint)wcslen(szFilter);
 	nPos2 = sFilter.length();
 	szFilter[nPos1++] = '\0';
-	strcpy(&szFilter[nPos1], sFilter.c_str());
+	wcscpy(&szFilter[nPos1], sFilter.c_str());
 	nPos1 = nPos1 + nPos2;
 	szFilter[nPos1++] = '\0';
 	szFilter[nPos1++] = '\0';
 
 	if (iNumParams > 4)	// fifth argument is filename
 	{
-		strcpy(szFile, vParams[4].szValue());
+		wcscpy(szFile, vParams[4].szValue());
 	}
 	else
 	{
 		szFile[0] = '\0';
 	}
-	ZeroMemory(&ofn, sizeof(OPENFILENAMEA));
-	ofn.lStructSize		= sizeof(OPENFILENAMEA);
+	ZeroMemory(&ofn, sizeof(OPENFILENAMEW));
+	ofn.lStructSize		= sizeof(OPENFILENAMEW);
 	ofn.hwndOwner		= NULL;
 	ofn.lpstrFilter		= szFilter;
 	ofn.lpstrTitle		= szTitle;
@@ -1290,17 +1290,17 @@ AUT_RESULT AutoIt_Script::FileDialog(VectorVariant &vParams, Variant &vResult, u
 
 	if(nFlag == 1)
 	{
-		if(GetOpenFileNameA(&ofn))
+		if(GetOpenFileNameW(&ofn))
 		{
 			if(nPos2 & OFN_ALLOWMULTISELECT)
 			{
-				size_t len=strlen(ofn.lpstrFile);
+				size_t len=wcslen(ofn.lpstrFile);
 				RET = ofn.lpstrFile;
 				ofn.lpstrFile+=len+1;
 				while(ofn.lpstrFile[0])
 				{
-					len=strlen(ofn.lpstrFile);
-					RET += "|";
+					len=wcslen(ofn.lpstrFile);
+					RET += L"|";
 					RET += ofn.lpstrFile;
 					ofn.lpstrFile+=len+1;
 				}
@@ -1314,7 +1314,7 @@ AUT_RESULT AutoIt_Script::FileDialog(VectorVariant &vParams, Variant &vResult, u
 	}
 	else
 	{
-		if(GetSaveFileNameA(&ofn))
+		if(GetSaveFileNameW(&ofn))
 			vResult = ofn.lpstrFile;
 		else
 			SetFuncErrorCode(1);				// Default is 0
@@ -1376,7 +1376,7 @@ AUT_RESULT AutoIt_Script::F_FileSelectFolder (VectorVariant &vParams, Variant &v
 			ULONG        chEaten;
 			ULONG        dwAttributes;
 			OLECHAR olePath[MAX_PATH];			// wide-char version of path name
-			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, vParams[1].szValue(), -1, olePath, MAX_PATH);
+			wcscpy(olePath, vParams[1].szValue());
 			pDF->ParseDisplayName(NULL,NULL,olePath,&chEaten,&pIdl,&dwAttributes);
 			pDF->Release();
 			browseInfo.pidlRoot = pIdl;
@@ -1387,10 +1387,10 @@ AUT_RESULT AutoIt_Script::F_FileSelectFolder (VectorVariant &vParams, Variant &v
 
 	browseInfo.hwndOwner		= NULL;
 	browseInfo.pszDisplayName	= Result;
-	strcpy(szText,vParams[0].szValue());
+	strcpy(szText,Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str());
 	browseInfo.lpszTitle		= szText;
 	browseInfo.lpfn				= BrowseForFolderProc;
-	strcpy(szInitialDir,vParams[3].szValue());
+	strcpy(szInitialDir, Util_UNICODEtoANSIStr(vParams[3].szValue()).c_str());
 	browseInfo.lParam			= (LPARAM)szInitialDir;
 	browseInfo.ulFlags			= flag;
 	browseInfo.iImage			= iImage;
@@ -1454,22 +1454,22 @@ int CALLBACK AutoIt_Script::BrowseForFolderProc(HWND hWnd,UINT iMsg,LPARAM lPara
 
 AUT_RESULT AutoIt_Script::F_DriveMapAdd(VectorVariant &vParams, Variant &vResult)
 {
-	NETRESOURCEA	nr;
+	NETRESOURCEW	nr;
 	DWORD		res;
 	uint		iNumParams = vParams.size();
 	DWORD		dwFlags = 0;
-	char		szBuffer[256];
+	wchar_t		szBuffer[256];
 	DWORD		dwBuffersize = 256;
 	DWORD		dwResult;
 
 	// Get the basic parameters
-	char *szDrive = Util_StrCpyAlloc(vParams[0].szValue());
-	char *szRemote = Util_StrCpyAlloc(vParams[1].szValue());
+	wchar_t *szDrive = Util_StrCpyAlloc(vParams[0].szValue());
+	wchar_t *szRemote = Util_StrCpyAlloc(vParams[1].szValue());
 
 	if (iNumParams > 2)
 		dwFlags = vParams[2].nValue();
 
-	if (!strnicmp(szDrive, "LPT", 3))
+	if (!wcsnicmp(szDrive, L"LPT", 3))
 		nr.dwType = RESOURCETYPE_PRINT;
 	else
 		nr.dwType = RESOURCETYPE_DISK;
@@ -1486,13 +1486,13 @@ AUT_RESULT AutoIt_Script::F_DriveMapAdd(VectorVariant &vParams, Variant &vResult
 		dwFlags |= CONNECT_REDIRECT;			// Use first available drive
 
 	if (iNumParams < 4 || g_oVersion.IsWin9x())
-		res = WNetUseConnectionA(NULL,&nr, NULL, NULL, dwFlags, szBuffer, &dwBuffersize, &dwResult); // Use current user/password
+		res = WNetUseConnectionW(NULL,&nr, NULL, NULL, dwFlags, szBuffer, &dwBuffersize, &dwResult); // Use current user/password
 	else
 	{
 		if (iNumParams == 4)
-			res = WNetUseConnectionA(NULL,&nr, NULL, vParams[3].szValue(), dwFlags, szBuffer, &dwBuffersize, &dwResult);
+			res = WNetUseConnectionW(NULL,&nr, NULL, vParams[3].szValue(), dwFlags, szBuffer, &dwBuffersize, &dwResult);
 		else
-			 res = WNetUseConnectionA(NULL,&nr, vParams[4].szValue(), vParams[3].szValue(), dwFlags, szBuffer, &dwBuffersize, &dwResult);
+			 res = WNetUseConnectionW(NULL,&nr, vParams[4].szValue(), vParams[3].szValue(), dwFlags, szBuffer, &dwBuffersize, &dwResult);
 	}
 
 	if(res != NO_ERROR)
@@ -1541,7 +1541,7 @@ AUT_RESULT AutoIt_Script::F_DriveMapAdd(VectorVariant &vParams, Variant &vResult
 
 AUT_RESULT AutoIt_Script::F_DriveMapDel(VectorVariant &vParams, Variant &vResult)
 {
-	DWORD res = WNetCancelConnection2A(vParams[0].szValue(), CONNECT_UPDATE_PROFILE, TRUE);
+	DWORD res = WNetCancelConnection2W(vParams[0].szValue(), CONNECT_UPDATE_PROFILE, TRUE);
 
 	if(res != NO_ERROR)
 	{
@@ -1564,10 +1564,10 @@ AUT_RESULT AutoIt_Script::F_DriveMapDel(VectorVariant &vParams, Variant &vResult
 
 AUT_RESULT AutoIt_Script::F_DriveMapGet(VectorVariant &vParams, Variant &vResult)
 {
-	char	szBuffer[1024];
+	wchar_t	szBuffer[1024];
 	DWORD	dwLen = 1024;
 
-	DWORD res = WNetGetConnectionA(vParams[0].szValue(), szBuffer, &dwLen);
+	DWORD res = WNetGetConnectionW(vParams[0].szValue(), szBuffer, &dwLen);
 
 	if(res != NO_ERROR)
 	{
@@ -1596,7 +1596,7 @@ AUT_RESULT AutoIt_Script::F_DriveGetDrive(VectorVariant &vParams, Variant &vResu
 	UINT	uiFlag, uiTemp;
 	Variant	*pvTemp;
 
-	sBuffer = vParams[0].szValue();
+	sBuffer = Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str();
 
 	if ( sBuffer.stricmp("all")==0 )
 		uiFlag = 99;
@@ -1660,8 +1660,8 @@ AUT_RESULT AutoIt_Script::F_DriveGetDrive(VectorVariant &vParams, Variant &vResu
 
 AUT_RESULT AutoIt_Script::F_CDTray(VectorVariant &vParams, Variant &vResult)
 {
-	AString sDrive	= vParams[0].szValue();
-	AString sAction = vParams[1].szValue();
+	AString sDrive	= Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str();
+	AString sAction = Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str();
 
 	sAction.tolower();							// Convert action to lower case (for comparision)
 
@@ -1707,11 +1707,11 @@ AUT_RESULT AutoIt_Script::F_DriveGetType(VectorVariant &vParams, Variant &vResul
 
 	SetErrorMode(SEM_FAILCRITICALERRORS);		// So a:\ does not ask for disk
 
-	AString sTemp = vParams[0].szValue();
+	std::wstring sTemp = vParams[0].szValue();
 	if ( sTemp[sTemp.length()-1] != '\\' )	// Attempt to fix the parameter passed
-		sTemp += "\\";
+		sTemp += L"\\";
 
-	if ( (uiType = GetDriveTypeA(sTemp.c_str())) != DRIVE_NO_ROOT_DIR )
+	if ( (uiType = GetDriveTypeW(sTemp.c_str())) != DRIVE_NO_ROOT_DIR )
 	{
 		switch (uiType)
 		{
@@ -1751,32 +1751,16 @@ AUT_RESULT AutoIt_Script::F_DriveSpaceTotal(VectorVariant &vParams, Variant &vRe
 {
 	SetErrorMode(SEM_FAILCRITICALERRORS);		// So a:\ does not ask for disk
 
-	AString sTemp = vParams[0].szValue();
-	if ( sTemp[sTemp.length()-1] != '\\' )	// Attemp to fix the parameter passed
-		sTemp += "\\";
+	std::wstring sTemp = vParams[0].szValue();
+	if (sTemp[sTemp.length() - 1] != '\\')	// Attemp to fix the parameter passed
+		sTemp += L"\\";
 
 	ULARGE_INTEGER	uiTotal, uiFree, uiUsed;
-	DWORD			dwSectPerClust, dwBytesPerSect, dwFreeClusters, dwTotalClusters;
-	typedef BOOL (WINAPI *MyGetDiskFreeSpaceEx)(LPCSTR, PULARGE_INTEGER, PULARGE_INTEGER, PULARGE_INTEGER);
-	MyGetDiskFreeSpaceEx	lpfnGetDiskFreeSpaceEx;
-
-	if ( (lpfnGetDiskFreeSpaceEx = (MyGetDiskFreeSpaceEx)GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "GetDiskFreeSpaceExA")) != NULL )
-	{
-		if ( lpfnGetDiskFreeSpaceEx(sTemp.c_str(),&uiFree,&uiTotal,&uiUsed) )
-			vResult = double((__int64)(uiTotal.QuadPart))/(1024.*1024.);
-		else
-			SetFuncErrorCode(1);
-	}
+	if (GetDiskFreeSpaceExW(sTemp.c_str(), &uiFree, &uiTotal, &uiUsed))
+		vResult = double((__int64)(uiTotal.QuadPart)) / (1024.*1024.);
 	else
-	{
-		if ( GetDiskFreeSpaceA(sTemp.c_str(), &dwSectPerClust, &dwBytesPerSect, &dwFreeClusters, &dwTotalClusters) )
-			vResult = double((__int64)(dwTotalClusters * dwSectPerClust * dwBytesPerSect))/(1024.*1024.);
-		else
-			SetFuncErrorCode(1);
-	}
-
+		SetFuncErrorCode(1);
 	return AUT_OK;
-
 } // DriveSpaceTotal()
 
 
@@ -1788,34 +1772,16 @@ AUT_RESULT AutoIt_Script::F_DriveSpaceTotal(VectorVariant &vParams, Variant &vRe
 AUT_RESULT AutoIt_Script::F_DriveSpaceFree(VectorVariant &vParams, Variant &vResult)
 {
 	SetErrorMode(SEM_FAILCRITICALERRORS);		// So a:\ does not ask for disk
-
-	AString sTemp = vParams[0].szValue();
-	if ( sTemp[sTemp.length()-1] != '\\' )	// Attemp to fix the parameter passed
-		sTemp += "\\";
+	std::wstring sTemp = vParams[0].szValue();
+	if (sTemp[sTemp.length() - 1] != '\\')	// Attemp to fix the parameter passed
+		sTemp += L"\\";
 
 	ULARGE_INTEGER	uiTotal, uiFree, uiUsed;
-	DWORD			dwSectPerClust, dwBytesPerSect, dwFreeClusters, dwTotalClusters;
-	typedef BOOL (WINAPI *MyGetDiskFreeSpaceEx)(LPCSTR, PULARGE_INTEGER, PULARGE_INTEGER, PULARGE_INTEGER);
-	MyGetDiskFreeSpaceEx	lpfnGetDiskFreeSpaceEx;
-//	int				test = ERROR_SUCCESS;
-
-	if ( (lpfnGetDiskFreeSpaceEx = (MyGetDiskFreeSpaceEx)GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "GetDiskFreeSpaceExA")) != NULL )
-	{
-		if ( lpfnGetDiskFreeSpaceEx(sTemp.c_str(),&uiFree,&uiTotal,&uiUsed) )
-			vResult = double((__int64)(uiFree.QuadPart))/(1024.*1024.);
-		else
-			SetFuncErrorCode(1);
-	}
+	if (GetDiskFreeSpaceExW(sTemp.c_str(), &uiFree, &uiTotal, &uiUsed))
+		vResult = double((__int64)(uiFree.QuadPart)) / (1024.*1024.);
 	else
-	{
-		if ( GetDiskFreeSpaceA(sTemp.c_str(), &dwSectPerClust, &dwBytesPerSect, &dwFreeClusters, &dwTotalClusters) )
-			vResult = double((__int64)(dwFreeClusters * dwSectPerClust * dwBytesPerSect))/(1024.*1024.);
-		else
-			SetFuncErrorCode(1);
-	}
-
+		SetFuncErrorCode(1);
 	return AUT_OK;
-
 } // DriveSpaceFree()
 
 
@@ -1828,14 +1794,14 @@ AUT_RESULT AutoIt_Script::F_DriveStatus(VectorVariant &vParams, Variant &vResult
 {
 	SetErrorMode(SEM_FAILCRITICALERRORS);		// So a:\ does not ask for disk
 
-	AString sTemp = vParams[0].szValue();
+	std::wstring sTemp = vParams[0].szValue();
 	if ( sTemp[sTemp.length()-1] != '\\' )	// Attemp to fix the parameter passed
-		sTemp += "\\";
+		sTemp += L"\\";
 
 	DWORD			dwSectPerClust, dwBytesPerSect, dwFreeClusters, dwTotalClusters;
 	int				test = ERROR_SUCCESS;
 
-	if ( !(GetDiskFreeSpaceA(sTemp.c_str(), &dwSectPerClust, &dwBytesPerSect, &dwFreeClusters, &dwTotalClusters)) )
+	if ( !(GetDiskFreeSpaceW(sTemp.c_str(), &dwSectPerClust, &dwBytesPerSect, &dwFreeClusters, &dwTotalClusters)) )
 			test = GetLastError();
 
 	switch (test)
@@ -1871,17 +1837,17 @@ AUT_RESULT AutoIt_Script::F_DriveStatus(VectorVariant &vParams, Variant &vResult
 
 AUT_RESULT AutoIt_Script::F_DriveGetFileSystem(VectorVariant &vParams, Variant &vResult)
 {
-	char			szBuffer[256];
-	char			szFileSystem[256];
+	wchar_t			szBuffer[256];
+	wchar_t			szFileSystem[256];
 	DWORD			dwVolumeSerial,dwMaxCL,dwFSFlags;
 
 	SetErrorMode(SEM_FAILCRITICALERRORS);		// So a:\ does not ask for disk
 
-	AString sTemp = vParams[0].szValue();
+	std::wstring sTemp = vParams[0].szValue();
 	if ( sTemp[sTemp.length()-1] != '\\' )	// Attemp to fix the parameter passed
-		sTemp += "\\";
+		sTemp += L"\\";
 
-	if ( GetVolumeInformationA(sTemp.c_str(),szBuffer,255,&dwVolumeSerial,&dwMaxCL,&dwFSFlags,szFileSystem,255) )
+	if ( GetVolumeInformationW(sTemp.c_str(),szBuffer,255,&dwVolumeSerial,&dwMaxCL,&dwFSFlags,szFileSystem,255) )
 		vResult = szFileSystem;
 	else
 		SetFuncErrorCode(1);
@@ -1898,19 +1864,19 @@ AUT_RESULT AutoIt_Script::F_DriveGetFileSystem(VectorVariant &vParams, Variant &
 
 AUT_RESULT AutoIt_Script::F_DriveGetSerial(VectorVariant &vParams, Variant &vResult)
 {
-	char			szBuffer[256];
-	char			szFileSystem[256];
+	wchar_t			szBuffer[256];
+	wchar_t			szFileSystem[256];
 	DWORD			dwVolumeSerial,dwMaxCL,dwFSFlags;
 
 	SetErrorMode(SEM_FAILCRITICALERRORS);		// So a:\ does not ask for disk
 
-	AString sTemp = vParams[0].szValue();
+	std::wstring sTemp = vParams[0].szValue();
 	if ( sTemp[sTemp.length()-1] != '\\' )	// Attemp to fix the parameter passed
-		sTemp += "\\";
+		sTemp += L"\\";
 
-	if ( GetVolumeInformationA(sTemp.c_str(),szBuffer,255,&dwVolumeSerial,&dwMaxCL,&dwFSFlags,szFileSystem,255) )
+	if ( GetVolumeInformationW(sTemp.c_str(),szBuffer,255,&dwVolumeSerial,&dwMaxCL,&dwFSFlags,szFileSystem,255) )
 	{
-		sprintf(szBuffer,"%lu",dwVolumeSerial);
+		swprintf(szBuffer,L"%lu",dwVolumeSerial);
 		vResult = szBuffer;
 	}
 	else
@@ -1928,17 +1894,17 @@ AUT_RESULT AutoIt_Script::F_DriveGetSerial(VectorVariant &vParams, Variant &vRes
 
 AUT_RESULT AutoIt_Script::F_DriveGetLabel(VectorVariant &vParams, Variant &vResult)
 {
-	char			szBuffer[256];
-	char			szFileSystem[256];
+	wchar_t			szBuffer[256];
+	wchar_t			szFileSystem[256];
 	DWORD			dwVolumeSerial,dwMaxCL,dwFSFlags;
 
 	SetErrorMode(SEM_FAILCRITICALERRORS);		// So a:\ does not ask for disk
 
-	AString sTemp = vParams[0].szValue();
+	std::wstring sTemp = vParams[0].szValue();
 	if ( sTemp[sTemp.length()-1] != '\\' )	// Attemp to fix the parameter passed
-		sTemp += "\\";
+		sTemp += L"\\";
 
-	if ( GetVolumeInformationA(sTemp.c_str(),szBuffer,255,&dwVolumeSerial,&dwMaxCL,&dwFSFlags,szFileSystem,255) )
+	if ( GetVolumeInformationW(sTemp.c_str(),szBuffer,255,&dwVolumeSerial,&dwMaxCL,&dwFSFlags,szFileSystem,255) )
 		vResult = szBuffer;
 	else
 		SetFuncErrorCode(1);
@@ -1955,13 +1921,13 @@ AUT_RESULT AutoIt_Script::F_DriveGetLabel(VectorVariant &vParams, Variant &vResu
 
 AUT_RESULT AutoIt_Script::F_DriveSetLabel(VectorVariant &vParams, Variant &vResult)
 {
-	AString sTemp = vParams[0].szValue();
-	if ( sTemp[sTemp.length()-1] != '\\' )	// Attemp to fix the parameter passed
-		sTemp += "\\";
+	std::wstring sTemp = vParams[0].szValue();
+	if ( sTemp[sTemp.length()-1] != L'\\' )	// Attemp to fix the parameter passed
+		sTemp += L"\\";
 
 	SetErrorMode(SEM_FAILCRITICALERRORS);		// So a:\ does not ask for disk
 
-	if ( !SetVolumeLabelA(sTemp.c_str(),vParams[1].szValue()) )
+	if ( !SetVolumeLabelW(sTemp.c_str(),vParams[1].szValue()) )
 		vResult = 0;							// Default is 1
 
 	return AUT_OK;
@@ -1981,17 +1947,17 @@ AUT_RESULT AutoIt_Script::F_FileCreateShortcut(VectorVariant &vParams, Variant &
 	bool			bShift, bControl, bAlt, bWin;
 	UINT			mods = 0;
 	UINT			vk;
-	IShellLinkA*		psl;
+	IShellLinkW*		psl;
 	IPersistFile*	ppf;
 	WORD			wsz[MAX_PATH];
-	AString			sLink = vParams[1].szValue();
+	AString			sLink = Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str();
 
 	// Add .lnk to the end of the lnk file - unless already present
 	if (sLink.find_str(".lnk", false) == sLink.length() )
 		sLink += ".lnk";
 
 	CoInitialize(NULL);
-	if( SUCCEEDED(CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLinkA, (LPVOID *)&psl)) )
+	if( SUCCEEDED(CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLinkW, (LPVOID *)&psl)) )
 	{
 		psl->SetPath(vParams[0].szValue());
 		if ( iNumParams > 2 )
@@ -2009,7 +1975,7 @@ AUT_RESULT AutoIt_Script::F_FileCreateShortcut(VectorVariant &vParams, Variant &
 		if ( iNumParams > 6 && vParams[6].isTrue())		// Hotkey may be blank
 		{
 			// Get the virtual key code and modifiers
-			if (m_oSendKeys.GetSingleVKandMods(vParams[6].szValue(), vk, bShift, bControl, bAlt, bWin) == true)
+			if (m_oSendKeys.GetSingleVKandMods(Util_UNICODEtoANSIStr(vParams[6].szValue()).c_str(), vk, bShift, bControl, bAlt, bWin) == true)
 			{
 				if (bShift)
 					mods |= HOTKEYF_SHIFT;
@@ -2063,7 +2029,7 @@ AUT_RESULT AutoIt_Script::F_FileGetShortcut(VectorVariant &vParams, Variant &vRe
 	char			szIconLocation[MAX_PATH+1];
 	int				nIconIndex;
 	int				nShowCmd;
-	AString			sLink = vParams[0].szValue();
+	AString			sLink = Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str();
 
 	// Add .lnk to the end of the lnk file - unless already present
 	if (sLink.find_str(".lnk", false) == sLink.length())
@@ -2215,7 +2181,7 @@ AUT_RESULT AutoIt_Script::F_FileInstall(VectorVariant &vParams, Variant &vResult
 	else
 		bOverwrite = false;
 
-	if (Util_CopyFile(vParams[0].szValue(), vParams[1].szValue(), bOverwrite, false) == false)
+	if (Util_CopyFile(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str(), Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str(), bOverwrite, false) == false)
 		vResult = 0;							// Error (default is 1)
 
 	return AUT_OK;
@@ -2234,15 +2200,15 @@ AUT_RESULT AutoIt_Script::F_FileInstall(VectorVariant &vParams, Variant &vResult
 
 AUT_RESULT AutoIt_Script::F_FileRecycle(VectorVariant &vParams, Variant &vResult)
 {
-	SHFILEOPSTRUCTA	FileOp;
+	SHFILEOPSTRUCTW	FileOp;
 
-	char			szFileTemp[_MAX_PATH+2];
+	wchar_t			szFileTemp[_MAX_PATH+2];
 
 	// Get the fullpathname - required for UNDO to work
 	Util_GetFullPathName(vParams[0].szValue(), szFileTemp);
 
 	// We must also make it a double nulled string *sigh*
-	szFileTemp[strlen(szFileTemp)+1] = '\0';
+	szFileTemp[wcslen(szFileTemp)+1] = '\0';
 
 	// set to known values - Corrects crash
 	FileOp.hNameMappings = NULL;
@@ -2254,7 +2220,7 @@ AUT_RESULT AutoIt_Script::F_FileRecycle(VectorVariant &vParams, Variant &vResult
 	FileOp.pFrom = szFileTemp;
 	FileOp.wFunc = FO_DELETE;
 	FileOp.fFlags = FOF_SILENT | FOF_ALLOWUNDO | FOF_NOCONFIRMATION;
-	if ( SHFileOperationA(&FileOp) )
+	if ( SHFileOperationW(&FileOp) )
 		vResult = 0;								// Error, default is 1
 
 	return AUT_OK;
@@ -2271,35 +2237,12 @@ AUT_RESULT AutoIt_Script::F_FileRecycle(VectorVariant &vParams, Variant &vResult
 
 AUT_RESULT AutoIt_Script::F_FileRecycleEmpty(VectorVariant &vParams, Variant &vResult)
 {
-typedef HRESULT (WINAPI *MySHEmptyRecycleBin)(HWND, LPCSTR, DWORD);
-
-	const char			*szPath = NULL;
-	MySHEmptyRecycleBin	lpfnEmpty;
-	HINSTANCE			hinstLib;
-
-	hinstLib = LoadLibraryW(L"shell32.dll");
-	if (hinstLib == NULL)
-	{
-		vResult = 0;
-		return AUT_OK;
-	}
-
-	// Get the address of all the functions we require
- 	lpfnEmpty		= (MySHEmptyRecycleBin)GetProcAddress(hinstLib, "SHEmptyRecycleBinA");
-	if (lpfnEmpty == NULL)
-	{
-		vResult = 0;
-		return AUT_OK;
-	}
-
+	const wchar_t	*szPath = NULL;
 	if (vParams.size() != 0)
 		szPath = vParams[0].szValue();
-
-	if (lpfnEmpty(NULL, szPath, SHERB_NOCONFIRMATION | SHERB_NOPROGRESSUI | SHERB_NOSOUND) != S_OK)
+	if (SHEmptyRecycleBinW(NULL, szPath, SHERB_NOCONFIRMATION | SHERB_NOPROGRESSUI | SHERB_NOSOUND) != S_OK)
 		vResult = 0;								// Error, default is 1
-
 	return AUT_OK;
-
 } // FileRecycleEmpty()
 
 
@@ -2314,7 +2257,7 @@ AUT_RESULT AutoIt_Script::F_FileGetAttrib (VectorVariant &vParams, Variant &vRes
 
 	//aRet = "";
 
-	dwTemp = GetFileAttributesA(vParams[0].szValue());
+	dwTemp = GetFileAttributesW(vParams[0].szValue());
 	if ( dwTemp != INVALID_FILE_ATTRIBUTES )
 	{
 		if (dwTemp & FILE_ATTRIBUTE_READONLY)
@@ -2357,7 +2300,7 @@ AUT_RESULT AutoIt_Script::F_FileSetAttrib (VectorVariant &vParams, Variant &vRes
 	DWORD		dwAdd = 0;
 	DWORD		dwRemove = 0;
 
-	const char	*szAttribs = vParams[1].szValue();
+	const char	*szAttribs = Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str();
 	int			nPos = 0;
 	int			nOp = 1;						// Default is +
 	bool		bRecurse;
@@ -2421,7 +2364,7 @@ AUT_RESULT AutoIt_Script::F_FileSetAttrib (VectorVariant &vParams, Variant &vRes
 
 
 	// Make a copy of the requested filename and remove trailing \s
-	strncpy(szPath, vParams[0].szValue(), _MAX_PATH);
+	strncpy(szPath, Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str(), _MAX_PATH);
 	szPath[_MAX_PATH] = '\0';
 	Util_StripTrailingDir(szPath);
 
@@ -2553,9 +2496,9 @@ bool AutoIt_Script::FileSetAttrib_recurse (const char *szIn, DWORD dwAdd, DWORD 
 
 AUT_RESULT AutoIt_Script::F_FileGetVersion (VectorVariant &vParams, Variant &vResult)
 {
-	char	szVersion[43+1];					// See Util_FileGetVersion for 43+1
+	wchar_t	szVersion[43+1];					// See Util_FileGetVersion for 43+1
 
-	char *szFile = Util_StrCpyAlloc(vParams[0].szValue());
+	wchar_t *szFile = Util_StrCpyAlloc(vParams[0].szValue());
 
 	if (Util_GetFileVersion(szFile, szVersion) == true)
 	{
@@ -2581,10 +2524,10 @@ AUT_RESULT AutoIt_Script::F_FileGetVersion (VectorVariant &vParams, Variant &vRe
 
 AUT_RESULT	AutoIt_Script::F_FileFindFirstFile(VectorVariant &vParams, Variant &vResult)
 {
-	WIN32_FIND_DATAA		wfd;
+	WIN32_FIND_DATAW		wfd;
 	int					nFreeHandle;
 
-	HANDLE hFind = FindFirstFileA(vParams[0].szValue(), &wfd);
+	HANDLE hFind = FindFirstFileW(vParams[0].szValue(), &wfd);
 
 	if ( hFind == INVALID_HANDLE_VALUE )
 	{
@@ -2613,7 +2556,7 @@ AUT_RESULT	AutoIt_Script::F_FileFindFirstFile(VectorVariant &vParams, Variant &v
 	m_FileHandleDetails[nFreeHandle]->nType = AUT_FILEFIND;		// File find type
 	m_FileHandleDetails[nFreeHandle]->hFind = hFind;			// Store handle
 
-	char *szFind = Util_StrCpyAlloc(wfd.cFileName);					// Store the first find result
+	char *szFind = Util_StrCpyAlloc(Util_UNICODEtoANSIStr(wfd.cFileName).c_str());					// Store the first find result
 	m_FileHandleDetails[nFreeHandle]->szFind = szFind;			// Store string
 
 	++m_nNumFileHandles;
@@ -2678,7 +2621,7 @@ AUT_RESULT	AutoIt_Script::F_FileFindNextFile(VectorVariant &vParams, Variant &vR
 
 AUT_RESULT AutoIt_Script::F_FileGetLongName(VectorVariant &vParams, Variant &vResult)
 {
-	char	szLFN[_MAX_PATH+1];
+	wchar_t	szLFN[_MAX_PATH+1];
 
 	if (Util_GetLongFileName(vParams[0].szValue(), szLFN) == true)
 		vResult = szLFN;
@@ -2699,9 +2642,9 @@ AUT_RESULT AutoIt_Script::F_FileGetLongName(VectorVariant &vParams, Variant &vRe
 
 AUT_RESULT AutoIt_Script::F_FileGetShortName(VectorVariant &vParams, Variant &vResult)
 {
-	char	szBuffer[_MAX_PATH+1];
+	wchar_t	szBuffer[_MAX_PATH+1];
 
-	if ( GetShortPathNameA(vParams[0].szValue(),szBuffer,_MAX_PATH) )
+	if ( GetShortPathNameW(vParams[0].szValue(),szBuffer,_MAX_PATH) )
 		vResult = szBuffer;
 	else
 	{
@@ -2790,7 +2733,7 @@ AUT_RESULT AutoIt_Script::F_FileCopy(VectorVariant &vParams, Variant &vResult)
 	if (vParams.size() >= 3 && vParams[2].nValue() != 0)
 		bTemp = true;
 
-	if (Util_CopyFile(vParams[0].szValue(), vParams[1].szValue(), bTemp, false) == false)
+	if (Util_CopyFile(Util_UNICODEtoANSIStr( vParams[0].szValue()).c_str(), Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str(), bTemp, false) == false)
 		vResult = 0;				// Error, default is 1
 
 	return AUT_OK;
@@ -2804,7 +2747,7 @@ AUT_RESULT AutoIt_Script::F_FileCopy(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT AutoIt_Script::F_FileDelete(VectorVariant &vParams, Variant &vResult)
 {
-	if (Util_DeleteFile(vParams[0].szValue()) == false)
+	if (Util_DeleteFile(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str()) == false)
 		vResult = 0;							// Error (default is 1)
 	return AUT_OK;
 
@@ -2822,7 +2765,7 @@ AUT_RESULT AutoIt_Script::F_FileMove(VectorVariant &vParams, Variant &vResult)
 	if (vParams.size() >= 3 && vParams[2].nValue() != 0)
 		bTemp = true;
 
-	if (Util_CopyFile(vParams[0].szValue(), vParams[1].szValue(), bTemp, true) == false)
+	if (Util_CopyFile(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str(), Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str(), bTemp, true) == false)
 		vResult = 0;				// Error, default is 1
 
 	return AUT_OK;
@@ -2836,7 +2779,7 @@ AUT_RESULT AutoIt_Script::F_FileMove(VectorVariant &vParams, Variant &vResult)
 
 AUT_RESULT AutoIt_Script::F_FileChangeDir(VectorVariant &vParams, Variant &vResult)
 {
-	if ( SetCurrentDirectoryA(vParams[0].szValue()) == 0 )
+	if ( SetCurrentDirectoryW(vParams[0].szValue()) == 0 )
 		vResult = 0;						// Failed, default is 1
 	return AUT_OK;
 
@@ -2872,7 +2815,7 @@ AUT_RESULT AutoIt_Script::F_DirMove(VectorVariant &vParams, Variant &vResult)
 AUT_RESULT AutoIt_Script::F_DirGetSize(VectorVariant &vParams, Variant &vResult)
 {
 	uint	iNumParams	= vParams.size();
-	AString sInputPath	= vParams[0].szValue();
+	AString sInputPath	= Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str();
 	bool	bExt		= false;					// Extended mode
 	bool	bRec		= true;						// Recurse subdirectories
 	__int64	nSize		= 0;

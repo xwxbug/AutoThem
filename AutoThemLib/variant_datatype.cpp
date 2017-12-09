@@ -52,7 +52,7 @@
 #endif
 
 #include "variant_datatype.h"
-
+#include "utility.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Copy constructor
@@ -81,8 +81,8 @@ Variant::Variant(const Variant &vOp2):
 		case VAR_STRING:
 			m_nStrLen	= vOp2.m_nStrLen;
 			m_nStrAlloc = m_nStrLen + 1;
-			m_szValue	= new char[m_nStrAlloc];
-			strcpy(m_szValue, vOp2.m_szValue);
+			m_szValue	= new wchar_t[m_nStrAlloc];
+			wcscpy(m_szValue, vOp2.m_szValue);
 			break;
 
 		case VAR_REFERENCE:
@@ -201,11 +201,49 @@ bool Variant::HexToDec(const char *szHex, int &nDec)
 } // Util_ConvDec()
 
 
+bool Variant::HexToDec(const wchar_t* szHex, int &nDec)
+{
+	// Really crappy hex conversion
+	size_t i = wcslen(szHex) - 1;
+
+	nDec = 0;
+	int nMult = 1;
+	for (int j = 0; j < 8; ++j)
+	{
+		if (i < 0)
+			break;
+
+		if (szHex[i] >= '0' && szHex[i] <= '9')
+			nDec += (szHex[i] - '0') * nMult;
+		else if (szHex[i] >= 'A' && szHex[i] <= 'F')
+			nDec += (((szHex[i] - 'A')) + 10) * nMult;
+		else if (szHex[i] >= 'a' && szHex[i] <= 'f')
+			nDec += (((szHex[i] - 'a')) + 10) * nMult;
+		else
+		{
+			nDec = 0;					// Set value as 0
+			return false;
+		}
+
+		--i;
+		nMult = nMult * 16;
+	}
+
+	if (i != -1)
+	{
+		nDec = 0;
+		return false;
+	}
+	else
+		return true;
+
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // szValue()
 ///////////////////////////////////////////////////////////////////////////////
 
-const char * Variant::szValue(void)
+const wchar_t * Variant::szValue(void)
 {
 	// If this is not a string type AND no generated string exists then
 	// generate one
@@ -243,7 +281,7 @@ double Variant::fValue(void)
 				return (double)nTemp;
 			}
 			else
-				return atof(m_szValue);
+				return _wtof(m_szValue);
 
 		case VAR_REFERENCE:
 		case VAR_ARRAY:
@@ -282,7 +320,7 @@ int	Variant::nValue(void)
 				return nTemp;
 			}
 			else
-				return atoi(m_szValue);
+				return _wtoi(m_szValue);
 
 		case VAR_REFERENCE:
 		case VAR_ARRAY:
@@ -321,7 +359,7 @@ __int64	Variant::n64Value(void)
 				return (__int64)nTemp;
 			}
 			else
-				return _atoi64(m_szValue);
+				return _wtoi64(m_szValue);
 
 		case VAR_REFERENCE:
 		case VAR_ARRAY:
@@ -375,7 +413,7 @@ void Variant::GenStringValue(void)
 	if (m_nVarType == VAR_STRING)
 		return;									// Already a current string, nothing to do
 
-	char	szTemp[128];						// It is unclear just how many 0000 the sprintf function can add...
+	wchar_t	szTemp[128];						// It is unclear just how many 0000 the sprintf function can add...
 
 	InvalidateStringValue();					// Remove previous string cache
 
@@ -383,18 +421,18 @@ void Variant::GenStringValue(void)
 	{
 		case VAR_INT32:
 			// Work out the string representation of the number
-			itoa(m_nValue, szTemp, 10);
+			_itow(m_nValue, szTemp, 10);
 			break;
 
 		case VAR_INT64:
 			// Work out the string representation of the number
-			_i64toa(m_n64Value, szTemp, 10);
+			_i64tow(m_n64Value, szTemp, 10);
 			break;
 
 
 		case VAR_DOUBLE:
 			// Work out the string representation of the number, don't print trailing zeros
-			sprintf(szTemp, "%.15g", m_fValue);		// Have at least 15 digits after the . for precision (default is 6)
+			swprintf(szTemp, L"%.15g", m_fValue);		// Have at least 15 digits after the . for precision (default is 6)
 			break;
 
 		case VAR_REFERENCE:
@@ -403,15 +441,15 @@ void Variant::GenStringValue(void)
 			break;
 
 		case VAR_HWND:
-			sprintf(szTemp, "%p", m_hWnd);
+			swprintf(szTemp, L"%p", m_hWnd);
 			break;
 	}
 
 	// Copy from szTemp
-	m_nStrLen = (int)strlen(szTemp);
+	m_nStrLen = wcslen(szTemp);
 	m_nStrAlloc = m_nStrLen + 1;
-	m_szValue = new char[m_nStrAlloc];
-	strcpy(m_szValue, szTemp);
+	m_szValue = new wchar_t[m_nStrAlloc];
+	wcscpy(m_szValue, szTemp);
 
 } // GenStringValue()
 
@@ -470,8 +508,8 @@ Variant& Variant::operator=(const Variant &vOp2)
 		case VAR_STRING:
 			m_nStrLen = vOp2.m_nStrLen;
 			m_nStrAlloc = vOp2.m_nStrAlloc;
-			m_szValue = new char[m_nStrAlloc];	// Same as the ALLOCATED size of the other string
-			strcpy(m_szValue, vOp2.m_szValue);
+			m_szValue = new wchar_t[m_nStrAlloc];	// Same as the ALLOCATED size of the other string
+			wcscpy(m_szValue, vOp2.m_szValue);
 			break;
 
 		case VAR_REFERENCE:
@@ -592,15 +630,36 @@ Variant& Variant::operator=(const char *szOp2)
 	m_nVarType	= VAR_STRING;
 
 	// Copy the string
-	m_nStrLen = (int)strlen(szOp2);
-	m_nStrAlloc =  m_nStrLen + 1;
-	m_szValue = new char[m_nStrAlloc];
-	strcpy(m_szValue, szOp2);
+	m_nStrLen = strlen(szOp2);
+	m_nStrAlloc =  (m_nStrLen + 1)*4;
+	m_szValue = new wchar_t[m_nStrAlloc];
+	wcscpy(m_szValue, Util_ANSItoUNICODEStr(szOp2).c_str());
 
 	return *this;								// Return this object that generated the call
 
 } // operator=()
 
+
+  ///////////////////////////////////////////////////////////////////////////////
+  // Overloaded operator=() for wstrings
+  ///////////////////////////////////////////////////////////////////////////////
+
+Variant& Variant::operator=(const wchar_t *szOp2)
+{
+	// Free any local array data / zero array variables
+	ReInit();
+
+	m_nVarType = VAR_STRING;
+
+	// Copy the string
+	m_nStrLen = wcslen(szOp2);
+	m_nStrAlloc = m_nStrLen + 1;
+	m_szValue = new wchar_t[m_nStrAlloc];
+	wcscpy(m_szValue, szOp2);
+
+	return *this;								// Return this object that generated the call
+
+} // operator=()
 
 ///////////////////////////////////////////////////////////////////////////////
 // Overloaded operator=() for pointers
@@ -992,7 +1051,7 @@ bool operator==(Variant &vOp1, Variant &vOp2)
 	{
 		case VAR_STRING:
 			// Do string conparision
-			if (!stricmp(vOp1.m_szValue, vOp2.m_szValue) )
+			if (!wcsicmp(vOp1.m_szValue, vOp2.m_szValue) )
 				return true;
 			else
 				return false;
@@ -1038,7 +1097,7 @@ bool Variant::StringCompare(Variant &vOp2)
 {
 	// Compare the two string portions - even if they aren't string variants
 	// Do string comparision
-	if (!strcmp(szValue(), vOp2.szValue()) )
+	if (!wcscmp(szValue(), vOp2.szValue()) )
 		return true;
 	else
 		return false;
@@ -1056,7 +1115,7 @@ bool operator>(Variant &vOp1, Variant &vOp2)
 	{
 		case VAR_STRING:
 			// Do string conparision
-			if (stricmp(vOp1.m_szValue, vOp2.m_szValue) > 0)
+			if (wcsicmp(vOp1.m_szValue, vOp2.m_szValue) > 0)
 				return true;
 			else
 				return false;
@@ -1095,7 +1154,7 @@ bool operator<(Variant &vOp1, Variant &vOp2)
 	{
 		case VAR_STRING:
 			// Do string conparision
-			if (stricmp(vOp1.m_szValue, vOp2.m_szValue) < 0)
+			if (wcsicmp(vOp1.m_szValue, vOp2.m_szValue) < 0)
 				return true;
 			else
 				return false;
@@ -1329,8 +1388,8 @@ void Variant::ChangeToString(void)
 
 void Variant::Concat(Variant &vOp2)
 {
-	char	*szTempString;
-	const char	*szOp2;
+	wchar_t*		szTempString;
+	const wchar_t*	szOp2;
 
 	// This must be a string type
 	ChangeToString();
@@ -1348,16 +1407,16 @@ void Variant::Concat(Variant &vOp2)
 		// Create DOUBLE the space we need (room to grow)
 		m_nStrAlloc = (m_nStrLen << 1) + 1;
 
-		szTempString	= new char[m_nStrAlloc];
+		szTempString	= new wchar_t[m_nStrAlloc];
 
-		strcpy(szTempString, m_szValue);
-		strcat(szTempString, szOp2);
+		wcscpy(szTempString, m_szValue);
+		wcscat(szTempString, szOp2);
 
 		delete [] m_szValue;
 		m_szValue	= szTempString;
 	}
 	else
-		strcat(m_szValue, szOp2);		// We have the space - no need to realloc
+		wcscat(m_szValue, szOp2);		// We have the space - no need to realloc
 
 
 } // Concat()

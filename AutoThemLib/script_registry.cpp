@@ -170,7 +170,7 @@ AUT_RESULT AutoIt_Script::F_RegRead(VectorVariant &vParams, Variant &vResult)
 	// Set the default return value to ""
 	vResult = "";
 
-	RegSplitKey(vParams[0].szValue(), sCname, sKey, sSubKey);
+	RegSplitKey(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str(), sCname, sKey, sSubKey);
 
 	// Get the main key name
 	if ( RegGetMainKey(sKey, hMainKey) == false)
@@ -204,7 +204,7 @@ AUT_RESULT AutoIt_Script::F_RegRead(VectorVariant &vParams, Variant &vResult)
 	}
 
 	// Read the value and determine the type
-	if ( RegQueryValueExA(hRegKey, vParams[1].szValue(), NULL, &dwType, NULL, NULL) != ERROR_SUCCESS )
+	if ( RegQueryValueExW(hRegKey, vParams[1].szValue(), NULL, &dwType, NULL, NULL) != ERROR_SUCCESS )
 	{
 		// Error reading key
 		SetFuncErrorCode(-1);					// Default is 0
@@ -228,7 +228,7 @@ AUT_RESULT AutoIt_Script::F_RegRead(VectorVariant &vParams, Variant &vResult)
 	{
 		case REG_SZ:
 		case REG_EXPAND_SZ:
-			if (RegQueryValueExA(hRegKey, vParams[1].szValue(), NULL, NULL, (LPBYTE)szRegBuffer, &dwRes) == ERROR_SUCCESS)
+			if (RegQueryValueExA(hRegKey, Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str(), NULL, NULL, (LPBYTE)szRegBuffer, &dwRes) == ERROR_SUCCESS)
 			{
 				// dwres is number of chars INCLUDING the null char IF present, according to docs we must ensure termination
 				szRegBuffer[dwRes] = '\0';
@@ -240,7 +240,7 @@ AUT_RESULT AutoIt_Script::F_RegRead(VectorVariant &vParams, Variant &vResult)
 			break;
 
 		case REG_MULTI_SZ:
-			if (RegQueryValueExA(hRegKey, vParams[1].szValue(), NULL, NULL, (LPBYTE)szRegBuffer, &dwRes) == ERROR_SUCCESS)
+			if (RegQueryValueExA(hRegKey, Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str(), NULL, NULL, (LPBYTE)szRegBuffer, &dwRes) == ERROR_SUCCESS)
 			{
 				szRegBuffer[dwRes] = '\0';	// Ensure termination
 
@@ -264,12 +264,12 @@ AUT_RESULT AutoIt_Script::F_RegRead(VectorVariant &vParams, Variant &vResult)
 
 		case REG_DWORD:
 			dwRes = sizeof(dwBuf);
-			RegQueryValueExA(hRegKey, vParams[1].szValue(), NULL, NULL, (LPBYTE)&dwBuf, &dwRes);
+			RegQueryValueExA(hRegKey, Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str(), NULL, NULL, (LPBYTE)&dwBuf, &dwRes);
 			vResult = (double)dwBuf;	// Unsigned DWORD possibly too big for signed int
 			break;
 
 		case REG_BINARY:
-			if (RegQueryValueExA(hRegKey, vParams[1].szValue(), NULL, NULL, (LPBYTE)szRegBuffer, &dwRes) == ERROR_SUCCESS)
+			if (RegQueryValueExW(hRegKey, vParams[1].szValue(), NULL, NULL, (LPBYTE)szRegBuffer, &dwRes) == ERROR_SUCCESS)
 			{
 				szBinary = new char[(dwRes * 2) + 1];	// Each byte will turned into 2 digits, plus a final null
 				szBinary[0] = '\0';
@@ -330,7 +330,7 @@ AUT_RESULT AutoIt_Script::F_RegWrite(VectorVariant &vParams, Variant &vResult)
 	}
 
 
-	RegSplitKey(vParams[0].szValue(), sCname, sKey, sSubKey);
+	RegSplitKey(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str(), sCname, sKey, sSubKey);
 
 	// Get the main key name
 	if ( RegGetMainKey(sKey, hMainKey) == false)
@@ -376,13 +376,13 @@ AUT_RESULT AutoIt_Script::F_RegWrite(VectorVariant &vParams, Variant &vResult)
 
 
 	// Get the length of the value (even if it's a dword...) to avoid multiple strlen calls later
-	nLen = (int)strlen(vParams[3].szValue());
+	nLen = (int)wcslen(vParams[3].szValue());
 
 	// Write the registry differently depending on type of variable we are writing
-	if (!stricmp(vParams[2].szValue(), "REG_EXPAND_SZ"))
+	if (!wcsicmp(vParams[2].szValue(), L"REG_EXPAND_SZ"))
 	{
-		strcpy(szRegBuffer, vParams[3].szValue());
-		if ( RegSetValueExA(hRegKey, vParams[1].szValue(), 0, REG_EXPAND_SZ, (CONST BYTE *)vParams[3].szValue(), (DWORD)nLen+1 ) != ERROR_SUCCESS )
+		wcscpy((wchar_t*)szRegBuffer, vParams[3].szValue());
+		if ( RegSetValueExW(hRegKey, vParams[1].szValue(), 0, REG_EXPAND_SZ, (CONST BYTE *)vParams[3].szValue(), (DWORD)nLen+1 ) != ERROR_SUCCESS )
 			vResult = 0;						// Default is 1
 
 		RegCloseKey(hRegKey);
@@ -391,10 +391,10 @@ AUT_RESULT AutoIt_Script::F_RegWrite(VectorVariant &vParams, Variant &vResult)
 		return AUT_OK;
 	}
 
-	if (!stricmp(vParams[2].szValue(), "REG_SZ"))
+	if (!wcsicmp(vParams[2].szValue(), L"REG_SZ"))
 	{
-		strcpy(szRegBuffer, vParams[3].szValue());
-		if ( RegSetValueExA(hRegKey, vParams[1].szValue(), 0, REG_SZ, (CONST BYTE *)vParams[3].szValue(), (DWORD)nLen+1 ) != ERROR_SUCCESS )
+		wcscpy((wchar_t*)szRegBuffer, vParams[3].szValue());
+		if ( RegSetValueExW(hRegKey, vParams[1].szValue(), 0, REG_SZ, (CONST BYTE *)vParams[3].szValue(), (DWORD)nLen+1 ) != ERROR_SUCCESS )
 			vResult = 0;						// Default is 1
 
 		RegCloseKey(hRegKey);
@@ -403,9 +403,9 @@ AUT_RESULT AutoIt_Script::F_RegWrite(VectorVariant &vParams, Variant &vResult)
 		return AUT_OK;
 	}
 
-	if (!stricmp(vParams[2].szValue(), "REG_MULTI_SZ"))
+	if (!wcsicmp(vParams[2].szValue(), L"REG_MULTI_SZ"))
 	{
-		Util_Strncpy(szRegBuffer, vParams[3].szValue(), 65535+1);	// Leave space for another null
+		Util_Strncpy(szRegBuffer, Util_UNICODEtoANSIStr(vParams[3].szValue()).c_str(), 65535+1);	// Leave space for another null
 		// Change all \n to \0 then double null terminate
 		nLen = (int)strlen(szRegBuffer);
 		szRegBuffer[nLen] = '\0';				// Double null
@@ -422,7 +422,7 @@ AUT_RESULT AutoIt_Script::F_RegWrite(VectorVariant &vParams, Variant &vResult)
 		if (nLen != 0)
 			nLen = nLen + 2;
 
-		if ( RegSetValueExA(hRegKey, vParams[1].szValue(), 0, REG_MULTI_SZ, (CONST BYTE *)szRegBuffer, (DWORD)nLen ) != ERROR_SUCCESS )
+		if ( RegSetValueExA(hRegKey, Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str(), 0, REG_MULTI_SZ, (CONST BYTE *)szRegBuffer, (DWORD)nLen ) != ERROR_SUCCESS )
 			vResult = 0;						// Default is 1
 
 		RegCloseKey(hRegKey);
@@ -432,10 +432,10 @@ AUT_RESULT AutoIt_Script::F_RegWrite(VectorVariant &vParams, Variant &vResult)
 	}
 
 
-	if (!stricmp(vParams[2].szValue(), "REG_DWORD"))
+	if (!wcsicmp(vParams[2].szValue(), L"REG_DWORD"))
 	{
 		dwBuf = vParams[3].nValue(); // Safe to use nvalue as the conversion TO dword happens ok
-		if ( RegSetValueExA(hRegKey, vParams[1].szValue(), 0, REG_DWORD, (CONST BYTE *)&dwBuf, sizeof(dwBuf) ) != ERROR_SUCCESS )
+		if ( RegSetValueExA(hRegKey, Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str(), 0, REG_DWORD, (CONST BYTE *)&dwBuf, sizeof(dwBuf) ) != ERROR_SUCCESS )
 			vResult = 0;						// Default is 1
 
 		RegCloseKey(hRegKey);
@@ -445,9 +445,9 @@ AUT_RESULT AutoIt_Script::F_RegWrite(VectorVariant &vParams, Variant &vResult)
 	}
 
 	// REG_BINARY - eeek
-	if (!stricmp(vParams[2].szValue(), "REG_BINARY"))
+	if (!wcsicmp(vParams[2].szValue(), L"REG_BINARY"))
 	{
-		szTemp = vParams[3].szValue();			// Easier access to the string
+		szTemp = Util_UNICODEtoANSIStr(vParams[3].szValue()).c_str();			// Easier access to the string
 
 		// Stringlength must be a multiple of 2
 		if ( (nLen % 2) != 0 )
@@ -486,7 +486,7 @@ AUT_RESULT AutoIt_Script::F_RegWrite(VectorVariant &vParams, Variant &vResult)
 			szRegBuffer[j++] = (char)nVal;
 		}
 
-		if ( RegSetValueExA(hRegKey, vParams[1].szValue(), 0, REG_BINARY, (CONST BYTE *)szRegBuffer, (DWORD)j ) != ERROR_SUCCESS )
+		if ( RegSetValueExA(hRegKey, Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str(), 0, REG_BINARY, (CONST BYTE *)szRegBuffer, (DWORD)j ) != ERROR_SUCCESS )
 			vResult = 0;						// Default is 1
 
 		RegCloseKey(hRegKey);
@@ -553,7 +553,7 @@ AUT_RESULT AutoIt_Script::F_RegDelete(VectorVariant &vParams, Variant &vResult)
 	AString	sCname, sKey, sSubKey, sValue;
 	bool	Success;
 
-	RegSplitKey(vParams[0].szValue(), sCname, sKey, sSubKey);
+	RegSplitKey(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str(), sCname, sKey, sSubKey);
 
 	// Get the main key name
 	if ( RegGetMainKey(sKey, hMainKey) == false)
@@ -606,7 +606,7 @@ AUT_RESULT AutoIt_Script::F_RegDelete(VectorVariant &vParams, Variant &vResult)
 
 		case 2:
 			// Remove Value
-			LONG lRes = RegDeleteValueA(hRegKey, vParams[1].szValue());
+			LONG lRes = RegDeleteValueW(hRegKey, vParams[1].szValue());
 			if (lRes != ERROR_SUCCESS)
 			{
 				if (lRes == ERROR_FILE_NOT_FOUND)
@@ -643,7 +643,7 @@ AUT_RESULT AutoIt_Script::F_RegEnumKey(VectorVariant &vParams, Variant &vResult)
 	// Set the default return value to ""
 	vResult = "";
 
-	RegSplitKey(vParams[0].szValue(), sCname, sKey, sSubKey);
+	RegSplitKey(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str(), sCname, sKey, sSubKey);
 
 	// Get the main key name
 	if ( RegGetMainKey(sKey, hMainKey) == false)
@@ -713,7 +713,7 @@ AUT_RESULT AutoIt_Script::F_RegEnumVal(VectorVariant &vParams, Variant &vResult)
 	// Set the default return value to ""
 	vResult = "";
 
-	RegSplitKey(vParams[0].szValue(), sCname, sKey, sSubKey);
+	RegSplitKey(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str(), sCname, sKey, sSubKey);
 
 	// Get the main key name
 	if ( RegGetMainKey(sKey, hMainKey) == false)

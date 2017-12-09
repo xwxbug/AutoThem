@@ -263,7 +263,7 @@ bool AutoIt_Script::Win_WindowSearch(bool bFirstOnly)
 	// If we are in mode 4 then do some other checks
 	if (m_nWindowSearchMatchMode == 4)
 	{
-		if (m_vWindowSearchTitle.szValue()[0] == '\0' || !stricmp(m_vWindowSearchTitle.szValue(), "last") )
+		if (m_vWindowSearchTitle.szValue()[0] == '\0' || !wcsicmp(m_vWindowSearchTitle.szValue(), L"last") )
 		{
 			if (m_WindowSearchHWND)					// Make sure that there HAS been a previous match
 			{
@@ -273,13 +273,13 @@ bool AutoIt_Script::Win_WindowSearch(bool bFirstOnly)
 			else
 				return false;
 		}
-		else if (!stricmp(m_vWindowSearchTitle.szValue(), "active") )
+		else if (!wcsicmp(m_vWindowSearchTitle.szValue(), L"active") )
 		{
 			m_WindowSearchHWND = GetForegroundWindow();
 			Win_WindowSearchAddToList(m_WindowSearchHWND);	// Create a 1 entry list for those functions that use it
 			return true;
 		}
-		else if ( !strnicmp(m_vWindowSearchTitle.szValue(), "handle=", 7) )	// handle=
+		else if ( !wcsnicmp(m_vWindowSearchTitle.szValue(), L"handle=", 7) )	// handle=
 		{
 			int		nTemp;
 
@@ -331,17 +331,17 @@ BOOL CALLBACK AutoIt_Script::Win_WindowSearchProc(HWND hWnd, LPARAM lParam)
 
 BOOL AutoIt_Script::Win_WindowSearchProcHandler(HWND hWnd, LPARAM lParam)
 {
-	char	szBuffer[1024+1] = "";				// 1024 chars is more than enough for a title
+	wchar_t	szBuffer[1024 + 1] = {0};				// 1024 chars is more than enough for a title
 
 	// Get the window text
-	GetWindowTextA(hWnd, szBuffer, 1024);
+	GetWindowTextW(hWnd, szBuffer, 1024);
 
 	m_WindowSearchHWND = hWnd;					// Save the handle of the window for use in the WinTextSearch()
 
 	switch (m_nWindowSearchMatchMode)
 	{
 		case 1:
-			if ( !strncmp(m_vWindowSearchTitle.szValue(), szBuffer, strlen(m_vWindowSearchTitle.szValue()) ) )
+			if ( !wcsncmp(m_vWindowSearchTitle.szValue(), szBuffer, wcslen(m_vWindowSearchTitle.szValue()) ) )
 			{
 				if ( Win_WindowSearchText() == true && m_bWindowSearchFirstOnly == true)
 					return FALSE;				// No need to search any more
@@ -349,7 +349,7 @@ BOOL AutoIt_Script::Win_WindowSearchProcHandler(HWND hWnd, LPARAM lParam)
 			break;
 
 		case 2:
-			if ( strstr(szBuffer, m_vWindowSearchTitle.szValue()) != NULL )
+			if ( wcsstr(szBuffer, m_vWindowSearchTitle.szValue()) != NULL )
 			{
 				if ( Win_WindowSearchText() == true && m_bWindowSearchFirstOnly == true)
 					return FALSE;				// No need to search any more
@@ -357,7 +357,7 @@ BOOL AutoIt_Script::Win_WindowSearchProcHandler(HWND hWnd, LPARAM lParam)
 			break;
 
 		case 3:
-			if ( !strcmp(szBuffer, m_vWindowSearchTitle.szValue()) )
+			if ( !wcscmp(szBuffer, m_vWindowSearchTitle.szValue()) )
 			{
 				if ( Win_WindowSearchText() == true && m_bWindowSearchFirstOnly == true)
 					return FALSE;				// No need to search any more
@@ -366,23 +366,23 @@ BOOL AutoIt_Script::Win_WindowSearchProcHandler(HWND hWnd, LPARAM lParam)
 
 		case 4:
 			// valid options are "classname=", "handle=", "", "all", "regexp="
-			if ( !strnicmp(m_vWindowSearchTitle.szValue(), "classname=", 10) )	// classname=
+			if ( !wcsnicmp(m_vWindowSearchTitle.szValue(), L"classname=", 10) )	// classname=
 			{
-				GetClassNameA(hWnd, szBuffer, 1024);
-				if (!strcmp(szBuffer, &m_vWindowSearchTitle.szValue()[10]) )
+				GetClassNameW(hWnd, szBuffer, 1024);
+				if (!wcscmp(szBuffer, &m_vWindowSearchTitle.szValue()[10]) )
 				{
 					if ( Win_WindowSearchText() == true && m_bWindowSearchFirstOnly == true)
 						return FALSE;			// No need to search any more
 				}
 			}
-			else if ( !stricmp(m_vWindowSearchTitle.szValue(), "all") )
+			else if ( !wcsicmp(m_vWindowSearchTitle.szValue(), L"all") )
 			{
 				//AUT_MSGBOX("here", "here")
 				// We don't care about the title, so try matching the text
 				if ( Win_WindowSearchText() == true && m_bWindowSearchFirstOnly == true)
 					return FALSE;				// No need to search any more
 			}
-			else if ( !strncmp(m_vWindowSearchTitle.szValue(), szBuffer, strlen(m_vWindowSearchTitle.szValue())) ) // Try default case 1
+			else if ( !wcsncmp(m_vWindowSearchTitle.szValue(), szBuffer, wcslen(m_vWindowSearchTitle.szValue())) ) // Try default case 1
 			{
 				if ( Win_WindowSearchText() == true && m_bWindowSearchFirstOnly == true)
 					return FALSE;				// No need to search any more
@@ -432,7 +432,7 @@ BOOL CALLBACK AutoIt_Script::Win_WindowSearchTextProc(HWND hWnd, LPARAM lParam)
 
 BOOL AutoIt_Script::Win_WindowSearchTextProcHandler(HWND hWnd, LPARAM lParam)
 {
-	char	szBuffer[AUT_WINTEXTBUFFER+1];
+	wchar_t	szBuffer[AUT_WINTEXTBUFFER+1];
 	int		nLen;
 
 	// WM_GETTEXT seems to get more info
@@ -443,7 +443,7 @@ BOOL AutoIt_Script::Win_WindowSearchTextProcHandler(HWND hWnd, LPARAM lParam)
 	{
 		if (m_nWindowSearchTextMode == 2)
 		{
-			nLen = GetWindowTextA(hWnd, szBuffer, AUT_WINTEXTBUFFER);	// Quicker mode
+			nLen = GetWindowTextW(hWnd, szBuffer, AUT_WINTEXTBUFFER);	// Quicker mode
 		}
 		else //if (SendMessage(hWnd, WM_GETTEXTLENGTH, 0, 0) > 0)
 		{
@@ -452,7 +452,7 @@ BOOL AutoIt_Script::Win_WindowSearchTextProcHandler(HWND hWnd, LPARAM lParam)
 
 		szBuffer[AUT_WINTEXTBUFFER] = '\0';		// Ensure terminated if large amount of return text
 
-		if ( nLen && strstr(szBuffer, m_vWindowSearchText.szValue()) )
+		if ( nLen && wcsstr(szBuffer, m_vWindowSearchText.szValue()) )
 		{
 			Win_WindowSearchAddToList(m_WindowSearchHWND);
 			return FALSE;						// No more searching needed in this window
@@ -729,7 +729,7 @@ AUT_RESULT AutoIt_Script::F_WinSetTitle(VectorVariant &vParams, Variant &vResult
 	if (Win_WindowSearch() == false)
 		return AUT_OK;									// Required window not found
 
-	SetWindowTextA( m_WindowSearchHWND, vParams[2].szValue() );
+	SetWindowTextW( m_WindowSearchHWND, vParams[2].szValue() );
 
 	return AUT_OK;
 
@@ -845,7 +845,7 @@ BOOL CALLBACK AutoIt_Script::ControlSearchProc(HWND hWnd, LPARAM lParam)
 
 BOOL AutoIt_Script::ControlSearchProcHandler(HWND hWnd, LPARAM lParam)
 {
-	char	szBuffer[1024+1];
+	wchar_t	szBuffer[1024+1];
 	BOOL	bRes = TRUE;						// Return TRUE to continue enumeration
 
 	// Determine the search method to use, ClassNN, ID or Text
@@ -856,23 +856,23 @@ BOOL AutoIt_Script::ControlSearchProcHandler(HWND hWnd, LPARAM lParam)
 	}
 	else if (m_nControlSearchMethod == AUT_CONTROLSEARCH_CLASS)
 	{
-		GetClassNameA(hWnd, szBuffer, 256);
+		GetClassNameW(hWnd, szBuffer, 256);
 
-		if ( strncmp(m_vControlSearchValue.szValue(), szBuffer, strlen(szBuffer)) == 0 )
+		if ( wcsncmp(m_vControlSearchValue.szValue(), szBuffer, wcslen(szBuffer)) == 0 )
 		{
 			m_iControlSearchInstance++;				//Control name found, increment instance
 
-			sprintf(szBuffer, "%s%u", szBuffer, m_iControlSearchInstance);
+			swprintf(szBuffer, L"%s%u", szBuffer, m_iControlSearchInstance);
 
-			if ( strcmp(szBuffer, m_vControlSearchValue.szValue()) == 0 )	//Do we match control name AND num
+			if ( wcscmp(szBuffer, m_vControlSearchValue.szValue()) == 0 )	//Do we match control name AND num
 				bRes = FALSE;
 		}
 	}
 	else										// Use window text
 	{
-		GetWindowTextA(hWnd, szBuffer, 1024);
+		GetWindowTextW(hWnd, szBuffer, 1024);
 
-		if ( strcmp(m_vControlSearchValue.szValue(), szBuffer) == 0 )
+		if ( wcscmp(m_vControlSearchValue.szValue(), szBuffer) == 0 )
 			bRes = FALSE;
 	}
 
@@ -1017,13 +1017,13 @@ AUT_RESULT AutoIt_Script::F_ControlClick(VectorVariant &vParams, Variant &vResul
 
 	if (iNumParams >= 4)
 	{
-		if (!stricmp(vParams[3].szValue(), "RIGHT"))
+		if (!wcsicmp(vParams[3].szValue(), L"RIGHT"))
 		{
 			msgdown = WM_RBUTTONDOWN;
 			msgup	= WM_RBUTTONUP;
 			wParam	= MK_RBUTTON;
 		}
-		else if (!stricmp(vParams[3].szValue(), "MIDDLE"))
+		else if (!wcsicmp(vParams[3].szValue(), L"MIDDLE"))
 		{
 			msgdown = WM_MBUTTONDOWN;
 			msgup	= WM_MBUTTONUP;
@@ -1292,14 +1292,14 @@ AUT_RESULT AutoIt_Script::F_ControlHide(VectorVariant &vParams, Variant &vResult
 
 AUT_RESULT AutoIt_Script::F_ControlCommand(VectorVariant &vParams,  Variant &vResult)
 {
-	char	szBuffer[AUT_WINTEXTBUFFER+1];
-	const char	*szCmd;
-	UINT		vMsg = 0;
-	UINT		xMsg = 0;
-	UINT		yMsg = 0;
-	RECT		rect;
-	LPARAM		lParam;
-	Variant		vTemp;
+	wchar_t			szBuffer[AUT_WINTEXTBUFFER+1];
+	const wchar_t*	szCmd;
+	UINT			vMsg = 0;
+	UINT			xMsg = 0;
+	UINT			yMsg = 0;
+	RECT			rect;
+	LPARAM			lParam;
+	Variant			vTemp;
 
 	if ( ControlSearch(vParams) == false )
 	{
@@ -1321,7 +1321,7 @@ AUT_RESULT AutoIt_Script::F_ControlCommand(VectorVariant &vParams,  Variant &vRe
 
 	while (1)
 	{
-		if ( strcmpi(szCmd,"ISVISIBLE")==0 )
+		if ( wcsicmp(szCmd,L"ISVISIBLE")==0 )
 		{
 			if ( IsWindowVisible(m_ControlSearchHWND) )
 				vResult = 1;
@@ -1329,7 +1329,7 @@ AUT_RESULT AutoIt_Script::F_ControlCommand(VectorVariant &vParams,  Variant &vRe
 				vResult = 0;
 			break;							// ISENABLED performed, exit switch
 		}
-		if ( strcmpi(szCmd,"ISENABLED")==0 )
+		if (wcsicmp(szCmd,L"ISENABLED")==0 )
 		{
 			if ( IsWindowEnabled(m_ControlSearchHWND) )
 				vResult = 1;
@@ -1337,21 +1337,21 @@ AUT_RESULT AutoIt_Script::F_ControlCommand(VectorVariant &vParams,  Variant &vRe
 				vResult = 0;
 			break;							// ISENABLED performed, exit switch
 		}
-		if ( strcmpi(szCmd,"TABLEFT")==0 )
+		if (wcsicmp(szCmd,L"TABLEFT")==0 )
 		{// must be a Tab Control
 			PostMessage(m_ControlSearchHWND, WM_KEYDOWN, VK_LEFT, (LPARAM)( (MapVirtualKey(VK_LEFT, 0)<<16) | 0x00000001 ) );
 			Sleep(0);
 			PostMessage(m_ControlSearchHWND, WM_KEYUP, VK_LEFT, (LPARAM)( (MapVirtualKey(VK_LEFT, 0)<<16) | 0xC0000001 ) );
 			break;							// TABLEFT performed, exit switch
 		}
-		if ( strcmpi(szCmd,"TABRIGHT")==0 )
+		if (wcsicmp(szCmd,L"TABRIGHT")==0 )
 		{// must be a Tab Control
 			PostMessage(m_ControlSearchHWND,WM_KEYDOWN,VK_RIGHT, (LPARAM)( (MapVirtualKey(VK_LEFT, 0)<<16) | 0x00000001 ) );
 			Sleep(0);
 			PostMessage(m_ControlSearchHWND,WM_KEYUP,VK_RIGHT, (LPARAM)( (MapVirtualKey(VK_LEFT, 0)<<16) | 0xC0000001 ));
 			break;							// TABRIGHT performed, exit switch
 		}
-		if ( strcmpi(szCmd,"CURRENTTAB")==0 )
+		if (wcsicmp(szCmd,L"CURRENTTAB")==0 )
 		{// must be a Tab Control
 			int nTab = (int)SendMessage(m_ControlSearchHWND,TCM_GETCURSEL,vParams[4].nValue(),0);
 			if ( nTab==-1 )
@@ -1364,25 +1364,25 @@ AUT_RESULT AutoIt_Script::F_ControlCommand(VectorVariant &vParams,  Variant &vRe
 			break;							// CURRENTTAB performed, exit switch
 		}
 
-		if ( strcmpi(szCmd,"SHOWDROPDOWN")==0 )
+		if (wcsicmp(szCmd,L"SHOWDROPDOWN")==0 )
 		{// must be a ComboBox
 			if ( !(SendMessage(m_ControlSearchHWND, CB_SHOWDROPDOWN, (WPARAM)TRUE, 0)) )
 				SetFuncErrorCode(1);
 			break;							// SHOWDROPDOWN performed, exit switch
 		}
 
-		if ( strcmpi(szCmd,"HIDEDROPDOWN")==0 )
+		if (wcsicmp(szCmd,L"HIDEDROPDOWN")==0 )
 		{// must be a ComboBox
 			if ( !(SendMessage(m_ControlSearchHWND, CB_SHOWDROPDOWN, (WPARAM)FALSE, 0)) )
 				SetFuncErrorCode(1);
 			break;							// HIDEDROPDOWN performed, exit switch
 		}
 
-		if ( strcmpi(szCmd,"ADDSTRING")==0 )
+		if (wcsicmp(szCmd,L"ADDSTRING")==0 )
 		{
-			if ( strnicmp(vParams[2].szValue(),"Combo",5)==0 )
+			if ( wcsnicmp(vParams[2].szValue(),L"Combo",5)==0 )
 				vMsg = CB_ADDSTRING;
-			if ( strnicmp(vParams[2].szValue(),"List",4)==0 )
+			if ( wcsnicmp(vParams[2].szValue(),L"List",4)==0 )
 				vMsg = LB_ADDSTRING;
 			if ( vMsg )
 			{// Must be ComboBox or ListBox
@@ -1392,11 +1392,11 @@ AUT_RESULT AutoIt_Script::F_ControlCommand(VectorVariant &vParams,  Variant &vRe
 			break;							// ADDSTRING performed, exit switch
 		}
 
-		if ( strcmpi(szCmd,"DELSTRING")==0 )
+		if (wcsicmp(szCmd,L"DELSTRING")==0 )
 		{
-			if ( strnicmp(vParams[2].szValue(),"Combo",5)==0 )
+			if ( wcsnicmp(vParams[2].szValue(),L"Combo",5)==0 )
 				vMsg = CB_DELETESTRING;
-			if ( strnicmp(vParams[2].szValue(),"List",4)==0 )
+			if ( wcsnicmp(vParams[2].szValue(),L"List",4)==0 )
 				vMsg = LB_DELETESTRING;
 			if ( vMsg )
 			{// Must be ComboBox or ListBox
@@ -1406,11 +1406,11 @@ AUT_RESULT AutoIt_Script::F_ControlCommand(VectorVariant &vParams,  Variant &vRe
 			break;							// DELSTRING performed, exit switch
 		}
 
-		if ( strcmpi(szCmd,"FINDSTRING")==0 )
+		if (wcsicmp(szCmd,L"FINDSTRING")==0 )
 		{
-			if ( strnicmp(vParams[2].szValue(),"Combo",5)==0 )
+			if ( wcsnicmp(vParams[2].szValue(),L"Combo",5)==0 )
 				vMsg = CB_FINDSTRINGEXACT;
-			if ( strnicmp(vParams[2].szValue(),"List",4)==0 )
+			if ( wcsnicmp(vParams[2].szValue(),L"List",4)==0 )
 				vMsg = LB_FINDSTRINGEXACT;
 			if ( vMsg )
 			{// Must be ComboBox or ListBox
@@ -1423,15 +1423,15 @@ AUT_RESULT AutoIt_Script::F_ControlCommand(VectorVariant &vParams,  Variant &vRe
 			break;							// FINDSTRING performed, exit switch
 		}
 
-		if ( strcmpi(szCmd,"SETCURRENTSELECTION")==0 )
+		if (wcsicmp(szCmd,L"SETCURRENTSELECTION")==0 )
 		{
-			if ( strnicmp(vParams[2].szValue(),"Combo",5)==0 )
+			if ( wcsnicmp(vParams[2].szValue(),L"Combo",5)==0 )
 			{
 				vMsg = CB_SETCURSEL;
 				xMsg = CBN_SELCHANGE;
 				yMsg = CBN_SELENDOK;
 			}
-			if ( strnicmp(vParams[2].szValue(),"List",4)==0 )
+			if ( wcsnicmp(vParams[2].szValue(),L"List",4)==0 )
 			{
 				vMsg = LB_SETCURSEL;
 				xMsg = LBN_SELCHANGE;
@@ -1450,15 +1450,15 @@ AUT_RESULT AutoIt_Script::F_ControlCommand(VectorVariant &vParams,  Variant &vRe
 			break;							// SETCURRENTSELECTION performed, exit switch
 		}
 
-		if ( stricmp(szCmd,"GETCURRENTSELECTION")==0 )
+		if (wcsicmp(szCmd,L"GETCURRENTSELECTION")==0 )
 		{
-			if ( strnicmp(vParams[2].szValue(),"ComboBox",8)==0 )
+			if ( wcsnicmp(vParams[2].szValue(),L"ComboBox",8)==0 )
 			{
 				vMsg = CB_GETCURSEL;
 				xMsg = CB_GETLBTEXTLEN;
 				yMsg = CB_GETLBTEXT;
 			}
-			if ( strnicmp(vParams[2].szValue(),"ListBox",7)==0 )
+			if ( wcsnicmp(vParams[2].szValue(),L"ListBox",7)==0 )
 			{
 				vMsg = LB_GETCURSEL;
 				xMsg = LB_GETTEXTLEN;
@@ -1493,15 +1493,15 @@ AUT_RESULT AutoIt_Script::F_ControlCommand(VectorVariant &vParams,  Variant &vRe
 			break;     // GETCURRENTSELECTION performed, exit switch
 		}
 
-		if ( strcmpi(szCmd,"SELECTSTRING")==0 )
+		if (wcsicmp(szCmd,L"SELECTSTRING")==0 )
 		{
-			if ( strnicmp(vParams[2].szValue(),"ComboBox",8)==0 )
+			if ( wcsnicmp(vParams[2].szValue(),L"ComboBox",8)==0 )
 			{
 				vMsg = CB_SELECTSTRING;
 				xMsg = CBN_SELCHANGE;
 				yMsg = CBN_SELENDOK;
 			}
-			if ( strnicmp(vParams[2].szValue(),"ListBox",7)==0 )
+			if ( wcsnicmp(vParams[2].szValue(),L"ListBox",7)==0 )
 			{
 				vMsg = LB_SELECTSTRING;
 				xMsg = LBN_SELCHANGE;
@@ -1520,7 +1520,7 @@ AUT_RESULT AutoIt_Script::F_ControlCommand(VectorVariant &vParams,  Variant &vRe
 			break;							// SELECTSTRING performed, exit switch
 		}
 
-		if ( strcmpi(szCmd,"ISCHECKED")==0  )
+		if (wcsicmp(szCmd,L"ISCHECKED")==0  )
 		{//Must be a Button
 			if ( SendMessage(m_ControlSearchHWND,BM_GETCHECK, 0, 0) == BST_CHECKED )
 				vResult = 1;				// Is checked (0 is default/not checked)
@@ -1529,7 +1529,7 @@ AUT_RESULT AutoIt_Script::F_ControlCommand(VectorVariant &vParams,  Variant &vRe
 			break;							// ISCHECKED performed, exit switch
 		}
 
-		if ( strcmpi(szCmd,"CHECK")==0 )
+		if (wcsicmp(szCmd,L"CHECK")==0 )
 		{//Must be a Button
 			// Only send the "check" if the button is not already checked
 			if ( SendMessage(m_ControlSearchHWND,BM_GETCHECK, 0, 0) == BST_UNCHECKED )
@@ -1545,7 +1545,7 @@ AUT_RESULT AutoIt_Script::F_ControlCommand(VectorVariant &vParams,  Variant &vRe
 			break;							// CHECK performed, exit switch
 		}
 
-		if ( strcmpi(szCmd,"UNCHECK")==0 )
+		if (wcsicmp(szCmd,L"UNCHECK")==0 )
 		{//Must be a Button
 			// Only send the "uncheck" if the button is not already unchecked
 			if ( SendMessage(m_ControlSearchHWND,BM_GETCHECK, 0, 0) == BST_CHECKED )
@@ -1561,7 +1561,7 @@ AUT_RESULT AutoIt_Script::F_ControlCommand(VectorVariant &vParams,  Variant &vRe
 				break;							// UNCHECK performed, exit switch
 		}
 
-		if ( strcmpi(szCmd,"GETSELECTED")==0 )
+		if (wcsicmp(szCmd,L"GETSELECTED")==0 )
 		{//Must be an Edit
 			UINT	nLen,nStart,nEnd;
 			char	*pBuffer = NULL;
@@ -1591,19 +1591,19 @@ AUT_RESULT AutoIt_Script::F_ControlCommand(VectorVariant &vParams,  Variant &vRe
 			break;							// GETSELECTED performed, exit switch
 		}
 
-		if ( strcmpi(szCmd,"GETLINECOUNT")==0 )
+		if (wcsicmp(szCmd,L"GETLINECOUNT")==0 )
 		{//Must be an Edit
 			vResult = (int)SendMessage(m_ControlSearchHWND,EM_GETLINECOUNT, 0, 0);
 			break;							// GETLINECOUNT performed, exit switch
 		}
 
-		if ( strcmpi(szCmd,"GETCURRENTLINE")==0 )
+		if (wcsicmp(szCmd,L"GETCURRENTLINE")==0 )
 		{
 			vResult = (int)SendMessage(m_ControlSearchHWND,EM_LINEFROMCHAR, (WPARAM)-1, 0)+1;
 			break;
 		}
 
-		if ( strcmpi(szCmd,"GETCURRENTCOL")==0 )
+		if (wcsicmp(szCmd,L"GETCURRENTCOL")==0 )
 		{
 			uint nStart, nEnd, nOriginal;
 			int  nLine;
@@ -1628,12 +1628,12 @@ AUT_RESULT AutoIt_Script::F_ControlCommand(VectorVariant &vParams,  Variant &vRe
 			break;
 		}
 
-		if ( strcmpi(szCmd,"EDITPASTE")==0 )
+		if (wcsicmp(szCmd,L"EDITPASTE")==0 )
 		{
 			SendMessage(m_ControlSearchHWND,EM_REPLACESEL, TRUE, (LPARAM)vParams[4].szValue());
 			break;
 		}
-		if ( strcmpi(szCmd,"GETLINE")==0 )
+		if (wcsicmp(szCmd,L"GETLINE")==0 )
 		{
 			int nFoo;
 			*((LPINT)szBuffer) = sizeof(szBuffer);
@@ -1676,9 +1676,9 @@ AUT_RESULT AutoIt_Script::F_ControlSend(VectorVariant &vParams, Variant &vResult
 
 	// Send the keys
 	if (vParams.size() >= 5 && vParams[4].nValue() != 0)
-		m_oSendKeys.SendRaw(vParams[3].szValue(), m_ControlSearchHWND);
+		m_oSendKeys.SendRaw(Util_UNICODEtoANSIStr(vParams[3].szValue()).c_str(), m_ControlSearchHWND);
 	else
-		m_oSendKeys.Send(vParams[3].szValue(), m_ControlSearchHWND);
+		m_oSendKeys.Send(Util_UNICODEtoANSIStr(vParams[3].szValue()).c_str(), m_ControlSearchHWND);
 
 	return AUT_OK;
 
@@ -1692,7 +1692,7 @@ AUT_RESULT AutoIt_Script::F_ControlSend(VectorVariant &vParams, Variant &vResult
 AUT_RESULT AutoIt_Script::F_WinMenuSelectItem(VectorVariant &vParams, Variant &vResult)
 {
 	uint	iNumParams = vParams.size();
-	char	szBuffer[AUT_WINTEXTBUFFER+1];
+	wchar_t	szBuffer[AUT_WINTEXTBUFFER+1];
 	UINT	c,i,nCount;
 	UINT	nId = 0;
 	BOOL	bFound;
@@ -1722,8 +1722,8 @@ AUT_RESULT AutoIt_Script::F_WinMenuSelectItem(VectorVariant &vParams, Variant &v
 		bFound=FALSE;
 		for ( c=0 ;c<=nCount-1; c++ )
 		{
-			GetMenuStringA(hMenu,c,szBuffer,AUT_WINTEXTBUFFER,MF_BYPOSITION);
-			if ( strncmp(vParams[i-1].szValue(),szBuffer,strlen(vParams[i-1].szValue()))==0 )
+			GetMenuStringW(hMenu,c,szBuffer,AUT_WINTEXTBUFFER,MF_BYPOSITION);
+			if ( wcsncmp(vParams[i-1].szValue(),szBuffer,wcslen(vParams[i-1].szValue()))==0 )
 			{
 				if ( i == iNumParams )
 				{
@@ -1879,7 +1879,7 @@ AUT_RESULT AutoIt_Script::F_ControlGetHandle(VectorVariant &vParams, Variant &vR
 
 void AutoIt_Script::ControlWithFocus(HWND hWnd, Variant &vResult)
 {
-	char	szClass[256];
+	wchar_t	szClass[256];
 
 
 	Util_AttachThreadInput(hWnd, true);
@@ -1892,7 +1892,7 @@ void AutoIt_Script::ControlWithFocus(HWND hWnd, Variant &vResult)
 		return;
 	}
 
-	GetClassNameA(m_ControlSearchHWND, szClass, 255);
+	GetClassNameW(m_ControlSearchHWND, szClass, 255);
 	m_vControlSearchValue		= szClass;		// Set the class to find
 
 	m_iControlSearchInstance	= 0;			// Variable to keep track of class instance
@@ -1902,7 +1902,7 @@ void AutoIt_Script::ControlWithFocus(HWND hWnd, Variant &vResult)
 
 	if (m_bControlSearchFoundFlag)
 	{
-		sprintf(szClass,"%s%d",m_vControlSearchValue.szValue(),m_iControlSearchInstance);
+		swprintf(szClass,L"%s%d",m_vControlSearchValue.szValue(),m_iControlSearchInstance);
 		vResult=szClass;
 	}
 	else
@@ -1917,11 +1917,11 @@ BOOL CALLBACK AutoIt_Script::ControlWithFocusProc(HWND hWnd, LPARAM lParam)
 
 BOOL AutoIt_Script::ControlWithFocusProcHandler(HWND hWnd, LPARAM lParam)
 {
-	char	szBuffer[256];
+	wchar_t	szBuffer[256];
 
-	GetClassNameA(hWnd, szBuffer, 255);
+	GetClassNameW(hWnd, szBuffer, 255);
 
-	if ( strcmp(m_vControlSearchValue.szValue(), szBuffer) == 0 )
+	if ( wcscmp(m_vControlSearchValue.szValue(), szBuffer) == 0 )
 	{
 		m_iControlSearchInstance++;				//Control name found, increment instance
 
