@@ -147,6 +147,8 @@ enum
 	M_INETGETACTIVE,
 	M_AUTOITPID,
 	M_AUTOITX64,
+	M_CPUARCH,
+	M_KBLAYOUT,
 	M_NUMPARAMS,
 	M_MAX
 };
@@ -236,6 +238,8 @@ const char * AutoIt_Script::m_szMacros[M_MAX] =	{
 	"INETGETACTIVE",
 	"AUTOITPID",
 	"AUTOITX64",
+	"CPUARCH",
+	"KBLAYOUT",
 	"NUMPARAMS"
 };
 
@@ -727,10 +731,10 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vRes
 			vResult = szValue;
 			break;
 		case M_DESKTOPCOMMONDIR:
-			Util_RegReadString(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Common Desktop", _MAX_PATH, szValue);
-			if (szValue[0] == '\0')
-				Util_RegReadString(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Desktop", _MAX_PATH, szValue);
-			vResult = szValue;
+			Util_RegReadString(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Common Desktop", _MAX_PATH, szValue_w_tmp1);
+			if (szValue_w_tmp1[0] == '\0')
+				Util_RegReadString(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Desktop", _MAX_PATH, szValue_w_tmp1);
+			vResult = szValue_w_tmp1;
 			break;
 		case M_DOCUMENTSCOMMONDIR:
 			Util_RegReadString(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Common Documents", _MAX_PATH, szValue);
@@ -788,17 +792,17 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vRes
 
 		case M_COMPUTERNAME:
 			dwTemp = _MAX_PATH;
-			GetComputerNameA(szValue, &dwTemp);
-			vResult = szValue;
+			GetComputerNameW(szValue_w_tmp1, &dwTemp);
+			vResult = szValue_w_tmp1;
 			break;
 
 		case M_WINDOWSDIR:
-			GetWindowsDirectoryA(szValue, _MAX_PATH);
-			vResult = szValue;
+			GetWindowsDirectoryW(szValue_w_tmp1, _MAX_PATH);
+			vResult = szValue_w_tmp1;
 			break;
 		case M_SYSTEMDIR:
-			GetSystemDirectoryA(szValue, _MAX_PATH);
-			vResult = szValue;
+			GetSystemDirectoryW(szValue_w_tmp1, _MAX_PATH);
+			vResult = szValue_w_tmp1;
 			break;
 
 		case M_SW_HIDE:
@@ -839,17 +843,17 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vRes
 			break;
 
 		case M_SCRIPTFULLPATH:
-			vResult = Util_UNICODEtoANSIStr(m_sScriptFullPath.c_str()).c_str();
+			vResult = m_sScriptFullPath.c_str();
 			break;
 		case M_SCRIPTNAME:
-			vResult = Util_UNICODEtoANSIStr(m_sScriptName.c_str()).c_str();
+			vResult = m_sScriptName.c_str();
 			break;
 		case M_SCRIPTDIR:
 			vResult = m_sScriptDir.c_str();
 			break;
 		case M_WORKINGDIR:
-			GetCurrentDirectoryA(_MAX_PATH, szValue);
-			vResult = szValue;
+			GetCurrentDirectoryW(_MAX_PATH, szValue_w_tmp1);
+			vResult = szValue_w_tmp1;
 			break;
 
 		case M_OSTYPE:
@@ -962,20 +966,20 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vRes
 			break;
 
 		case M_COMSPEC:
-			GetEnvironmentVariableA("COMSPEC", szValue, _MAX_PATH);
-			vResult = szValue;
+			GetEnvironmentVariableW(L"COMSPEC", szValue_w_tmp1, _MAX_PATH);
+			vResult = szValue_w_tmp1;
 			break;
 
 		case M_TEMPDIR:
-			GetTempPathA(_MAX_PATH, szValue);
-			Util_StripTrailingDir(szValue);		// Remove trailing backslash
-			vResult = szValue;
+			GetTempPathW(_MAX_PATH, szValue_w_tmp1);
+			Util_StripTrailingDir(szValue_w_tmp1);		// Remove trailing backslash
+			vResult = szValue_w_tmp1;
 			break;
 
 		case M_USERNAME:
 			dwTemp = _MAX_PATH;
-			GetUserNameA(szValue, &dwTemp);
-			vResult = szValue;
+			GetUserNameW(szValue_w_tmp1, &dwTemp);
+			vResult = szValue_w_tmp1;
 			break;
 
 #ifndef AUTOITSC
@@ -1048,6 +1052,30 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vRes
 			else
 				vResult = 1;			
 			break;
+		case M_CPUARCH:
+		{
+			int is64bit = 0;
+			int reg[4];
+			__cpuidex(reg, 0x80000000, 0);
+			if (reg[0]>= 0x80000001)
+			{
+				__cpuidex(reg, 0x80000001, 0);
+				is64bit = reg[3] >> 29 & (((UINT32)-1) >> (32 - 1));
+			}
+			if (is64bit)
+				vResult = L"X64";
+			else
+				vResult = L"X86";	
+			break;
+		}			
+		case M_KBLAYOUT:
+		{
+			//The return value is the input locale identifier for the thread. The low word contains a Language Identifier for the input language and the high word contains a device handle to the physical layout of the keyboard.
+			HKL h= GetKeyboardLayout(0);
+			swprintf(szValue_w_tmp1, L"%08x", (unsigned short)h);
+			vResult = szValue_w_tmp1;
+			break;
+		}
 		case M_NUMPARAMS:
 			vResult = m_nNumParams;
 			break;
