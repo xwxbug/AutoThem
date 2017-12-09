@@ -16,13 +16,13 @@ Current Function Port
 --
 
 Variable Name | autoit(3.3.15.0) | AutoThem(current)
----|---|---|---
+---|---|---
 $CmdLine|Y|Y
 $CmdLineRaw|Y|Y
 
 
 Macro Name | autoit(3.3.15.0) | AutoThem(current)
----|---|---|---
+---|---|---
 @AppDataCommonDir|Y|N
 @AppDataDir|Y|N
 @AutoItExe|Y|N
