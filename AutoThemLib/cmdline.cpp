@@ -59,14 +59,9 @@
 // Constructor()
 ///////////////////////////////////////////////////////////////////////////////
 
-CmdLine::CmdLine() : m_nNumParameters(0), m_nCurrentParam(0), m_szCmdLineRaw(NULL)
+CmdLine::CmdLine()
 {
-//	m_nNumParameters	= 0;					// Number of space separated paramters on the cmdline
-//	m_nCurrentParam		= 0;					// Current param to return for GetNextParam()
-
-	// Ensure all pointers are NULL
-	for (int i=0; i<CMDLINE_MAXPARAMS; i++)
-		m_szParams[i] = NULL;
+	m_nCurrentParam	= 0;						// Current param to return for GetNextParam()
 }
 
 
@@ -85,34 +80,34 @@ CmdLine::~CmdLine()
 // SetCmdLine()
 ///////////////////////////////////////////////////////////////////////////////
 
-void CmdLine::SetCmdLine(char *szCmdLine)
+void CmdLine::SetCmdLine(std::wstring szCmdLine)
 {
 	Reset();									// Reset any previous command lines
 
 	// Store the raw command line
-	m_szCmdLineRaw = Util_StrCpyAlloc(szCmdLine);
+	m_szCmdLineRaw = szCmdLine;
 
 	// Command line parameters are separated by spaces
 	// If spaces are required in a parameter, it should be surrounded by quotes
 	// If quotes are required, they must be doubled up eg "" is one quote
 
-	int			i = 0;							// In string position
-	int			iParam = 0;						// Out param position
+	size_t		i = 0;							// In string position
+	size_t		iParam = 0;						// Out param position
 	bool		bQuote = false;					// Quoting is inactive
-	char		szParam[CMDLINE_MAXLEN+1];		// Store our temp parameter
-	char		ch;
+	wchar_t		szParam[CMDLINE_MAXLEN+1];		// Store our temp parameter
+	wchar_t		ch;
 
 	// Whenever we hit a space and we are NOT in quote mode
 	// - Store param
 	// - Skip spaces
 
 	// Skip leading spaces
-	while ( (ch = szCmdLine[i]) == ' ' || ch  == '\t')
+	while ( (ch = szCmdLine[i]) == L' ' || ch  == L'\t')
 		i++;
 
-	while ( ((ch = szCmdLine[i++]) != '\0')  &&  (iParam < CMDLINE_MAXLEN) )
+	while ( ((ch = szCmdLine[i++]) != L'\0')  &&  (iParam < CMDLINE_MAXLEN) )
 	{
-		if ( ch == ' '|| ch  == '\t')
+		if ( ch == L' '|| ch  == L'\t')
 		{
 			// Param separator found - are we in quote mode?
 			if ( bQuote == true )
@@ -125,17 +120,17 @@ void CmdLine::SetCmdLine(char *szCmdLine)
 				StoreParam(szParam);
 				iParam = 0;
 				// We are starting a param, skip all spaces
-				while ( (ch = szCmdLine[i]) == ' '|| ch  == '\t' )
+				while ( (ch = szCmdLine[i]) == L' '|| ch  == L'\t' )
 					i++;
 			}
 		}
 		else
 		{
-			if ( ch == '"' )
+			if ( ch == L'"' )
 			{
-				if (szCmdLine[i] == '"')
+				if (szCmdLine[i] == L'"')
 				{
-					szParam[iParam++] = '"';
+					szParam[iParam++] = L'"';
 					i++;
 				}
 				else
@@ -158,26 +153,23 @@ void CmdLine::SetCmdLine(char *szCmdLine)
 } // SetCmdLine()
 
 
-const char * CmdLine::GetCmdLine()
+std::wstring CmdLine::GetCmdLine()
 {
 	return m_szCmdLineRaw;
 }
 
-int CmdLine::GetNumParams(void) const
+size_t CmdLine::GetNumParams(void) const
 {
-	return m_nNumParameters;
+	return m_vec_sz_params.size();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // StoreParam()
 ///////////////////////////////////////////////////////////////////////////////
 
-void CmdLine::StoreParam(char *szParam)
+void CmdLine::StoreParam(wchar_t *szParam)
 {
-	// Create enough space to store our line + \0
-	//m_szParams[m_nNumParameters] = (char *)malloc((strlen(szParam)+1) * sizeof(char));
-	m_szParams[m_nNumParameters++] = Util_StrCpyAlloc(szParam);
-
+	m_vec_sz_params.push_back(szParam);
 } // StoreParam()
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -186,20 +178,8 @@ void CmdLine::StoreParam(char *szParam)
 
 void CmdLine::Reset(void)
 {
-	// Ensure all pointers are NULL
-	for (int i=0; i<m_nNumParameters; i++)
-	{
-		//free(m_szParams[i]);
-		delete [] m_szParams[i];				// Harmless if already NULL
-		m_szParams[i] = NULL;
-	}
-
-	// Delete the raw command line
-	delete [] m_szCmdLineRaw;					// Harmless if already NULL
-
-	m_nNumParameters	= 0;
 	m_nCurrentParam		= 0;
-
+	m_vec_sz_params.clear();
 } // Reset()
 
 
@@ -207,26 +187,28 @@ void CmdLine::Reset(void)
 // GetParam()
 ///////////////////////////////////////////////////////////////////////////////
 
-bool CmdLine::GetParam(int nParam, char *szParam) const
+bool CmdLine::GetParam(size_t nParam, char *szParam) const
 {
 	// Ensure we don't pass back crap if there is an error
 	szParam[0] = '\0';
 
-	if (nParam >= m_nNumParameters)
+	if (nParam >= m_vec_sz_params.size())
 		return false;							// Invalid request
 	else
 	{
-		if (m_szParams[nParam] == NULL)
-			return false;
-		else
-		{
-			strcpy(szParam, m_szParams[nParam]);
-			return true;
-		}
+		strcpy(szParam, Util_UNICODEtoANSIStr(m_vec_sz_params[nParam].c_str()).c_str());
+		return true;
 	}
-
 } // GetParam()
 
+
+std::wstring CmdLine::GetParam(size_t nParam) const
+{
+	if (nParam >= m_vec_sz_params.size())
+		return L"";								// Invalid request
+	else
+		return m_vec_sz_params[nParam];
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // GetNextParam()
@@ -237,21 +219,28 @@ bool CmdLine::GetNextParam(char *szParam)
 	// Ensure we don't pass back crap if there is an error
 	szParam[0] = '\0';
 
-	if (m_nCurrentParam >= m_nNumParameters)
+	if (m_nCurrentParam >= m_vec_sz_params.size())
 		return false;							// Invalid request
 	else
 	{
-		if (m_szParams[m_nCurrentParam] == NULL)
-			return false;
-		else
-		{
-			strcpy(szParam, m_szParams[m_nCurrentParam]);
-			m_nCurrentParam++;
-			return true;
-		}
+		strcpy(szParam, Util_UNICODEtoANSIStr(m_vec_sz_params[m_nCurrentParam].c_str()).c_str());
+		m_nCurrentParam++;
+		return true;
 	}
-
 } // GetNextParam()
+
+std::wstring CmdLine::GetNextParam()
+{
+	std::wstring sz_result;
+	if (m_nCurrentParam >= m_vec_sz_params.size())
+		return sz_result;							// Invalid request
+	else
+	{
+		sz_result=m_vec_sz_params[m_nCurrentParam];
+		m_nCurrentParam++;
+		return sz_result;
+	}
+}
 
 void CmdLine::GetNextParamReset(void)
 {

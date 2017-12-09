@@ -60,12 +60,12 @@
 // WinMain()
 ///////////////////////////////////////////////////////////////////////////////
 
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
 	return ATL_WinMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 } // Winmain()
 
-int main(int argc, char* argv[])
+int wmain(int argc, wchar_t* argv[])
 {
 	HMODULE hModule;
 	STARTUPINFOW si = {0};
@@ -73,12 +73,12 @@ int main(int argc, char* argv[])
 	hModule = GetModuleHandleW(NULL);
 	GetStartupInfoW(&si);
 
-	char* lpCmdLine = new char[4097]();
+	wchar_t* lpCmdLine = new wchar_t[4097]();
 	for (size_t i=1;i<argc;i++)
 	{
-		strcat(lpCmdLine, "\"");
-		strcat(lpCmdLine, argv[i]);
-		strcat(lpCmdLine, "\" ");
+		wcscat(lpCmdLine, L"\"");
+		wcscat(lpCmdLine, argv[i]);
+		wcscat(lpCmdLine, L"\" ");
 	}
 	int n_result= ATL_WinMain(hModule, nullptr, lpCmdLine, si.wShowWindow);
 	delete[]lpCmdLine;

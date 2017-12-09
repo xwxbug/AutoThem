@@ -60,7 +60,7 @@
 // WinMain()
 ///////////////////////////////////////////////////////////////////////////////
 
-int WINAPI ATL_WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+int WINAPI ATL_WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
 	g_hInstance			= hInstance;			// Program instance
 	g_nExitCode			= 0;					// Default exit code

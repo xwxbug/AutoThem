@@ -45,35 +45,36 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#define	CMDLINE_MAXPARAMS	64					// Max number of parameters
-#define CMDLINE_MAXLEN		4096				// Each parameter can be this many characters
+#define	CMDLINE_MAXPARAMS	64							// Max number of parameters
+#define CMDLINE_MAXLEN		4096						// Each parameter can be this many characters
+
+
 
 class CmdLine
 {
 public:
-	CmdLine();									// Constructor
-	~CmdLine();									// Destructor
-
+	CmdLine();											// Constructor
+	~CmdLine();											// Destructor
+public:
 	// Functions
-	void	SetCmdLine(char *szCmdLine);		// Call this with the full cmd line
-
-	const char * GetCmdLine();
-
-	int		GetNumParams(void) const;
-	bool	GetParam(int nParam, char *szParam) const;
-	bool	GetNextParam(char *szParam);
-	void	GetNextParamReset(void);
+	void		 SetCmdLine(std::wstring szCmdLine);	// Call this with the full cmd line
+	std::wstring GetCmdLine();
+	size_t		 GetNumParams(void) const;
+	bool		 GetParam(size_t nParam, char *szParam) const;
+	std::wstring GetParam(size_t nParam) const;
+	bool		 GetNextParam(char *szParam);
+	std::wstring GetNextParam();
+	void		 GetNextParamReset(void);
 
 private:
 	// Variables
-	int		m_nNumParameters;					// Number of space separated paramters on the cmdline
-	int		m_nCurrentParam;					// Current param to return for GetNextParam()
-	char	*m_szCmdLineRaw;					// The original command line
-	char	*m_szParams[CMDLINE_MAXPARAMS];		// List of pointers to each parameter
-
+	size_t						m_nCurrentParam;					// Current param to return for GetNextParam()
+	std::wstring				m_szCmdLineRaw;						// The original command line
+	std::vector<std::wstring>	m_vec_sz_params;
+private:
 	// Functions
-	void	StoreParam(char *szParam);
-	void	Reset(void);						// Frees up memory ready for reuse
+	void		StoreParam(wchar_t *szParam);
+	void		Reset(void);						// Frees up memory ready for reuse
 
 };
 

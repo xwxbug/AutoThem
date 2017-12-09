@@ -69,7 +69,7 @@ typedef unsigned short 		ushort;
 typedef unsigned int 		uint;
 typedef unsigned long 		ulong;
 
-int		WINAPI ATL_WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow);
+int		WINAPI ATL_WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow);
 
 #define AUT_MAX_LINESIZE		4095			// Max size for a line of script
 #define AUT_STRBUFFER			4095			// Size of a general string buffer

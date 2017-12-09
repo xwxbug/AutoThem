@@ -286,7 +286,7 @@ void AutoIt_App::ParseCmdLine(void)
 	m_bSingleCmdMode		= false;			// set defaults
 
 	// Create the variable $CmdLineRaw which holds the original command line
-	vTemp = g_oCmdLine.GetCmdLine();
+	vTemp = Util_UNICODEtoANSIStr(g_oCmdLine.GetCmdLine().c_str()).c_str();
 	g_oVarTable.Assign("CmdLineRaw", vTemp, true);
 	vTemp = 0;									// Will be used later as a dummy var so make 0 to save space
 
