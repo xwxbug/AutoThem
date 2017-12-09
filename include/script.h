@@ -293,17 +293,17 @@ public:
 	AutoIt_Script();							// Constructor
 	~AutoIt_Script();							// Destrucutor
 
-	AUT_RESULT		InitScript(char *szFile);	// Perform setup of a loaded script
+	AUT_RESULT		InitScript(wchar_t *szFile);	// Perform setup of a loaded script
 	int				ProcessMessages();
 	AUT_RESULT		Execute(int nScriptLine=0);	// Run script at this line number
-	int             GetCurLineNumber (void) const { return m_nErrorLine; }  // Return current line number for TrayTip debugging
+	int             GetCurLineNumber (void) const;  // Return current line number for TrayTip debugging
 
 private:
 
 	// Variables
 	HS_SendKeys		m_oSendKeys;				// SendKeys object
-	AString			m_sScriptName;				// Filename of script
-	AString			m_sScriptFullPath;			// Full pathname of script
+	std::wstring	m_sScriptName;				// Filename of script
+	std::wstring	m_sScriptFullPath;			// Full pathname of script
 	AString			m_sScriptDir;				// Directory the script is in
 
 	HWND			m_hWndTip;					// ToolTip window

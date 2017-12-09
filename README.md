@@ -23,7 +23,7 @@ $CmdLineRaw|Y|Y
 
 Macro Name | autoit(3.3.15.0) | AutoThem(current)
 ---|---|---
-@AppDataCommonDir|Y|N
+@AppDataCommonDir|Y|Y
 @AppDataDir|Y|N
 @AutoItExe|Y|N
 @AutoItPID|Y|N

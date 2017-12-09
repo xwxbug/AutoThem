@@ -710,7 +710,7 @@ const char * AutoIt_Script::FormatWinError(DWORD dwCode)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::InitScript(char *szFile)
+AUT_RESULT AutoIt_Script::InitScript(wchar_t *szFile)
 {
 	// Check that the block structures are correct
 	if ( AUT_FAILED(Parser_VerifyBlockStructure()) )
@@ -729,14 +729,14 @@ AUT_RESULT AutoIt_Script::InitScript(char *szFile)
 		return AUT_ERR;
 
 	// Make a note of the script filename (for @ScriptDir, etc)
-	char	szFileTemp[_MAX_PATH+1];
-	char	*szFilePart;
+	wchar_t	szFileTemp[_MAX_PATH+1];
+	wchar_t	*szFilePart;
 
-	GetFullPathNameA(szFile, _MAX_PATH, szFileTemp, &szFilePart);
+	GetFullPathNameW(szFile, _MAX_PATH, szFileTemp, &szFilePart);
 	m_sScriptFullPath = szFileTemp;
 	m_sScriptName = szFilePart;
 	szFilePart[-1] = '\0';
-	m_sScriptDir = szFileTemp;
+	m_sScriptDir =  Util_UNICODEtoANSIStr(szFileTemp).c_str();
 
 	// Initialise the random number routine (must be done after the script has
 	// loaded as the compiled script loader also uses random numbers and must
@@ -939,6 +939,11 @@ AUT_RESULT AutoIt_Script::Execute(int nScriptLine)
 
 } // Execute()
 
+
+int AutoIt_Script::GetCurLineNumber(void) const
+{
+	return m_nErrorLine;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // HandleDelayedFunctions()

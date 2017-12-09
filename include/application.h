@@ -81,8 +81,8 @@ private:
 
 	bool		m_bSingleCmdMode;				// TRUE=/c cmdline mode
 	AString		m_sSingleLine;					// Single line for the /c cmdline
-	char		m_szScriptFileName[_MAX_PATH+1];// FileName (fullpath) of current script
-	char		*m_szScriptFilePart;			// Just the filename (no path)
+	wchar_t		m_szScriptFileName[_MAX_PATH+1];// FileName (fullpath) of current script
+	wchar_t*	m_szScriptFilePart;			// Just the filename (no path)
 	bool		m_bShowingPauseIcon;			// State of the flashing paused icon
 
 

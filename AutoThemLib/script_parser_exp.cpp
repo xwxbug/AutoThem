@@ -580,81 +580,81 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vRes
 			break;
 
 		case M_PROGRAMFILESDIR:
-			Util_RegReadString(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion", L"ProgramFilesDir", _MAX_PATH, szValue);
+			Util_RegReadString(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion", "ProgramFilesDir", _MAX_PATH, szValue);
 			vResult = szValue;
 			break;
 		case M_COMMONFILESDIR:
-			Util_RegReadString(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion", L"CommonFilesDir", _MAX_PATH, szValue);
+			Util_RegReadString(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion", "CommonFilesDir", _MAX_PATH, szValue);
 			vResult = szValue;
 			break;
 
 		case M_MYDOCUMENTSDIR:
-			Util_RegReadString(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Personal", _MAX_PATH, szValue);
+			Util_RegReadString(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders","Personal", _MAX_PATH, szValue);
 			Util_StripTrailingDir(szValue);		// Remove trailing blackslash
 			vResult = szValue;
 			break;
 
 		case M_APPDATACOMMONDIR:
-			Util_RegReadString(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Common AppData", _MAX_PATH, szValue);
+			Util_RegReadString(HKEY_LOCAL_MACHINE,"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Common AppData", _MAX_PATH, szValue);
 			vResult = szValue;
 			break;
 		case M_DESKTOPCOMMONDIR:
-			Util_RegReadString(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Common Desktop", _MAX_PATH, szValue);
+			Util_RegReadString(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Common Desktop", _MAX_PATH, szValue);
 			if (szValue[0] == '\0')
-				Util_RegReadString(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Desktop", _MAX_PATH, szValue);
+				Util_RegReadString(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Desktop", _MAX_PATH, szValue);
 			vResult = szValue;
 			break;
 		case M_DOCUMENTSCOMMONDIR:
-			Util_RegReadString(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Common Documents", _MAX_PATH, szValue);
+			Util_RegReadString(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Common Documents", _MAX_PATH, szValue);
 			vResult = szValue;
 			break;
 		case M_FAVORITESCOMMONDIR:
-			Util_RegReadString(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Common Favorites", _MAX_PATH, szValue);
+			Util_RegReadString(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Common Favorites", _MAX_PATH, szValue);
 			if (szValue[0] == '\0')
-				Util_RegReadString(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Favorites", _MAX_PATH, szValue);
+				Util_RegReadString(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Favorites", _MAX_PATH, szValue);
 			vResult = szValue;
 			break;
 		case M_PROGRAMSCOMMONDIR:
-			Util_RegReadString(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Common Programs", _MAX_PATH, szValue);
+			Util_RegReadString(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Common Programs", _MAX_PATH, szValue);
 			if (szValue[0] == '\0')
-				Util_RegReadString(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Programs", _MAX_PATH, szValue);
+				Util_RegReadString(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Programs", _MAX_PATH, szValue);
 			vResult = szValue;
 			break;
 		case M_STARTMENUCOMMONDIR:
-			Util_RegReadString(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Common Start Menu", _MAX_PATH, szValue);
+			Util_RegReadString(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Common Start Menu", _MAX_PATH, szValue);
 			if (szValue[0] == '\0')
-				Util_RegReadString(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Start Menu", _MAX_PATH, szValue);
+				Util_RegReadString(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Start Menu", _MAX_PATH, szValue);
 			vResult = szValue;
 			break;
 		case M_STARTUPCOMMONDIR:
-			Util_RegReadString(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Common Startup", _MAX_PATH, szValue);
+			Util_RegReadString(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Common Startup", _MAX_PATH, szValue);
 			if (szValue[0] == '\0')
-				Util_RegReadString(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Startup", _MAX_PATH, szValue);
+				Util_RegReadString(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Startup", _MAX_PATH, szValue);
 			vResult = szValue;
 			break;
 
 		case M_APPDATADIR:
-			Util_RegReadString(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"AppData", _MAX_PATH, szValue);
+			Util_RegReadString(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "AppData", _MAX_PATH, szValue);
 			vResult = szValue;
 			break;
 		case M_DESKTOPDIR:
-			Util_RegReadString(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Desktop", _MAX_PATH, szValue);
+			Util_RegReadString(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Desktop", _MAX_PATH, szValue);
 			vResult = szValue;
 			break;
 		case M_FAVORITESDIR:
-			Util_RegReadString(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Favorites", _MAX_PATH, szValue);
+			Util_RegReadString(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Favorites", _MAX_PATH, szValue);
 			vResult = szValue;
 			break;
 		case M_PROGRAMSDIR:
-			Util_RegReadString(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Programs", _MAX_PATH, szValue);
+			Util_RegReadString(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Programs", _MAX_PATH, szValue);
 			vResult = szValue;
 			break;
 		case M_STARTMENUDIR:
-			Util_RegReadString(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Start Menu", _MAX_PATH, szValue);
+			Util_RegReadString(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Start Menu", _MAX_PATH, szValue);
 			vResult = szValue;
 			break;
 		case M_STARTUPDIR:
-			Util_RegReadString(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Startup", _MAX_PATH, szValue);
+			Util_RegReadString(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Startup", _MAX_PATH, szValue);
 			vResult = szValue;
 			break;
 
@@ -711,10 +711,10 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vRes
 			break;
 
 		case M_SCRIPTFULLPATH:
-			vResult = m_sScriptFullPath.c_str();
+			vResult = Util_UNICODEtoANSIStr(m_sScriptFullPath.c_str()).c_str();
 			break;
 		case M_SCRIPTNAME:
-			vResult = m_sScriptName.c_str();
+			vResult = Util_UNICODEtoANSIStr(m_sScriptName.c_str()).c_str();
 			break;
 		case M_SCRIPTDIR:
 			vResult = m_sScriptDir.c_str();
@@ -767,16 +767,16 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vRes
 			if ( g_oVersion.IsWinNT() == true )
 			{
 				if ( g_oVersion.IsWin2000orLater() == true )
-					Util_RegReadString(HKEY_LOCAL_MACHINE,L"SYSTEM\\CurrentControlSet\\Control\\Nls\\Language", L"InstallLanguage", _MAX_PATH, szValue);
+					Util_RegReadString(HKEY_LOCAL_MACHINE,"SYSTEM\\CurrentControlSet\\Control\\Nls\\Language", "InstallLanguage", _MAX_PATH, szValue);
 				else      // WinNT4
-					Util_RegReadString(HKEY_LOCAL_MACHINE,L"SYSTEM\\CurrentControlSet\\Control\\Nls\\Language", L"Default", _MAX_PATH, szValue);
+					Util_RegReadString(HKEY_LOCAL_MACHINE,"SYSTEM\\CurrentControlSet\\Control\\Nls\\Language", "Default", _MAX_PATH, szValue);
 
 				vResult = szValue;
 			}
 
 			else         // Win9x
 			{
-				Util_RegReadString(HKEY_USERS,L".DEFAULT\\Control Panel\\Desktop\\ResourceLocale", L"", _MAX_PATH, szValue);
+				Util_RegReadString(HKEY_USERS,".DEFAULT\\Control Panel\\Desktop\\ResourceLocale", "", _MAX_PATH, szValue);
 				vResult = &szValue[4];
 			}
 
@@ -868,7 +868,7 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vRes
 			else
 			{
 				// Get the users desktop dir and remove the last \ char
-				Util_RegReadString(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", L"Desktop", _MAX_PATH, szValue);
+				Util_RegReadString(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Desktop", _MAX_PATH, szValue);
 				for (nTemp = (int)strlen(szValue)-1; nTemp >= 0 && szValue[nTemp] != '\\'; --nTemp);
 				szValue[nTemp] = '\0';
 			}

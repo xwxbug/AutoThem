@@ -75,7 +75,7 @@ public:
 	// Functions
 	AutoIt_ScriptFile();						// Constructor
 	~AutoIt_ScriptFile();						// Destructor
-	bool			LoadScript(char *szFile);	// Loads a script into memory
+	bool			LoadScript(wchar_t *szFile);	// Loads a script into memory
 	void			PrepareScript(void);		// Prepares a loaded script for speed
 	void			UnloadScript(void);			// Removes a script from memory
 	const char *	GetLine(int nLineNum);			// Retrieve line x

@@ -607,28 +607,28 @@ void AutoIt_ScriptFile::PrepareScript(void)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-bool AutoIt_ScriptFile::LoadScript(char *szFile)
+bool AutoIt_ScriptFile::LoadScript(wchar_t *szFile)
 {
-	OPENFILENAMEA	ofn;
+	OPENFILENAMEW	ofn;
 
 //	strcpy(szFile, "bin\\test.au3");
 
 	// Was a script file specified? If not, bring up the fileopen dialog
     if (szFile[0] == '\0')
     {
-		ZeroMemory(&ofn, sizeof(OPENFILENAMEA));
-		ofn.lStructSize		= sizeof(OPENFILENAMEA);
-		ofn.lpstrTitle		= "Run Script:\0";
+		ZeroMemory(&ofn, sizeof(OPENFILENAMEW));
+		ofn.lStructSize		= sizeof(OPENFILENAMEW);
+		ofn.lpstrTitle		= L"Run Script:\0";
 		ofn.hwndOwner		= NULL;
 		ofn.lpstrFile		= szFile;
 		ofn.nMaxFile		= _MAX_PATH;
-		ofn.lpstrFilter		= "AutoIt files (*.au3)\0*.au3\0All files (*.*)\0*.*\0";
+		ofn.lpstrFilter		= L"AutoIt files (*.au3)\0*.au3\0All files (*.*)\0*.*\0";
 		ofn.nFilterIndex	= 1;
 		ofn.Flags			= OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-		ofn.lpstrDefExt		= "au3";
+		ofn.lpstrDefExt		= L"au3";
 
 		// Check that the user successfully selected a scriptfile
-		if (!GetOpenFileNameA(&ofn))
+		if (!GetOpenFileNameW(&ofn))
 			return false;
 	}
 
@@ -637,7 +637,7 @@ bool AutoIt_ScriptFile::LoadScript(char *szFile)
 	Util_GetLongFileName(szFile, szFile);
 
 	// Read in the script and any include files
-    return Include(szFile, AddIncludeName(szFile));
+    return Include(Util_UNICODEtoANSIStr(szFile).c_str(), AddIncludeName(Util_UNICODEtoANSIStr(szFile).c_str()));
 
 } // LoadScript()
 

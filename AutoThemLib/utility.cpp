@@ -163,22 +163,37 @@ void Util_RandInit(void)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-void Util_RegReadString(HKEY hKey, LPCTSTR lpSubKey, LPCTSTR lpValueName, DWORD dwBufLen, char *szValue )
+void Util_RegReadString(HKEY hKey, LPCWSTR lpSubKey, LPCWSTR lpValueName, DWORD dwBufLen, LPWSTR szValue )
 {
 	HKEY	hRegKey;
 
 	// Make sure the return value is blank just in case we error
 	szValue[0] = '\0';
 
-	if (RegOpenKeyEx(hKey, lpSubKey, 0, KEY_QUERY_VALUE, &hRegKey) != ERROR_SUCCESS)
+	if (RegOpenKeyExW(hKey, lpSubKey, 0, KEY_QUERY_VALUE, &hRegKey) != ERROR_SUCCESS)
 		return;
 
-	RegQueryValueEx(hRegKey, lpValueName, NULL, NULL, (LPBYTE)szValue, &dwBufLen);
+	RegQueryValueExW(hRegKey, lpValueName, NULL, NULL, (LPBYTE)szValue, &dwBufLen);
 
 	RegCloseKey(hRegKey);
 
 } // Util_RegReadString()
 
+
+void Util_RegReadString(HKEY hKey, LPCSTR lpSubKey, LPCSTR lpValueName, DWORD dwBufLen, LPSTR szValue)
+{
+	HKEY	hRegKey;
+
+	// Make sure the return value is blank just in case we error
+	szValue[0] = '\0';
+
+	if (RegOpenKeyExA(hKey, lpSubKey, 0, KEY_QUERY_VALUE, &hRegKey) != ERROR_SUCCESS)
+		return;
+
+	RegQueryValueExA(hRegKey, lpValueName, NULL, NULL, (LPBYTE)szValue, &dwBufLen);
+
+	RegCloseKey(hRegKey);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Util_WinKill()
@@ -637,13 +652,21 @@ unsigned int Util_AddCRSize(const char *szText)
 
 void Util_StripTrailingDir(char *szPath)
 {
-	int len = (int)strlen(szPath)-1;
+	size_t len = strlen(szPath)-1;
 
-	if (szPath[len] == '\\')
+	if (szPath[len] == '\\' || szPath[len] == L'/')
 		szPath[len] = '\0';
 
 } // Util_StripTrailingDir
 
+
+void Util_StripTrailingDir(wchar_t* szPath)
+{
+	size_t len = wcslen(szPath) - 1;
+
+	if (szPath[len] == L'\\' || szPath[len] == L'/')
+		szPath[len] = '\0';
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Util_FileSetTime()
@@ -780,13 +803,24 @@ bool Util_IsDir(const char *szPath)
 
 void Util_GetFullPathName(const char *szIn, char *szOut)
 {
-	char	*szFilePart;
-
-	GetFullPathNameA(szIn, _MAX_PATH, szOut, &szFilePart);
-	Util_StripTrailingDir(szOut);
-
+	char* szFilePart;
+	char* sz_temp = new char[4096]();
+	GetFullPathNameA(szIn, _MAX_PATH, sz_temp, &szFilePart);
+	Util_StripTrailingDir(sz_temp);
+	strncpy(szOut, sz_temp, MAX_PATH);
+	delete[]sz_temp;
 } // Util_GetFullPathName()
 
+
+void Util_GetFullPathName(const wchar_t* szIn, wchar_t* szOut)
+{
+	wchar_t* szFilePart;
+	wchar_t* sz_temp = new wchar_t[4096]();
+	GetFullPathNameW(szIn, _MAX_PATH, sz_temp, &szFilePart);
+	Util_StripTrailingDir(sz_temp);
+	wcsncpy(szOut, sz_temp, MAX_PATH);
+	delete[]sz_temp;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Util_GetLongFileName()
@@ -834,6 +868,45 @@ bool Util_GetLongFileName(const char *szIn, char *szOut)
 
 } // Util_GetLongFileName()
 
+
+bool Util_GetLongFileName(const wchar_t* szIn, wchar_t* szOut)
+{
+	IMalloc*		iMalloc;
+	BOOL			ret = FALSE;
+	IShellFolder*	iShellFolder;
+	wchar_t			buffer[MAX_PATH];
+	ULONG			eaten;
+	ITEMIDLIST*		itemIDList;
+	wchar_t			filePath[MAX_PATH];
+
+	if (SHGetMalloc(&iMalloc) != NOERROR)
+	{
+		wcscpy(szOut, szIn);
+		return false;
+	}
+
+	// convert file path to display name
+	if (SHGetDesktopFolder(&iShellFolder) == NOERROR)
+	{
+		wcscpy(buffer, szIn);
+		if (iShellFolder->ParseDisplayName(NULL, NULL, buffer, &eaten, &itemIDList, NULL) == S_OK)
+		{
+			if ((ret = SHGetPathFromIDListW(itemIDList, filePath)))
+				wcscpy(szOut, filePath);
+			iMalloc->Free(itemIDList);
+		}
+		iShellFolder->Release();
+	}
+	iMalloc->Release();
+
+	if (!ret)
+	{
+		wcscpy(szOut, szIn);					// Error, dupicate input
+		return false;
+	}
+	else
+		return true;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Util_IsDifferentVolumes()
@@ -1841,7 +1914,7 @@ void Util_AttachThreadInput(HWND hWnd, bool bAttach)
 
 int Util_MouseDown(const char *szButton)
 {
-	char swapped[4];
+	wchar_t swapped[4];
 	DWORD event=0;
 
 	if ( szButton[0] == '\0' || stricmp(szButton, "LEFT")==0 ) // empty string or "left"
@@ -1886,7 +1959,7 @@ int Util_MouseDown(const char *szButton)
 
 int Util_MouseUp(const char *szButton)
 {
-	char swapped[4];
+	wchar_t swapped[4];
 	DWORD event = 0;	// default to 0 in case no strings match
 
 	if ( szButton[0] == '\0' || stricmp(szButton, "LEFT")==0 ) // empty string or "left"

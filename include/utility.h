@@ -62,8 +62,8 @@ int		Util_NewHandler( size_t size);
 
 void	Util_RandInit(void);
 
-void	Util_RegReadString(HKEY hKey, LPCTSTR lpSubKey, LPCTSTR lpValueName, DWORD dwBufLen, char *szValue);
-
+void	Util_RegReadString(HKEY hKey, LPCWSTR lpSubKey, LPCWSTR lpValueName, DWORD dwBufLen, LPWSTR szValue);
+void	Util_RegReadString(HKEY hKey, LPCSTR  lpSubKey, LPCSTR  lpValueName, DWORD dwBufLen, LPSTR  szValue);
 void	Util_WinKill(HWND hWnd);
 
 bool	Util_DoesProcessExist(const char *szName, DWORD &dwPid, bool &bResult);
@@ -78,14 +78,17 @@ void	Util_StripCR(char *szText);
 void	Util_AddCR(const char *szInput, char *szOutput);
 unsigned int Util_AddCRSize(const char *szText);
 
-void	Util_StripTrailingDir(char *szPath);
+void	Util_StripTrailingDir(char*		szPath);
+void	Util_StripTrailingDir(wchar_t*	szPath);
 
 bool	Util_GetFileVersion(char *szFile, char *szVersion);
 
 bool	Util_DoesFileExist(const char *szFilename);
 bool	Util_IsDir(const char *szPath);
-void	Util_GetFullPathName(const char *szIn, char *szOut);
-bool	Util_GetLongFileName(const char *szIn, char *szOut);
+void	Util_GetFullPathName(const char*	szIn, char*		szOut);
+void	Util_GetFullPathName(const wchar_t* szIn, wchar_t*	szOut);
+bool	Util_GetLongFileName(const char*	szIn, char*		szOut);
+bool	Util_GetLongFileName(const wchar_t* szIn, wchar_t*	szOut);
 bool	Util_IsDifferentVolumes(const char *szPath1, const char *szPath2);
 bool	Util_DeleteFile(const char *szFilename);
 bool	Util_FileSetTime(const char *szFilename, FILETIME *ft, int nWhichTime);

@@ -62,7 +62,7 @@
 
 int WINAPI ATL_WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
-	g_hInstance			= hInstance;			// Program instance
+	g_hInstance			= GetModuleHandleW(nullptr);			// Program instance
 	g_nExitCode			= 0;					// Default exit code
 	g_nExitMethod		= AUT_EXITBY_NATURAL;	// Default exit method
 

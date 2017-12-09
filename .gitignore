@@ -1,8 +1,5 @@
-﻿################################################################################
-# 此 .gitignore 文件已由 Microsoft(R) Visual Studio 自动创建。
-################################################################################
-
-/.vs/AutoThem/v15
-/AutoThem/x64/Debug
-/AutoThemLib/x64/Debug
-/x64/Debug
+﻿
+/.vs
+/AutoThem/x64
+/AutoThemLib/x64
+/x64

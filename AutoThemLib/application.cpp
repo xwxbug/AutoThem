@@ -129,7 +129,7 @@ AutoIt_App::~AutoIt_App()
 void AutoIt_App::Run(void)
 {
 	wchar_t	szOldWorkingDir[_MAX_PATH+1];
-	char	szTempFileName[_MAX_PATH+1];
+	wchar_t	szTempFileName[_MAX_PATH+1];
 
 
 	// Parse the command line options (get scriptname, reveal mode, single cmd, etc.)
@@ -153,7 +153,7 @@ void AutoIt_App::Run(void)
 			return;									// Error loading script
 		}
 		else
-			GetFullPathNameA(m_szScriptFileName, _MAX_PATH, szTempFileName, &m_szScriptFilePart);
+			GetFullPathNameW(m_szScriptFileName, _MAX_PATH, szTempFileName, &m_szScriptFilePart);
 	}
 
 	// Prepare the script for use
@@ -321,7 +321,7 @@ void AutoIt_App::ParseCmdLine(void)
 	if ( !stricmp("/c", szTemp) )
 	{
 		m_bSingleCmdMode = true;
-		GetModuleFileNameA(NULL, m_szScriptFileName, _MAX_PATH);
+		GetModuleFileNameW(NULL, m_szScriptFileName, _MAX_PATH);
 
 		g_oCmdLine.GetNextParam(szTemp);
 		m_sSingleLine = szTemp;					// Store the single line
@@ -358,7 +358,7 @@ void AutoIt_App::ParseCmdLine(void)
 
 	// If we are here must just be the scriptfilename.au3 param1 param2 etc - store the script
 	// name - note, this will be converted to a FULLPATH by the loadscript() function
-	strcpy(m_szScriptFileName, szTemp);
+	wcscpy(m_szScriptFileName, Util_ANSItoUNICODEStr(szTemp).c_str());
 
 	// How many parameters left?  Use this number to Dim our $CmdLines array
 	pvTemp->ArraySubscriptClear();				// Reset the subscript
@@ -824,7 +824,7 @@ void AutoIt_App::SetTrayIconToolTip(void)
 	if (!g_bTrayIconDebug)
 	{
 		sTip += "AutoIt - ";					// Only Prefix with "AutoIt" when not debugging
-		sTip += m_szScriptFilePart;				// Get the scriptname from the script filename
+		sTip += Util_UNICODEtoANSIStr(m_szScriptFilePart).c_str();				// Get the scriptname from the script filename
 	}
 	else
 	{
