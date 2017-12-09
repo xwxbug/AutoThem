@@ -73,8 +73,7 @@ public:
 	void	ScopeIncrease(void);				// Increase scope (user function call)
 	void	ScopeDecrease(void);				// Decrease scope (return from user function)
 	int		isDeclared(AString sVarName);		// Return true if the reference variable exists (and type of variable, global/local etc)
-	bool	IsGlobalLevel(void)					// Returns true when vartable is in base/global state
-				{ return m_Locals.empty(); }
+	bool	IsGlobalLevel(void);				// Returns true when vartable is in base/global state
 };
 
 ///////////////////////////////////////////////////////////////////////////////

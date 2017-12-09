@@ -80,7 +80,7 @@ CInputBox::CInputBox(void)
 {
 	m_hWnd			= NULL;
 	m_password		= '\0';
-	m_title			= "";
+	m_title			= L"";
 	m_left			= -1;
 	m_top			= -1;
 	m_width			= -1;
@@ -89,8 +89,8 @@ CInputBox::CInputBox(void)
 	m_timer			= 0;
 	m_maxlen		= 0;
 	m_flags			= 0;
-	m_strInputText	= "";
-	m_strPrompt		= "";
+	m_strInputText	= L"";
+	m_strPrompt		= L"";
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -108,18 +108,18 @@ BOOL CInputBox::OnInitDialog()
 
 	// Title the message box
 	if (m_title.length()>0)
-		SetWindowTextA(m_hWnd, m_title.c_str());
+		SetWindowTextW(m_hWnd, m_title.c_str());
 
 	// Prompt
 	if (m_strPrompt.length()>0) {
 		hControl = GetDlgItem(m_hWnd, IDC_INPUTPROMPT);
-		SetWindowTextA(hControl, m_strPrompt.c_str());
+		SetWindowTextW(hControl, m_strPrompt.c_str());
 	}
 
 	// Default Value?
 	if (m_strInputText.length()>0) {
 		hControl = GetDlgItem(m_hWnd, IDC_INPUTEDIT);
-		SetWindowTextA(hControl, m_strInputText.c_str());
+		SetWindowTextW(hControl, m_strInputText.c_str());
 	}
 
 	// Check for password character
@@ -147,8 +147,8 @@ BOOL CInputBox::OnInitDialog()
 		nWidth=m_width;
 	if (m_height>0)
 		nHeight=m_height;
-	if (m_title != "")
-		SetWindowTextA(m_hWnd, m_title.c_str());
+	if (m_title.length())
+		SetWindowTextW(m_hWnd, m_title.c_str());
 
   	GetWindowRect(GetDesktopWindow(), &rSize);
 	Normalize(rSize);
@@ -260,7 +260,7 @@ void CInputBox::OnTimer(UINT iIdent)
 {
  	// What to do when the timer signals
  	if (iIdent == TimerConst) {  // Timeout timer
- 		m_strInputText = "";
+ 		m_strInputText = L"";
  		EndDialog(m_hWnd, IDABORT);
  	}
 }
@@ -274,12 +274,12 @@ void CInputBox::OnGetMinMaxInfo(LPMINMAXINFO lpMMI)
 void CInputBox::OnOK()
 {
 	HWND hControl=NULL;
-	char szInputText[256];
+	wchar_t szInputText[256];
 
 	// Make sure that the string is not empty.
 	hControl = GetDlgItem(m_hWnd, IDC_INPUTEDIT);
 	if (hControl != NULL) {
-		GetWindowTextA(hControl, szInputText, 256);
+		GetWindowTextW(hControl, szInputText, 256);
  		if ((m_flags & ibf_notnull) && *szInputText == '\0')	// empty string
  			MessageBeep(MB_OK);
  		else {
@@ -293,7 +293,7 @@ void CInputBox::OnOK()
 
 void CInputBox::OnCancel()
 {
-	m_strInputText = "";
+	m_strInputText = L"";
 	EndDialog(m_hWnd, IDCANCEL);
 }
 

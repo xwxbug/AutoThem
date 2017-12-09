@@ -56,7 +56,6 @@
 
 #include "globaldata.h"
 #include "script.h"
-#include "shared_memory.h"
 #include "utility.h"
 #include "regexp.h"
 #include "resources\resource.h"

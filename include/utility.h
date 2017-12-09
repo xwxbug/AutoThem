@@ -53,7 +53,7 @@
 #endif
 
 #include "variant_datatype.h"
-
+#include <string>
 
 // Function declarations
 void	Util_FatalError(UINT iErrTitle, UINT iErrMsg, HWND hWnd);
@@ -147,7 +147,10 @@ bool	Util_ConvSystemTime(const char *szTime, SYSTEMTIME *st, bool bDate, int nSe
 int		Util_IsSpace(int c);
 
 wchar_t * Util_ANSItoUNICODE(const char *szANSI, int nMinLen = 0);
+std::wstring Util_ANSItoUNICODEStr(const char *szANSI, int nMinLen=0);
+
 char *	Util_UNICODEtoANSI(const wchar_t *szUNI, int nMinLen = 0);
+std::string Util_UNICODEtoANSIStr(const wchar_t *szUNI, int nMinLen=0);
 
 template<typename T> inline void Util_VariantArrayAssign(Variant *pvVariant, unsigned int iElement, T tParam)
 {

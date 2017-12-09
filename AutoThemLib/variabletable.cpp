@@ -205,3 +205,8 @@ int VariableTable::isDeclared(AString sVarName)
 
 } // isDeclared()
 
+bool VariableTable::IsGlobalLevel(void) // Returns true when vartable is in base/global state
+{
+	return m_Locals.empty();
+}
+

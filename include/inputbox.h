@@ -49,7 +49,7 @@
 #include "AutoIt.h"
 #include "resources\resource.h"
 #include "astring_datatype.h"
-
+#include <string>
 
 /////////////////////////////////////////////////////////////////////////////
 // CInputBox dialog
@@ -75,9 +75,9 @@ public:
 	int m_maxlen;
 	double m_timeout;
 	char m_password;
-	AString m_title;
-	AString	m_strInputText;
-	AString	m_strPrompt;
+	std::wstring	m_title;
+	std::wstring	m_strInputText;
+	std::wstring	m_strPrompt;
 
 private:
 	HWND m_hWnd;

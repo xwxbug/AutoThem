@@ -122,7 +122,7 @@ enum
 	RP,											// Reduce parenthesis
 	A,											// Accept
 	E1,											// Error: missing )
-	E2,											// Error: mising operator
+	E2,											// Error: missing operator
 	E3											// Error: unbalanced )
 };
 

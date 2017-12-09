@@ -1698,3 +1698,8 @@ bool Variant::ArrayCopy(Variant &other)
 	return false;
 
 } // ArrayCopy
+
+int Variant::type(void) const
+{
+	return m_nVarType;
+}

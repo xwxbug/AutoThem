@@ -57,7 +57,6 @@
 #include "scriptfile.h"
 #include "os_version.h"
 #include "guibox.h"
-#include "shared_memory.h"
 
 
 // Global data

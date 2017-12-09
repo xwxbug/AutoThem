@@ -105,7 +105,7 @@ VectorToken::~VectorToken()
 // Overloaded operator[]()
 ///////////////////////////////////////////////////////////////////////////////
 
-Token& VectorToken::operator[](unsigned int nIndex)
+Token& VectorToken::operator[](size_t nIndex)
 {
 	// Check bounds
 	if (nIndex >= m_nItems)
@@ -116,7 +116,7 @@ Token& VectorToken::operator[](unsigned int nIndex)
 
 
 	// Loop through and return the correct token
-	unsigned int	i;
+	size_t	i;
 	VectorTokenNode	*lpTemp;
 
 	lpTemp = m_lpFirst;
@@ -142,8 +142,8 @@ VectorToken& VectorToken::operator=(VectorToken &vOp2)
 	clear();
 
 	// Copy items
-	int nSize = vOp2.size();
-	for (int i=0; i<nSize; ++i)
+	size_t nSize = vOp2.size();
+	for (size_t i=0; i<nSize; ++i)
 		push_back(vOp2[i]);
 
 	return *this;								// Return this object that generated the call
@@ -222,5 +222,9 @@ void VectorToken::clear(void)
 
 } // clear()
 
+size_t VectorToken::size(void) const
+{
+	return m_nItems;
+}
 
 

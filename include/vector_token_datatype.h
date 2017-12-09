@@ -53,8 +53,8 @@
 // Structs for stack node
 typedef struct _VectorTokenNode
 {
-	Token					tItem;			// The item
-	struct _VectorTokenNode	*lpNext;		// Next node (or NULL)
+	Token					tItem;						// The item
+	struct _VectorTokenNode	*lpNext;					// Next node (or NULL)
 
 } VectorTokenNode;
 
@@ -63,29 +63,29 @@ class VectorToken
 {
 public:
 	// Functions
-	VectorToken();							// Constructor
-	VectorToken(const VectorToken &vSource);// Copy Constructor
-	~VectorToken();							// Destructor
+	VectorToken();										// Constructor
+	VectorToken(const VectorToken &vSource);			// Copy Constructor
+	~VectorToken();										// Destructor
 
-	void			push_back(const Token &tItem);	// Push item onto end of vector
-	void			clear(void);					// Deletes all items
+	void			push_back(const Token &tItem);		// Push item onto end of vector
+	void			clear(void);						// Deletes all items
 
 
 	// Properties
-	unsigned int	size(void) const { return m_nItems; }	// Return number of items on stack
-	bool			empty(void) const;						// Tests if stack empty
+	size_t			size(void) const;					// Return number of items on stack
+	bool			empty(void) const;					// Tests if stack empty
 
 
 	// Overloads
-	Token&			operator[](unsigned int nIndex);// Overloaded []
-	VectorToken&	operator=(VectorToken &vOp2);	// Overloaded = for vectortokens
+	Token&			operator[](size_t nIndex);			// Overloaded []
+	VectorToken&	operator=(VectorToken &vOp2);		// Overloaded = for vectortokens
 
 
 private:
 	// Variables
-	unsigned int	m_nItems;				// Number of items on stack
-	VectorTokenNode	*m_lpFirst;				// Pointer to first node
-	VectorTokenNode	*m_lpLast;				// Pointer to last node
+	size_t	m_nItems;									// Number of items on stack
+	VectorTokenNode	*m_lpFirst;							// Pointer to first node
+	VectorTokenNode	*m_lpLast;							// Pointer to last node
 	Token			m_tNull;
 
 };

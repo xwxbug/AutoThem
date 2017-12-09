@@ -128,7 +128,7 @@ void Util_FatalError(char *szTitle, char *szText, HWND hWnd)
 
 int Util_NewHandler( size_t size)
 {
-	MessageBoxA(NULL, "Error allocating memory.", "AutoIt", MB_ICONSTOP | MB_OK);
+	MessageBoxW(NULL, L"Error allocating memory.", L"AutoIt", MB_ICONSTOP | MB_OK);
 	exit(1);									// Force termination
 
 	return 0;									// Never reached, but compiler wants a return value
@@ -2407,6 +2407,30 @@ wchar_t * Util_ANSItoUNICODE(const char *szANSI, int nMinLen)
 } // Util_ANSItoUNICODE()
 
 
+std::wstring Util_ANSItoUNICODEStr(const char *szANSI, int nMinLen)
+{
+	wchar_t *szUNI;
+	std::wstring sz_result;
+	// First find out how many wide chars we need
+	int nLen = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, szANSI, -1, NULL, 0);
+
+	if (nLen == 0)
+		return NULL;							// Unable to convert (unlikely)
+
+												// Allocate our buffer (must be at least nMinLen chars)
+	if (nMinLen > nLen)
+		szUNI = new wchar_t[nMinLen];
+	else
+		szUNI = new wchar_t[nLen];
+
+	// Do the conversion proper
+	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, szANSI, -1, szUNI, nLen);
+	sz_result = szUNI;
+	delete[]szUNI;
+	return sz_result;
+
+} // Util_ANSItoUNICODEStr()
+
 ///////////////////////////////////////////////////////////////////////////////
 // Util_UNICODEtoANSI()
 //
@@ -2439,5 +2463,29 @@ char * Util_UNICODEtoANSI(const wchar_t *szUNI, int nMinLen)
 	WideCharToMultiByte(CP_ACP, 0, szUNI, -1, szANSI, nLen, NULL, NULL);
 
 	return szANSI;
+
+} // Util_UNICODEtoANSI()
+
+std::string Util_UNICODEtoANSIStr(const wchar_t *szUNI, int nMinLen)
+{
+	char *szANSI;
+	std::string sz_result;
+	// First find out how many wide chars we need
+	int nLen = WideCharToMultiByte(CP_ACP, 0, szUNI, -1, NULL, 0, NULL, NULL);
+
+	if (nLen == 0)
+		return NULL;							// Unable to convert (unlikely)
+
+												// Allocate our buffer (must be at least nMinLen chars)
+	if (nMinLen > nLen)
+		szANSI = new char[nMinLen];
+	else
+		szANSI = new char[nLen];
+
+	// Do the conversion proper
+	WideCharToMultiByte(CP_ACP, 0, szUNI, -1, szANSI, nLen, NULL, NULL);
+	sz_result = szANSI;
+	delete[]szANSI;
+	return sz_result;
 
 } // Util_UNICODEtoANSI()

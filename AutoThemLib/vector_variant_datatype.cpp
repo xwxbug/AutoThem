@@ -200,3 +200,8 @@ void VectorVariant::clear(void)
 	m_lpLast	= NULL;
 
 } // clear()
+
+unsigned int VectorVariant::size(void) const
+{
+	return m_nItems;
+}

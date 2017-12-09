@@ -1481,15 +1481,15 @@ AUT_RESULT AutoIt_Script::F_InputBox(VectorVariant &vParams, Variant &vResult)
 				} // for i
 
 		case 3: // with default
-			aDlg.m_strInputText = vParams[2].szValue();
+			aDlg.m_strInputText = Util_ANSItoUNICODEStr(vParams[2].szValue());
 
 		case 2:	// title and prompt only
-			aDlg.m_title = vParams[0].szValue();
-			aDlg.m_strPrompt = vParams[1].szValue();
+			aDlg.m_title = Util_ANSItoUNICODEStr(vParams[0].szValue());
+			aDlg.m_strPrompt = Util_ANSItoUNICODEStr(vParams[1].szValue());
 			iRetVal = aDlg.DoModal(g_hInstance, NULL);
 
 			if (iRetVal==IDOK)
-				vResult = aDlg.m_strInputText.c_str();
+				vResult = Util_UNICODEtoANSIStr(aDlg.m_strInputText.c_str()).c_str();
 			else if (iRetVal == IDCANCEL) {
 				SetFuncErrorCode(1);	// cancel pressed
 				vResult = "";

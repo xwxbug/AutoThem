@@ -129,7 +129,7 @@ public:
 	bool		ArrayCopy(Variant &other);			// Copies the given array into the current variant, minding array bounds
 
 	// Properties
-	int		type(void) const { return m_nVarType; }	// Returns variant type
+	int			type(void) const;					// Returns variant type
 	const char	*szValue(void);						// Returns string value
 	double		fValue(void);						// Returns float (double) value
 	int			nValue(void);						// Returns int value
