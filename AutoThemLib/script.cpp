@@ -702,6 +702,16 @@ const char * AutoIt_Script::FormatWinError(DWORD dwCode)
 } // FormatWinError()
 
 
+void AutoIt_Script::SetFuncErrorCode(int nCode)
+{
+	m_nFuncErrorCode = nCode;
+}
+
+void AutoIt_Script::SetFuncExtCode(int nCode)
+{
+	m_nFuncExtCode = nCode;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // InitScript()
 //

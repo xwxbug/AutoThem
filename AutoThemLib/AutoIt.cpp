@@ -62,7 +62,7 @@
 
 int WINAPI ATL_WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
-	g_hInstance			= GetModuleHandleW(nullptr);			// Program instance
+//	g_hInstance			= GetModuleHandleW(nullptr);			// Program instance
 	g_nExitCode			= 0;					// Default exit code
 	g_nExitMethod		= AUT_EXITBY_NATURAL;	// Default exit method
 
@@ -85,3 +85,20 @@ int WINAPI ATL_WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCm
 	return g_nExitCode;
 
 } // Winmain()
+
+BOOL APIENTRY DllMain(HMODULE hModule,DWORD  ul_reason_for_call,LPVOID lpReserved)
+{
+	switch (ul_reason_for_call)
+	{
+	case DLL_PROCESS_ATTACH:
+		{
+			g_hInstance = hModule;
+			break;
+		}
+	case DLL_THREAD_ATTACH:
+	case DLL_THREAD_DETACH:
+	case DLL_PROCESS_DETACH:
+		break;
+	}
+	return TRUE;
+}

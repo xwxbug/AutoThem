@@ -744,14 +744,14 @@ AUT_RESULT AutoIt_Script::F_WinSetTitle(VectorVariant &vParams, Variant &vResult
 
 AUT_RESULT AutoIt_Script::F_WinGetTitle(VectorVariant &vParams, Variant &vResult)
 {
-	char	szBuffer[AUT_WINTEXTBUFFER+1];
+	wchar_t	szBuffer[AUT_WINTEXTBUFFER+1];
 
 	Win_WindowSearchInit(vParams);
 
 	if (Win_WindowSearch() == false)
 		return AUT_OK;									// Required window not found
 
-	GetWindowTextA(m_WindowSearchHWND, szBuffer, AUT_WINTEXTBUFFER);
+	GetWindowTextW(m_WindowSearchHWND, szBuffer, AUT_WINTEXTBUFFER);
 
 	vResult = szBuffer;
 

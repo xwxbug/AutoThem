@@ -26,9 +26,9 @@ Macro Name | autoit(3.3.15.0) | AutoThem(current)
 @AppDataCommonDir|Y|Y
 @AppDataDir|Y|Y
 @AutoItExe|Y|Y
-@AutoItPID|Y|N
-@AutoItVersion|Y|N
-@AutoItX64|Y|N
+@AutoItPID|Y|Y
+@AutoItVersion|Y|Y
+@AutoItX64|Y|Y
 @COM_EventObj|Y|N
 @CommonFilesDir|Y|N
 @Compiled|Y|N
