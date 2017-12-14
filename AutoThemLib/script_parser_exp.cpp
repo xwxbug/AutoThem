@@ -149,6 +149,7 @@ enum
 	M_AUTOITX64,
 	M_CPUARCH,
 	M_KBLAYOUT,
+	M_LOCALAPPDATADIR,
 	M_NUMPARAMS,
 	M_MAX
 };
@@ -240,6 +241,7 @@ const char * AutoIt_Script::m_szMacros[M_MAX] =	{
 	"AUTOITX64",
 	"CPUARCH",
 	"KBLAYOUT",
+	"LOCALAPPDATADIR",
 	"NUMPARAMS"
 };
 
@@ -1076,6 +1078,13 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vRes
 			vResult = szValue_w_tmp1;
 			break;
 		}
+		case M_LOCALAPPDATADIR:
+		{
+			SHGetSpecialFolderPathW(NULL, szValue_w_tmp1, CSIDL_LOCAL_APPDATA, FALSE);
+			vResult = szValue_w_tmp1;
+			break;
+		}
+
 		case M_NUMPARAMS:
 			vResult = m_nNumParams;
 			break;

@@ -746,7 +746,7 @@ AUT_RESULT AutoIt_Script::InitScript(wchar_t *szFile)
 	m_sScriptFullPath = szFileTemp;
 	m_sScriptName = szFilePart;
 	szFilePart[-1] = '\0';
-	m_sScriptDir =  Util_UNICODEtoANSIStr(szFileTemp).c_str();
+	m_sScriptDir =  szFileTemp;
 
 	// Initialise the random number routine (must be done after the script has
 	// loaded as the compiled script loader also uses random numbers and must

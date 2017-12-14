@@ -304,7 +304,7 @@ private:
 	HS_SendKeys				m_oSendKeys;							// SendKeys object
 	std::wstring			m_sScriptName;							// Filename of script
 	std::wstring			m_sScriptFullPath;						// Full pathname of script
-	AString					m_sScriptDir;							// Directory the script is in
+	std::wstring			m_sScriptDir;							// Directory the script is in
 
 	HWND					m_hWndTip;								// ToolTip window
 

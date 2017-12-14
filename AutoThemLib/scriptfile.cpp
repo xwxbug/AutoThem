@@ -90,7 +90,7 @@ AutoIt_ScriptFile::AutoIt_ScriptFile()
 	DWORD	dwRes;
 	HKEY	hRegKey;
 
-	if ( RegOpenKeyExA(HKEY_LOCAL_MACHINE, "Software\\AutoIt v3\\AutoIt", 0, KEY_READ, &hRegKey) == ERROR_SUCCESS )
+	if ( RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"Software\\AutoIt v3\\AutoIt", 0, KEY_READ, &hRegKey) == ERROR_SUCCESS )
 	{
 		// Get the install directory's include path and add it as the first directory to search.
 		dwRes = _MAX_PATH;

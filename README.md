@@ -67,7 +67,7 @@ Macro Name | autoit(3.3.15.0) | AutoThem(current)
 @IPAddress4|Y|Y
 @KBLayout|Y|Y
 @LF|Y|Y
-@LocalAppDataDir|Y|N
+@LocalAppDataDir|Y|Y
 @LogonDNSDomain|Y|N
 @LogonDomain|Y|N
 @LogonServer|Y|N

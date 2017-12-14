@@ -164,34 +164,11 @@ AUT_RESULT AutoIt_Script::F_AutoItWinGetTitle(VectorVariant &vParams, Variant &v
 
 AUT_RESULT AutoIt_Script::F_BlockInput(VectorVariant &vParams, Variant &vResult)
 {
-
-typedef void (CALLBACK *BlockInput)(BOOL);
-
-	// Must be running 2000/ win98 for this function to be successful
-	// We must dynamically load the function to retain compatibility with Win95
-
-    // Get a handle to the DLL module that contains BlockInput
-	HINSTANCE hinstLib = LoadLibraryW(L"user32.dll");
-
-    // If the handle is valid, try to get the function address.
-	if (hinstLib != NULL)
-	{
-		BlockInput lpfnDLLProc = (BlockInput)GetProcAddress(hinstLib, "BlockInput");
-
-		if (lpfnDLLProc != NULL)
-		{
-			if (vParams[0].nValue() == 0)
-				(*lpfnDLLProc)(FALSE);
-			else
-				(*lpfnDLLProc)(TRUE);
-		}
-
-		// Free the DLL module.
-		FreeLibrary(hinstLib);
-	}
-
+	if (vParams[0].nValue() == 0)
+		BlockInput(FALSE);
+	else
+		BlockInput(TRUE);
 	return AUT_OK;
-
 } // BlockInput()
 
 
