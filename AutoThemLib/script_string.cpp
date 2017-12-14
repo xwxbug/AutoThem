@@ -128,16 +128,16 @@ AUT_RESULT AutoIt_Script::F_StringMid(VectorVariant &vParams, Variant &vResult)
 
 	std::wstring	sInput = vParams[0].szValue();
 	std::wstring	sResult;
-	int		nCount =-1;
-	int		nStart = vParams[1].nValue() - 1;
+	int				nCount = -1;
+	int				nStart = vParams[1].nValue() - 1;
 
 	if (vParams.size() > 2)
-		nCount	= vParams[2].nValue();
+		nCount = vParams[2].nValue();
 
-	if ( (nCount > (sInput.length() - nStart)) || (nCount < 0) )
+	if ((nCount > (sInput.length() - nStart)) || (nCount < 0))
 		nCount = sInput.length() - nStart;
 
-	sResult.assign( sInput, nStart, nStart+nCount );
+	sResult.assign(sInput, nStart, nStart + nCount);
 
 	vResult = sResult.c_str();
 	return AUT_OK;
@@ -164,7 +164,7 @@ AUT_RESULT AutoIt_Script::F_StringTrimLeft(VectorVariant &vParams, Variant &vRes
 		return AUT_OK;
 	}
 
-	sResult.assign( sInput, nStart, nEnd );
+	sResult.assign(sInput, nStart, nEnd);
 
 	vResult = sResult.c_str();
 	return AUT_OK;
@@ -184,7 +184,7 @@ AUT_RESULT AutoIt_Script::F_StringTrimRight(VectorVariant &vParams, Variant &vRe
 	std::wstring sResult;
 	int		nEnd;
 
-	if ( vParams[1].nValue() >= sInput.length() )
+	if (vParams[1].nValue() >= sInput.length())
 	{
 		vResult = "";
 		return AUT_OK;
@@ -192,7 +192,7 @@ AUT_RESULT AutoIt_Script::F_StringTrimRight(VectorVariant &vParams, Variant &vRe
 
 	nEnd = sInput.length() - vParams[1].nValue();
 
-	sResult.assign( sInput, 0, nEnd );
+	sResult.assign(sInput, 0, nEnd);
 
 	vResult = sResult.c_str();
 	return AUT_OK;
@@ -213,7 +213,7 @@ AUT_RESULT AutoIt_Script::F_StringInStr(VectorVariant &vParams, Variant &vResult
 	bool	bCs = false;	// not case sensitive
 
 	// Get the string into our nice string class
-	AString sInput = Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str();
+	std::wstring sInput = vParams[0].szValue();
 
 	switch (vParams.size())
 	{
@@ -234,13 +234,13 @@ AUT_RESULT AutoIt_Script::F_StringInStr(VectorVariant &vParams, Variant &vResult
 
 	case 2:
 		// do the find.
-		nPos = sInput.find_str( Util_UNICODEtoANSIStr(vParams[1].szValue()).c_str(), bCs, nOccur );
+		nPos = Util_find_string_in_str(sInput.c_str(), vParams[1].szValue(), bCs, nOccur);
 	}
 
 	if (nPos == sInput.length())
 		vResult = 0;
 	else
-		vResult =  (int)nPos + 1;
+		vResult = (int)nPos + 1;
 
 	return AUT_OK;
 
@@ -255,11 +255,8 @@ AUT_RESULT AutoIt_Script::F_StringLower(VectorVariant &vParams, Variant &vResult
 {
 	// $var = StringLower(<string>)
 
-	AString sString = Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str();
-	sString.tolower();
-
-	vResult =  sString.c_str();
-
+	std::wstring sz_string = stringtolowerW(vParams[0].szValue());
+	vResult = sz_string.c_str();
 	return AUT_OK;
 
 } // StringLower()
@@ -273,10 +270,8 @@ AUT_RESULT AutoIt_Script::F_StringUpper(VectorVariant &vParams, Variant &vResult
 {
 	// $var = StringUpper(<string>)
 
-	AString sString = Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str();
-	sString.toupper();
-
-	vResult =  sString.c_str();
+	std::wstring sz_string = stringtoupperW(vParams[0].szValue());
+	vResult = sz_string.c_str();
 
 	return AUT_OK;
 
@@ -941,20 +936,17 @@ AUT_RESULT AutoIt_Script::F_StringFormat(VectorVariant &vParams, Variant &vResul
 
 AUT_RESULT AutoIt_Script::F_StringIsAlpha(VectorVariant &vParams, Variant &vResult)
 {
-	uchar *pChar;
-
 	vResult = 0;						// Set default
-	pChar = (uchar *)(vParams[0].szValue());
+	const wchar_t *pChar = vParams[0].szValue();
 	if (*pChar == '\0')	// empty string.  Not valid
-			return AUT_OK;
+		return AUT_OK;
 	for (; *pChar != '\0'; ++pChar)
-		if (!IsCharAlpha(*pChar))
+		if (!IsCharAlphaW(*pChar))
 			return AUT_OK;
 	// entire string read.  It passed.
 	vResult = 1;
 
 	return AUT_OK;
-
 } // StringIsAlpha()
 
 
@@ -964,14 +956,12 @@ AUT_RESULT AutoIt_Script::F_StringIsAlpha(VectorVariant &vParams, Variant &vResu
 
 AUT_RESULT AutoIt_Script::F_StringIsAlnum(VectorVariant &vParams, Variant &vResult)
 {
-	uchar *pChar;
-
 	vResult = 0;						// Set default
-	pChar = (uchar *)(vParams[0].szValue());
+	const wchar_t *pChar = vParams[0].szValue();
 	if (*pChar == '\0')	// empty string.  Not valid
-			return AUT_OK;
+		return AUT_OK;
 	for (; *pChar != '\0'; ++pChar)
-		if (!IsCharAlphaNumeric(*pChar))
+		if (!IsCharAlphaNumericW(*pChar))
 			return AUT_OK;
 	// entire string read.  It passed.
 	vResult = 1;
@@ -986,10 +976,8 @@ AUT_RESULT AutoIt_Script::F_StringIsAlnum(VectorVariant &vParams, Variant &vResu
 
 AUT_RESULT AutoIt_Script::F_StringIsDigit(VectorVariant &vParams, Variant &vResult)
 {
-	uchar *pChar;
-
 	vResult = 0;						// Set default
-	pChar = (uchar *)(vParams[0].szValue());
+	const wchar_t *pChar = vParams[0].szValue();
 	if (*pChar == '\0')	// empty string.  Not valid
 		return AUT_OK;
 	for (; *pChar != '\0'; ++pChar)
@@ -1008,12 +996,10 @@ AUT_RESULT AutoIt_Script::F_StringIsDigit(VectorVariant &vParams, Variant &vResu
 
 AUT_RESULT AutoIt_Script::F_StringIsXDigit(VectorVariant &vParams, Variant &vResult)
 {
-	uchar *pChar;
-
 	vResult = 0;						// Set default
-	pChar = (uchar *)(vParams[0].szValue());
+	const wchar_t *pChar = vParams[0].szValue();
 	if (*pChar == '\0')	// empty string.  Not valid
-			return AUT_OK;
+		return AUT_OK;
 	for (; *pChar != '\0'; ++pChar)
 		if (!isxdigit(*pChar))
 			return AUT_OK;
@@ -1030,12 +1016,10 @@ AUT_RESULT AutoIt_Script::F_StringIsXDigit(VectorVariant &vParams, Variant &vRes
 
 AUT_RESULT AutoIt_Script::F_StringIsLower(VectorVariant &vParams, Variant &vResult)
 {
-	uchar *pChar;
-
 	vResult = 0;						// Set default
-	pChar = (uchar *)(vParams[0].szValue());
+	const wchar_t *pChar = vParams[0].szValue();
 	if (*pChar == '\0')	// empty string.  Not valid
-			return AUT_OK;
+		return AUT_OK;
 	for (; *pChar != '\0'; ++pChar)
 		if (!IsCharLower(*pChar))
 			return AUT_OK;
@@ -1052,12 +1036,10 @@ AUT_RESULT AutoIt_Script::F_StringIsLower(VectorVariant &vParams, Variant &vResu
 
 AUT_RESULT AutoIt_Script::F_StringIsUpper(VectorVariant &vParams, Variant &vResult)
 {
-	uchar *pChar;
-
 	vResult = 0;						// Set default
-	pChar = (uchar *)(vParams[0].szValue());
+	const wchar_t *	pChar = vParams[0].szValue();
 	if (*pChar == '\0')	// empty string.  Not valid
-			return AUT_OK;
+		return AUT_OK;
 	for (; *pChar != '\0'; ++pChar)
 		if (!IsCharUpper(*pChar))
 			return AUT_OK;
@@ -1074,10 +1056,8 @@ AUT_RESULT AutoIt_Script::F_StringIsUpper(VectorVariant &vParams, Variant &vResu
 
 AUT_RESULT AutoIt_Script::F_StringIsSpace(VectorVariant &vParams, Variant &vResult)
 {
-	uchar *pChar;
-
 	vResult = 0;						// Set default
-	pChar = (uchar *)(vParams[0].szValue());
+	const wchar_t *	pChar = vParams[0].szValue();
 	if (*pChar == '\0')	// empty string.  Not valid
 		return AUT_OK;
 	for (; *pChar != '\0'; ++pChar)
@@ -1096,12 +1076,10 @@ AUT_RESULT AutoIt_Script::F_StringIsSpace(VectorVariant &vParams, Variant &vResu
 
 AUT_RESULT AutoIt_Script::F_StringIsASCII(VectorVariant &vParams, Variant &vResult)
 {
-	uchar *pChar;
-
 	vResult = 0;						// Set default
-	pChar = (uchar *)(vParams[0].szValue());
+	const wchar_t *pChar = vParams[0].szValue();
 	if (*pChar == '\0')	// empty string.  Not valid
-			return AUT_OK;
+		return AUT_OK;
 	for (; *pChar != '\0'; ++pChar)
 		if (!isascii(*pChar))
 			return AUT_OK;

@@ -2883,7 +2883,7 @@ std::string Util_UNICODEtoANSIStr(const wchar_t *szUNI, int nMinLen)
 size_t Util_find_string_in_str(const wchar_t* sz_text, const wchar_t *szInput, bool bCaseSense, int nOccurance)
 {
 	int		i, nMatches;
-	int		nInputLen = (int)wcslen(szInput);
+	size_t	nInputLen = wcslen(szInput);
 	size_t	nTextLen = wcslen(sz_text);
 
 	if (nOccurance > 0)

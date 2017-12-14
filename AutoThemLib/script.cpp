@@ -1408,7 +1408,7 @@ AUT_RESULT AutoIt_Script::StorePluginFuncs(void)
 
 bool StoreModuleFuncsSort(ATE_FuncInfo i, ATE_FuncInfo j)
 {
-	return stricmp(i.szName, j.szName)==0;
+	return stricmp(i.szName, j.szName)<=0;
 }
 
 AUT_RESULT AutoIt_Script::StoreModuleFuncs(void)
@@ -1474,6 +1474,22 @@ bool AutoIt_Script::RegisterModuleFuncs(ATE_FuncInfo * lp_func_info)
 	CharUpperA(lp_sz_func_name);
 	afi_tmp.szName = strdup(lp_sz_func_name);
 	free(lp_sz_func_name);
+	m_vec_module_func_list.push_back(afi_tmp);
+	return true;
+}
+
+bool AutoIt_Script::RegisterModuleFuncs(const char * szName, ATE_FUNCTION lpFunc, int nMin, int nMax)
+{
+	if (!szName)
+		return false;
+	if (!lpFunc)
+		return false;
+	ATE_FuncInfo afi_tmp;
+	afi_tmp.lpFunc = lpFunc;
+	afi_tmp.nMin = nMin;
+	afi_tmp.nMax = nMax;
+	afi_tmp.szName = strdup(szName);
+	CharUpperA((LPSTR)afi_tmp.szName);
 	m_vec_module_func_list.push_back(afi_tmp);
 	return true;
 }

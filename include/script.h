@@ -296,6 +296,7 @@ class IExternalScript
 {
 public:
 	virtual bool RegisterModuleFuncs(ATE_FuncInfo * lp_func_info) = 0;
+	virtual bool RegisterModuleFuncs(const char	  * szName, ATE_FUNCTION lpFunc, int nMin, int nMax) = 0;
 };
 
 // The AutoIt Script object
@@ -468,6 +469,7 @@ private:
 ////外部模块函数注册
 	AUT_RESULT		StoreModuleFuncs(void);
 	bool			RegisterModuleFuncs(ATE_FuncInfo * lp_func_info);
+	bool			RegisterModuleFuncs(const char   * szName, ATE_FUNCTION lpFunc, int nMin, int nMax);
 ////
 	bool			HandleDelayedFunctions(void);						// Handle delayed commands
 	bool			HandleAdlib(void);
