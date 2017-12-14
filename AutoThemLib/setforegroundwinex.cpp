@@ -68,11 +68,10 @@ void SetForegroundWinEx::Patch()
 	OS_Version		oVersion;
 	DWORD			dwTimeout;
 
-	m_bWin98orLater = oVersion.IsWin98orLater();
 	m_bWin2000orLater = oVersion.IsWin2000orLater();
 
 	// If we are running 98/2000 or later, do the crazy patches
-	if ( (m_bWin98orLater == true) || (m_bWin2000orLater == true) )
+	if ( m_bWin2000orLater == true )
 	{
 		// Get current systemparam timeout
 		SystemParametersInfo(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, &dwTimeout, 0);
@@ -99,7 +98,7 @@ void SetForegroundWinEx::UnPatch()
 	DWORD			dwTimeout;
 
 	// If we are running 98/2000 or later, undo the crazy patches
-	if ( (m_bWin98orLater == true) || (m_bWin2000orLater == true) )
+	if (m_bWin2000orLater == true)
 	{
 		// Get old systemparam timeout
 		dwTimeout = m_dwOldSystemTimeout;	// Use local var to stop API freaking due to C++

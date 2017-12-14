@@ -945,14 +945,7 @@ AUT_RESULT AutoIt_Script::F_IsAdmin(VectorVariant &vParams, Variant &vResult)
 {
 	vResult = 0;								// Set default
 
-	if (g_oVersion.IsWin9x())
-	{
-		vResult = 1;
-		return AUT_OK;
-	}
-
 	// Running NT, check rights
-
 	SC_HANDLE h = OpenSCManager( NULL, NULL, SC_MANAGER_LOCK );
 	if ( h )
 	{

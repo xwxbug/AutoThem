@@ -12,7 +12,7 @@ plan
  6. rewrite all source code 
  
 
-Current Function Port
+Current Variable Port
 --
 
 Variable Name | autoit(3.3.15.0) | AutoThem(current)
@@ -21,6 +21,8 @@ $CmdLine|Y|Y
 $CmdLineRaw|Y|Y
 
 
+Current Macro Port
+--
 Macro Name | autoit(3.3.15.0) | AutoThem(current)
 ---|---|---
 @AppDataCommonDir|Y|Y
@@ -69,22 +71,22 @@ Macro Name | autoit(3.3.15.0) | AutoThem(current)
 @LF|Y|Y
 @LocalAppDataDir|Y|Y
 @LogonDNSDomain|Y|Y
-@LogonDomain|Y|N
-@LogonServer|Y|N
-@MDAY|Y|N
-@MIN|Y|N
-@MON|Y|N
-@MSEC|Y|N
-@MUILang|Y|N
-@MyDocumentsDir|Y|N
-@NumParams|Y|N
-@OSArch|Y|N
-@OSBuild|Y|N
-@OSLang|Y|N
-@OSServicePack|Y|N
-@OSType|Y|N
-@OSVersion|Y|N
-@ProgramFilesDir|Y|N
+@LogonDomain|Y|Y
+@LogonServer|Y|Y
+@MDAY|Y|Y
+@MIN|Y|Y
+@MON|Y|Y
+@MSEC|Y|Y
+@MUILang|Y|Y
+@MyDocumentsDir|Y|Y
+@NumParams|Y|Y
+@OSArch|Y|Y
+@OSBuild|Y|Y
+@OSLang|Y|Y
+@OSServicePack|Y|Y
+@OSType|Y|Y
+@OSVersion|Y|Y
+@ProgramFilesDir|Y|Y
 @ProgramsCommonDir|Y|N
 @ProgramsDir|Y|N
 @ScriptDir|Y|N
@@ -125,7 +127,8 @@ Macro Name | autoit(3.3.15.0) | AutoThem(current)
 @WorkingDir|Y|N
 
 
-
+Current Function Port
+--
 Function Name | autoit(3.3.15.0) | AutoThem(current) | Param Count
 ---|---|---|---
 Abs|Y|N|(1,1)/(N/A,N/A)

@@ -1,116 +1,23 @@
+#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_NON_CONFORMING_SWPRINTFS
+#pragma warning(disable:4996) 
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// AutoIt v3
-//
-// Copyright (C)1999-2005:
-//		- Jonathan Bennett <jon at hiddensoft dot com>
-//		- See "AUTHORS.txt" for contributors.
-//
-// This file is part of AutoIt.
-//
-// AutoIt source code is copyrighted software distributed under the terms of the
-// AutoIt source code license.
-//
-// You may:
-//
-// - Customize the design and operation of the AutoIt source code to suit
-// the internal needs of your organization except to the extent not
-// permitted in this Agreement
-//
-// You may not:
-//
-// - Distribute the AutoIt source code and/or compiled versions of AutoIt
-// created with the AutoIt source code.
-// - Create derivative works based on the AutoIt source code for distribution
-// or usage outside your organisation.
-// - Modify and/or remove any copyright notices or labels included in the
-// AutoIt source code.
-//
-// AutoIt is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-//
-// See the LICENSE.txt file that accompanies the AutoIt source
-// code for more details.
-//
-///////////////////////////////////////////////////////////////////////////////
-//
-// os_version.cpp
-//
-// A standalone class for easy checking of the OS version.
-//
-///////////////////////////////////////////////////////////////////////////////
-
-
-// Includes
-#include "StdAfx.h"								// Pre-compiled headers
-
-#ifndef _MSC_VER								// Includes for non-MS compilers
-	#include <windows.h>
-#endif
-
+#include <Windows.h>
+#include <stdio.h>
 #include "os_version.h"
-
-
-/*
-OSVERSIONINFO structure details
-===============================
-
-dwOSVersionInfoSize
-Specifies the size, in bytes, of this data structure. Set this member to sizeof(OSVERSIONINFO)
-before calling the GetVersionEx function.
-
-dwMajorVersion
-Major version number of the operating system. This member can be one of the following values. Operating System Meaning
-Windows 95 4
-Windows 98 4
-Windows Me 4
-Windows NT 3.51 3
-Windows NT 4.0 4
-Windows 2000 5
-Windows XP 5
-Windows Server 2003 family 5
-
-dwMinorVersion
-Minor version number of the operating system. This member can be one of the following values. Operating System Meaning
-Windows 95 0
-Windows 98 10
-Windows Me 90
-Windows NT 3.51 51
-Windows NT 4.0 0
-Windows 2000 0
-Windows XP 1
-Windows Server 2003 family 2
-
-dwBuildNumber
-Build number of the operating system.
-Windows Me/98/95:  The low-order word contains the build number of the operating system. The high-order word contains the major and minor version numbers.
-dwPlatformId
-Operating system platform. This member can be one of the following values. Value Meaning
-VER_PLATFORM_WIN32s Win32s on Windows 3.1.
-VER_PLATFORM_WIN32_WINDOWS Windows 95, Windows 98, or Windows Me.
-VER_PLATFORM_WIN32_NT Windows NT, Windows 2000, Windows XP, or Windows Server 2003 family.
-
-szCSDVersion
-Pointer to a null-terminated string, such as "Service Pack 3", that indicates the latest Service Pack installed on the system. If no Service Pack has been installed, the string is empty.
-Windows Me/98/95:  Pointer to a null-terminated string that indicates additional version information. For example, " C" indicates Windows 95 OSR2 and " A" indicates Windows 98 Second Edition.
-
-*/
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Constructor
-///////////////////////////////////////////////////////////////////////////////
 
 OS_Version::OS_Version()
 {
-	int				i;
-	OSVERSIONINFOA	OSvi;						// OS Version data
+	typedef NTSTATUS( NTAPI* fnRtlGetVersion )(PRTL_OSVERSIONINFOEXW lpVersionInformation);
+	static fnRtlGetVersion RtlGetVersion;
 
 	// Get details of the OS we are running on
-	OSvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
-	GetVersionExA(&OSvi);
+	OSvi.dwOSVersionInfoSize = sizeof(RTL_OSVERSIONINFOEXW);
+	RtlGetVersion = (fnRtlGetVersion)GetProcAddress(GetModuleHandleW( L"ntdll.dll" ),"RtlGetVersion" );
+	if (RtlGetVersion)	
+		RtlGetVersion(&OSvi);	
+	else	
+		GetVersionExW((LPOSVERSIONINFOW)&OSvi);
 
 	// Populate Major and Minor version numbers
 	m_dwMajorVersion	= OSvi.dwMajorVersion;
@@ -118,90 +25,332 @@ OS_Version::OS_Version()
 	m_dwBuildNumber		= OSvi.dwBuildNumber;
 
 	// Get CSD information
-	size_t nTemp = strlen(OSvi.szCSDVersion);
+	size_t nTemp = wcslen(OSvi.szCSDVersion);
 
 	if (nTemp > 0)
 	{
+		size_t i=0;
 		//	strip trailing
-		for (i=nTemp-1; i>0; i--)
+		for ( i=nTemp-1; i>0; i--)
 		{
-			if ((char) OSvi.szCSDVersion[i] != ' ')
+			if (OSvi.szCSDVersion[i] != L' ')
 				break;
-			OSvi.szCSDVersion[i] = '\0';
+			OSvi.szCSDVersion[i] = L'\0';
 		}
 
 		//	strip leading
 		nTemp = i;
 		for (i=0; i<nTemp; i++)
 		{
-			if ((char) OSvi.szCSDVersion[i] != ' ')
+			if (OSvi.szCSDVersion[i] != L' ')
 				break;
 		}
-		strcpy(m_szCSDVersion, &OSvi.szCSDVersion[i]);
+		wcscpy(m_szCSDVersion, &OSvi.szCSDVersion[i]);
 	}
 	else
-		m_szCSDVersion[0] = '\0';				// No CSD info, make it blank to avoid errors
-
-
+		m_szCSDVersion[0] = 0;				// No CSD info, make it blank to avoid errors
+	wcscpy(	m_szOperatingSystemName,L"Unknow Operating System Name");
+	_swprintf(m_szOperatingSystemShortName,L"%d.%d",OSvi.dwMajorVersion,OSvi.dwMinorVersion);
 	// Set all options to false by default
-	m_bWinNT	= false;
-	m_bWin9x	= false;
-
-	m_bWinNT4	= false;	m_bWinNT4orLater	= false;
-	m_bWin2000	= false;	m_bWin2000orLater	= false;
-	m_bWinXP	= false;	m_bWinXPorLater		= false;
-	m_bWin2003	= false;	m_bWin2003orLater	= false;
-
-	m_bWin98	= false;	m_bWin98orLater		= false;
-	m_bWin95	= false;	m_bWin95orLater		= false;
-	m_bWinMe	= false;	m_bWinMeorLater		= false;
-
-
+	m_bWin2000		= false;	m_bWin2000orLater	= false;
+	m_bWinXP		= false;	m_bWinXPorLater		= false;
+	m_bWin2003		= false;	m_bWin2003orLater	= false;
+	m_bWinVista		= false;	m_bWinVistaorLater	= false;
+	m_bWin2008		= false;	m_bWin2008orLater	= false;
+	m_bWin7			= false;	m_bWin7orLater		= false;
+	m_bWin2008R2	= false;	m_bWin2008R2orLater = false;
+	m_bWin8			= false;	m_bWin8orLater		= false;
+	m_bWin2012		= false;	m_bWin2012orLater	= false;
+	m_bWin8_1		= false;	m_bWin8_1orLater	= false;
+	m_bWin2012R2	= false;	m_bWin2012R2orLater	= false;
+	m_bWin10		= false;	m_bWin10orLater		= false;
+	m_bWin2016		= false;	m_bWin2016orLater	= false;
 	// Work out if NT or 9x
 	if (OSvi.dwPlatformId == VER_PLATFORM_WIN32_NT)
 	{
-		// Windows NT
-		m_bWinNT = true;
-
 		switch (m_dwMajorVersion)
 		{
-			case 4:								// NT 4
-				m_bWinNT4 = m_bWinNT4orLater = true;
-				break;
-
-			case 5:								// Win2000 / XP
-				m_bWinNT4orLater = true;
-
-				if ( m_dwMinorVersion == 0 )	// Win2000
+		case 5:	
+			{
+				if ( m_dwMinorVersion == 0 )		// Win 2000
+				{
 					m_bWin2000 = m_bWin2000orLater = true;
-				else							// WinXP
-					m_bWinXP = m_bWinXPorLater = m_bWin2000orLater = true;
+					wcscpy(	m_szOperatingSystemName,L"Microsoft Windows 2000");
+					wcscpy(	m_szOperatingSystemShortName,L"2000");
+				}
+				else if ( m_dwMinorVersion == 1 )		// WinXP
+				{
+					m_bWinXP = m_bWin2000orLater = m_bWinXPorLater = true;
+					wcscpy(	m_szOperatingSystemName,L"Microsoft Windows XP");
+					wcscpy(	m_szOperatingSystemShortName,L"XP");
+				}
+				else if (m_dwMinorVersion == 2)		// 2003
+				{
+					m_bWin2003 = m_bWin2000orLater = m_bWinXPorLater = m_bWin2003orLater;
+					wcscpy(	m_szOperatingSystemName,L"Microsoft Windows Server 2003");
+					wcscpy(	m_szOperatingSystemShortName,L"2003");
+				}
 				break;
-
+			}
+		case 6:
+			{
+				if ( m_dwMinorVersion == 0 )		// vista
+				{
+					if (OSvi.wProductType==VER_NT_WORKSTATION)						
+					{
+						m_bWinVista = m_bWin2000orLater =  m_bWinXPorLater = m_bWin2003orLater = m_bWinVistaorLater =m_bWin2008orLater = true;
+						wcscpy(	m_szOperatingSystemName,L"Microsoft Windows Vista");
+						wcscpy(	m_szOperatingSystemShortName,L"Vista");
+					}
+					else
+					{
+						m_bWin2008  = m_bWin2000orLater = m_bWinXPorLater = m_bWin2003orLater = m_bWinVistaorLater =m_bWin2008orLater = true;
+						wcscpy(	m_szOperatingSystemName,L"Microsoft Windows Server 2008");
+						wcscpy(	m_szOperatingSystemShortName,L"2008");
+					}
+				}
+				else if (m_dwMinorVersion==1)
+				{
+					if (OSvi.wProductType==VER_NT_WORKSTATION)
+					{
+						m_bWin7 = m_bWin2000orLater = m_bWinXPorLater = m_bWin2003orLater = m_bWinVistaorLater =m_bWin2008orLater = m_bWin2008R2orLater =m_bWin7orLater = true;
+						wcscpy(	m_szOperatingSystemName,L"Microsoft Windows 7");
+						wcscpy(	m_szOperatingSystemShortName,L"7");
+					}
+					else
+					{
+						m_bWin2008R2  = m_bWin2000orLater = m_bWinXPorLater = m_bWin2003orLater = m_bWinVistaorLater =m_bWin2008orLater = m_bWin2008R2orLater =m_bWin7orLater = true;
+						wcscpy(	m_szOperatingSystemName,L"Microsoft Windows Server 2008 R2");
+						wcscpy(	m_szOperatingSystemShortName,L"2008R2");
+					}
+				}
+				else if (m_dwMinorVersion==2)
+				{
+					if (OSvi.wProductType==VER_NT_WORKSTATION)						
+					{
+						m_bWin8 = m_bWin2000orLater = m_bWinXPorLater = m_bWin2003orLater = m_bWinVistaorLater =m_bWin2008orLater = m_bWin2008R2orLater =m_bWin7orLater = true;
+						m_bWin8orLater=m_bWin2012orLater=true;
+						wcscpy(	m_szOperatingSystemName,L"Microsoft Windows 8");
+						wcscpy(	m_szOperatingSystemShortName,L"8");
+					}
+					else
+					{
+						m_bWin2012  = m_bWin2000orLater = m_bWinXPorLater = m_bWin2003orLater = m_bWinVistaorLater =m_bWin2008orLater = m_bWin2008R2orLater =m_bWin7orLater = true;
+						m_bWin8orLater=m_bWin2012orLater=true;
+						wcscpy(	m_szOperatingSystemName,L"Microsoft Windows Server 2012");
+						wcscpy(	m_szOperatingSystemShortName,L"2012");
+					}
+				}
+				else if (m_dwMinorVersion==3)
+				{
+					if (OSvi.wProductType==VER_NT_WORKSTATION)						
+					{
+						m_bWin8_1 = m_bWin2000orLater = m_bWinXPorLater = m_bWin2003orLater = m_bWinVistaorLater =m_bWin2008orLater = m_bWin2008R2orLater =m_bWin7orLater = true;
+						m_bWin8orLater=m_bWin2012orLater= m_bWin8_1orLater=m_bWin2012R2orLater =true;
+						wcscpy(	m_szOperatingSystemName,L"Microsoft Windows 8.1");
+						wcscpy(	m_szOperatingSystemShortName,L"8.1");
+					}
+					else
+					{
+						m_bWin2012R2  = m_bWin2000orLater = m_bWinXPorLater = m_bWin2003orLater = m_bWinVistaorLater =m_bWin2008orLater = m_bWin2008R2orLater =m_bWin7orLater = true;
+						m_bWin8orLater=m_bWin2012orLater= m_bWin8_1orLater=m_bWin2012R2orLater =true;
+						wcscpy(	m_szOperatingSystemName,L"Microsoft Windows Server 2012 R2");
+						wcscpy(	m_szOperatingSystemShortName,L"2012R2");
+					}
+				}
+				break;
+			}
+		case  10:
+			{
+				if (m_dwMinorVersion>=0)
+				{
+					if (OSvi.wProductType==VER_NT_WORKSTATION)						
+					{
+						m_bWin10 = m_bWin2000orLater = m_bWinXPorLater = m_bWin2003orLater = m_bWinVistaorLater =m_bWin2008orLater = m_bWin2008R2orLater =m_bWin7orLater = true;
+						m_bWin10orLater=m_bWin2016orLater= m_bWin8orLater=m_bWin2012orLater= m_bWin8_1orLater=m_bWin2012R2orLater =true;
+						wcscpy(	m_szOperatingSystemName,L"Microsoft Windows 10");
+						wcscpy(	m_szOperatingSystemShortName,L"10");
+					}
+					else
+					{
+						m_bWin2016  = m_bWin2000orLater = m_bWinXPorLater = m_bWin2003orLater = m_bWinVistaorLater =m_bWin2008orLater = m_bWin2008R2orLater =m_bWin7orLater = true;
+						m_bWin10orLater=m_bWin2016orLater= m_bWin8orLater=m_bWin2012orLater= m_bWin8_1orLater=m_bWin2012R2orLater =true;
+						wcscpy(	m_szOperatingSystemName,L"Microsoft Windows Server 2016");
+						wcscpy(	m_szOperatingSystemShortName,L"2016");
+					}
+				}
+				break;
+			}
 		} // End Switch
 	}
+}
+
+bool OS_Version::IsWin2000(void)
+{
+	return m_bWin2000;
+}
+
+bool OS_Version::IsWin2000orLater(void)
+{
+	return m_bWin2000orLater;
+}
+
+bool OS_Version::IsWinXP(void)
+{
+	return m_bWinXP;
+}
+
+bool OS_Version::IsWinXPorLater(void)
+{
+	return m_bWinXPorLater;
+}
+
+bool OS_Version::IsWin2003(void)
+{
+	 return m_bWin2003;
+}
+
+bool OS_Version::IsWin2003orLater(void)
+{
+	return m_bWin2003orLater;
+}
+
+bool OS_Version::IsWinVista(void)
+{
+	return m_bWinVista;
+}
+
+bool OS_Version::IsWinVistaorLater(void)
+{
+	return m_bWinVistaorLater;
+}
+
+bool OS_Version::IsWin2008(void)
+{
+	return m_bWin2008;
+}
+
+bool OS_Version::IsWin2008orLater(void)
+{
+	return m_bWin2008orLater;
+}
+
+bool OS_Version::IsWin7(void)
+{
+	return m_bWin7;
+}
+
+bool OS_Version::IsWin7orLater(void)
+{
+	return m_bWin7orLater;
+}
+
+bool OS_Version::IsWin2008r2(void)
+{
+	return m_bWin2008R2;
+}
+
+bool OS_Version::IsWin2008r2orLater(void)
+{
+	return m_bWin2008R2orLater;
+}
+
+bool OS_Version::IsWin8(void)
+{
+	return m_bWin8;
+}
+
+bool OS_Version::IsWin8orLater(void)
+{
+	return m_bWin8orLater;
+}
+
+bool OS_Version::IsWin2012(void)
+{
+	return m_bWin2012;
+}
+
+bool OS_Version::IsWin2012orLater(void)
+{
+	return m_bWin2012orLater;
+}
+
+bool OS_Version::IsWin8_1(void)
+{
+	return m_bWin8_1;
+}
+
+bool OS_Version::IsWin8_1orLater(void)
+{
+	return m_bWin8_1orLater;
+}
+
+bool OS_Version::IsWin2012r2(void)
+{
+	return m_bWin2012R2;
+}
+
+bool OS_Version::IsWin2012r2orLater(void)
+{
+	return m_bWin2012R2orLater;
+}
+
+bool OS_Version::IsWin10(void)
+{
+	return m_bWin10;
+}
+
+bool OS_Version::IsWin10orLater(void)
+{
+	return m_bWin10orLater;
+}
+
+bool OS_Version::IsWin2016(void)
+{
+	return m_bWin2016;
+}
+
+bool OS_Version::IsWin2016orLater(void)
+{
+	return m_bWin2016orLater;
+}
+
+bool OS_Version::IsWindowsServer()
+{
+	if (OSvi.dwMajorVersion<=5 && OSvi.dwMinorVersion<=1)
+		return false;
+	if (OSvi.wProductType!= VER_NT_WORKSTATION || OSvi.wSuiteMask & VER_SUITE_WH_SERVER)
+		return true;
 	else
-	{
-		// Windows 9x -- all major versions = 4
-		m_bWin9x = true;
-		m_bWin95orLater = true;
-		m_dwBuildNumber	= (WORD) OSvi.dwBuildNumber;	// Build number in lower word on 9x
+		return false;
+}
 
-		switch ( m_dwMinorVersion )
-		{
-			case 0:								// 95
-				m_bWin95 = true;
-				break;
+bool OS_Version::IsWindows64bit()
+{
+	SYSTEM_INFO si;
+	GetNativeSystemInfo(&si);
+	if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64 ||si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_IA64 )
+		return true;
+	else
+		return false;
+}
 
-			case 10:							// 98
-				m_bWin98 = m_bWin98orLater = true;
-				break;
+DWORD OS_Version::BuildNumber(void)
+{
+	 return m_dwBuildNumber;
+}
 
-			case 90:							// ME
-				m_bWinMe = 	m_bWinMeorLater = m_bWin98orLater = true;
-				break;
-		} // End Switch
-	} // End If
+const	LPWSTR OS_Version::CSD(void)
+{
+	 return m_szCSDVersion;
+}
 
-} // Constructor()
+const	LPWSTR OS_Version::OperatingSystemName(void)
+{
+	return m_szOperatingSystemName;
+}
 
+const	LPWSTR OS_Version::OperatingSystemShortName(void)
+{
+	return m_szOperatingSystemShortName;
+}

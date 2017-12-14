@@ -208,7 +208,7 @@ void AutoIt_App::RegisterClass(void)
 	m_hIconPause	= LoadIcon(g_hInstance, MAKEINTRESOURCE(IDI_PAUSED));
 
 	// Load the right tray icon for the OS
-	if (g_oVersion.IsWinXPorLater() || g_oVersion.IsWinMeorLater())
+	if (g_oVersion.IsWinXPorLater())
 		m_hIconSmall	= Util_LoadIcon(IDI_MAIN, 16, 16, -1);
 	else
 		m_hIconSmall	= Util_LoadIcon(IDI_MAIN, 16, 16, 4);

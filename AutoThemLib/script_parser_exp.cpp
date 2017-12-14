@@ -150,6 +150,9 @@ enum
 	M_CPUARCH,
 	M_KBLAYOUT,
 	M_LOCALAPPDATADIR,
+	M_MSEC,
+	M_MUILANG,
+	M_OSARCH,
 	M_NUMPARAMS,
 	M_MAX
 };
@@ -242,6 +245,9 @@ const char * AutoIt_Script::m_szMacros[M_MAX] =	{
 	"CPUARCH",
 	"KBLAYOUT",
 	"LOCALAPPDATADIR",
+	"MSEC",
+	"MUILANG",
+	"OSARCH",
 	"NUMPARAMS"
 };
 
@@ -679,7 +685,14 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vRes
 			sprintf(szValue, "%.2d", newtime->tm_sec);
 			vResult = szValue;
 			break;
-
+		case M_MSEC:
+			{
+				SYSTEMTIME st;
+				GetLocalTime(&st);
+				sprintf(szValue, "%.3d", st.wMilliseconds);
+				vResult = szValue;
+				break;
+			}
 		case M_MIN:
 			sprintf(szValue, "%.2d", newtime->tm_min);
 			vResult = szValue;
@@ -859,33 +872,38 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vRes
 			break;
 
 		case M_OSTYPE:
-			if ( g_oVersion.IsWinNT() == true )
-				vResult = "WIN32_NT";
-			else
-				vResult = "WIN32_WINDOWS";
+			vResult = "WIN32_NT";
 			break;
 
 		case M_OSVERSION:
-			if ( g_oVersion.IsWinNT() == true )
-			{
-				if (g_oVersion.IsWin2003() == true)
-					vResult = "WIN_2003";
-				else if (g_oVersion.IsWinXP() == true)
-					vResult = "WIN_XP";
-				else if (g_oVersion.IsWin2000() == true)
-					vResult = "WIN_2000";
-				else
-					vResult = "WIN_NT4";
-			}
+			if (g_oVersion.IsWin2016())
+				vResult = L"WIN_2016";
+			else if (g_oVersion.IsWin10() == true)
+				vResult = "WIN_10";
+			else if (g_oVersion.IsWin2012r2() == true)
+				vResult = "WIN_2012R2";
+			else if (g_oVersion.IsWin2012())
+				vResult = "WIN_2012";
+			else if (g_oVersion.IsWin8_1())
+				vResult = "WIN_81";
+			else if (g_oVersion.IsWin8())
+				vResult = "WIN_8";
+			else if (g_oVersion.IsWin2008r2())
+				vResult = "WIN_2008R2";
+			else if (g_oVersion.IsWin7())
+				vResult = "WIN_7";
+			else if (g_oVersion.IsWin2008())
+				vResult = "WIN_2008";
+			else if (g_oVersion.IsWinVista())
+				vResult = "WIN_VISTA";
+			else if (g_oVersion.IsWin2003() == true)
+				vResult = "WIN_2003";
+			else if (g_oVersion.IsWinXP() == true)
+				vResult = "WIN_XP";
+			else if (g_oVersion.IsWin2000() == true)
+				vResult = "WIN_2000";
 			else
-			{
-				if (g_oVersion.IsWin95() == true)
-					vResult = "WIN_95";
-				else if (g_oVersion.IsWin98() == true)
-					vResult = "WIN_98";
-				else
-					vResult = "WIN_ME";
-			} // End If
+				vResult = "WIN_UNKNOW";
 			break;
 
 		case M_OSBUILD:
@@ -898,22 +916,11 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vRes
 			break;
 
 		case M_OSLANG:
-			if ( g_oVersion.IsWinNT() == true )
-			{
-				if ( g_oVersion.IsWin2000orLater() == true )
-					Util_RegReadString(HKEY_LOCAL_MACHINE,"SYSTEM\\CurrentControlSet\\Control\\Nls\\Language", "InstallLanguage", _MAX_PATH, szValue);
-				else      // WinNT4
-					Util_RegReadString(HKEY_LOCAL_MACHINE,"SYSTEM\\CurrentControlSet\\Control\\Nls\\Language", "Default", _MAX_PATH, szValue);
-
-				vResult = szValue;
-			}
-
-			else         // Win9x
-			{
-				Util_RegReadString(HKEY_USERS,".DEFAULT\\Control Panel\\Desktop\\ResourceLocale", "", _MAX_PATH, szValue);
-				vResult = &szValue[4];
-			}
-
+			if (g_oVersion.IsWin2000orLater() == true)
+				Util_RegReadString(HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Control\\Nls\\Language", "InstallLanguage", _MAX_PATH, szValue);
+			else      // WinNT4
+				Util_RegReadString(HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Control\\Nls\\Language", "Default", _MAX_PATH, szValue);
+			vResult = szValue;
 			break;
 
 
@@ -993,20 +1000,9 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vRes
 			vResult = 1;
 			break;
 #endif
-
 		case M_USERPROFILEDIR:
-			// Deceptively difficult as all the API functions for obtaining this rely on IE4+
-			if (g_oVersion.IsWinNT())
-				GetEnvironmentVariableA("USERPROFILE", szValue, _MAX_PATH);
-			else
-			{
-				// Get the users desktop dir and remove the last \ char
-				Util_RegReadString(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Desktop", _MAX_PATH, szValue);
-				for (nTemp = (int)strlen(szValue)-1; nTemp >= 0 && szValue[nTemp] != '\\'; --nTemp);
-					szValue[nTemp] = '\0';
-			}
-
-			vResult = szValue;
+			SHGetSpecialFolderPathW(NULL, szValue_w_tmp1, CSIDL_PROFILE, FALSE);
+			vResult = szValue_w_tmp1;
 			break;
 
 		case M_HOMEDRIVE:
@@ -1084,7 +1080,28 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vRes
 			vResult = szValue_w_tmp1;
 			break;
 		}
-
+		case M_MUILANG:		
+		{
+			unsigned long ul_tmp_buffer = sizeof(szValue_w_tmp1);
+			unsigned long ul_tmp_count  = 0;
+			GetUserPreferredUILanguages(MUI_LANGUAGE_ID, &ul_tmp_count, szValue_w_tmp1, &ul_tmp_buffer);
+			vResult = szValue_w_tmp1;
+			break;
+		}
+		case M_OSARCH:
+		{
+			SYSTEM_INFO si;
+			GetNativeSystemInfo(&si);
+			if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
+				vResult = L"X64";
+			else if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_IA64)
+				vResult = L"IA64";
+			else if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_INTEL)
+				vResult = L"X86";
+			else
+				vResult = L"UNKNOW";
+			break;
+		}
 		case M_NUMPARAMS:
 			vResult = m_nNumParams;
 			break;

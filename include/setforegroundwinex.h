@@ -61,12 +61,9 @@ public:
 	void	Patch();							// Patch system
 	void	UnPatch();							// UnPatch system
 	void	Activate(HWND hWnd);				// SetForegroundWindow()
-
-
 private:
 	// Variables
 	bool	m_bWin2000orLater;
-	bool	m_bWin98orLater;
 	DWORD	m_dwOldSystemTimeout;				// Timeout from SystemParameters
 	DWORD	m_dwOldRegTimeout;					// Timeout from user reg key
 };

@@ -1485,7 +1485,7 @@ AUT_RESULT AutoIt_Script::F_DriveMapAdd(VectorVariant &vParams, Variant &vResult
 	if (szDrive[0] == '*')
 		dwFlags |= CONNECT_REDIRECT;			// Use first available drive
 
-	if (iNumParams < 4 || g_oVersion.IsWin9x())
+	if (iNumParams < 4 )
 		res = WNetUseConnectionW(NULL,&nr, NULL, NULL, dwFlags, szBuffer, &dwBuffersize, &dwResult); // Use current user/password
 	else
 	{

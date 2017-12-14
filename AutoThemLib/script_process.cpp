@@ -591,19 +591,13 @@ AUT_RESULT AutoIt_Script::F_ProcessSetPriority(VectorVariant &vParams, Variant &
 		dwPriority = 0x00000040;				// IDLE_PRIORITY_CLASS
 		break;
 	case 1:
-		if (g_oVersion.IsWin9x() || g_oVersion.IsWinMe())
-			SetFuncErrorCode(2);
-		else
-			dwPriority = 0x00004000;			// BELOW_NORMAL_PRIORITY_CLASS
+		dwPriority = 0x00004000;			// BELOW_NORMAL_PRIORITY_CLASS
 		break;
 	case 2:
 		dwPriority = 0x00000020;				// NORMAL_PRIORITY_CLASS
 		break;
 	case 3:
-		if (g_oVersion.IsWin9x() || g_oVersion.IsWinMe())
-			SetFuncErrorCode(2);
-		else
-			dwPriority = 0x00008000;			// ABOVE_NORMAL_PRIORITY_CLASS
+		dwPriority = 0x00008000;			// ABOVE_NORMAL_PRIORITY_CLASS
 		break;
 	case 4:
         dwPriority = 0x00000080;				// HIGH_PRIORITY_CLASS;
@@ -664,7 +658,7 @@ AUT_RESULT AutoIt_Script::F_ProcessList(VectorVariant &vParams, Variant &vResult
 	};
 	ProcessInfo piProc[512];
 
-	if (g_oVersion.IsWinNT4())	// Windows NT 4stuff
+
 	{
 		typedef BOOL (WINAPI *MyEnumProcesses)(DWORD*, DWORD, DWORD*);
 		typedef BOOL (WINAPI *MyEnumProcessModules)(HANDLE, HMODULE*, DWORD, LPDWORD);
@@ -733,59 +727,7 @@ AUT_RESULT AutoIt_Script::F_ProcessList(VectorVariant &vParams, Variant &vResult
 		}
 		FreeLibrary(hinstLib);					// Free the DLL module.
 	}
-	else	// Win 98
-	{
-		typedef BOOL (WINAPI *PROCESSWALK)(HANDLE hSnapshot, PROCESSENTRY32A* lppe);
-		typedef HANDLE (WINAPI *CREATESNAPSHOT)(DWORD dwFlags, DWORD th32ProcessID);
-
-		HANDLE			snapshot;
-		PROCESSENTRY32A	proc;
-		CREATESNAPSHOT	lpfnCreateToolhelp32Snapshot = NULL;
-		PROCESSWALK		lpfnProcess32First = NULL;
-		PROCESSWALK		lpfnProcess32Next  = NULL;
-
-		// We must dynamically load the function to retain compatibility with WinNT
-		hinstLib = GetModuleHandleW(L"KERNEL32.DLL");
-		if (!hinstLib)
-		{
-			SetFuncErrorCode(1);
-			return AUT_OK;
-		}
-
-		lpfnCreateToolhelp32Snapshot = (CREATESNAPSHOT)GetProcAddress(hinstLib, "CreateToolhelp32Snapshot");
-		lpfnProcess32First = (PROCESSWALK)GetProcAddress(hinstLib, "Process32First");
-		lpfnProcess32Next  = (PROCESSWALK)GetProcAddress(hinstLib, "Process32Next");
-
-		if (!lpfnCreateToolhelp32Snapshot || !lpfnProcess32First || !lpfnProcess32Next)
-		{
-			FreeLibrary(hinstLib);					// Free the DLL module.
-			SetFuncErrorCode(1);
-			return AUT_OK;
-		}
-
-		proc.dwSize = sizeof(proc);
-		snapshot = lpfnCreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-		lpfnProcess32First(snapshot, &proc);
-
-		do
-		{
-			_splitpath( proc.szExeFile, szDrive, szDir, szFile, szExt );	// Split the filename
-			strcat(szFile, szExt);
-
-			// Only make a note of matching process names
-			if ( vParams.size() == 0 || ( vParams.size() && !stricmp(szFile, Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str())) )
-			{
-				piProc[count].sName = szFile;
-				piProc[count].dwPid = proc.th32ProcessID;
-				++count;
-			}
-
-		} while (lpfnProcess32Next(snapshot, &proc));
-
-		CloseHandle(snapshot);
-	}
-
-	// Create and fill the array
+		// Create and fill the array
 	Variant	*pvVariant;
 
 	vResult.ArraySubscriptClear();						// Reset the subscript

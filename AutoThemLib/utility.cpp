@@ -238,16 +238,16 @@ void Util_WinKill(HWND hWnd)
 
 bool Util_DoesProcessExist(const char *szName, DWORD &dwPid, bool &bResult)
 {
-	if (g_oVersion.IsWinNT4())
+//	if (g_oVersion.IsWinNT4())
 	{
 		// NT4
 		return Util_DoesProcessExistNT(szName, dwPid, bResult);
 	}
-	else
-	{
-		// 9x/2000+
-		return Util_DoesProcessExist9x2000(szName, dwPid, bResult);
-	}
+//	else
+//	{
+//		// 9x/2000+
+//		return Util_DoesProcessExist9x2000(szName, dwPid, bResult);
+//	}
 
 } // Util_DoesProcessExist()
 
@@ -724,15 +724,10 @@ void Util_StripTrailingDir(wchar_t* szPath)
 
 bool Util_FileSetTime(const char *szFilename, FILETIME *ft, int nWhichTime)
 {
-	HANDLE	hFile;
+	HANDLE	hFile = CreateFileA(szFilename, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, NULL);
 
-	// If this is a directory and we are NOT running NT then just return
-	if (Util_IsDir(szFilename) && g_oVersion.IsWin9x() )
-		return true;
-
-	if ( (hFile = CreateFileA(szFilename, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, NULL)) == INVALID_HANDLE_VALUE )
+	if (hFile == INVALID_HANDLE_VALUE )
 		return false;
-
 	if (nWhichTime == 0)
 		SetFileTime(hFile, NULL, NULL, ft);	// Modified
 	else if (nWhichTime == 1)
@@ -741,7 +736,6 @@ bool Util_FileSetTime(const char *szFilename, FILETIME *ft, int nWhichTime)
 		SetFileTime(hFile, NULL, ft, NULL);	// Accessed
 
 	CloseHandle(hFile);
-
 	return true;
 
 } // Util_FileSetTime()
@@ -1906,48 +1900,39 @@ void Util_SoundPlay(const wchar_t *szFilename, bool bWait)
 BOOL Util_Shutdown(int nFlag)
 {
 
-/*
-flags can be a combination of:
-#define EWX_LOGOFF           0
-#define EWX_SHUTDOWN         0x00000001
-#define EWX_REBOOT           0x00000002
-#define EWX_FORCE            0x00000004
-#define EWX_POWEROFF         0x00000008 */
+	/*
+	flags can be a combination of:
+	#define EWX_LOGOFF           0
+	#define EWX_SHUTDOWN         0x00000001
+	#define EWX_REBOOT           0x00000002
+	#define EWX_FORCE            0x00000004
+	#define EWX_POWEROFF         0x00000008 */
 
 	HANDLE				hToken;
 	TOKEN_PRIVILEGES	tkp;
 
-	// If we are running NT, make sure we have rights to shutdown
-	if (g_oVersion.IsWinNT())
-	{
-		// Get a token for this process.
- 		if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
-			return FALSE;						// Don't have the rights
 
-		// Get the LUID for the shutdown privilege.
- 		LookupPrivilegeValue(NULL, SE_SHUTDOWN_NAME, &tkp.Privileges[0].Luid);
+	// Get a token for this process.
+	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
+		return FALSE;						// Don't have the rights
 
-		tkp.PrivilegeCount = 1;  /* one privilege to set */
-		tkp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+	// Get the LUID for the shutdown privilege.
+	LookupPrivilegeValue(NULL, SE_SHUTDOWN_NAME, &tkp.Privileges[0].Luid);
 
-		// Get the shutdown privilege for this process.
- 		AdjustTokenPrivileges(hToken, FALSE, &tkp, 0, (PTOKEN_PRIVILEGES)NULL, 0);
+	tkp.PrivilegeCount = 1;  /* one privilege to set */
+	tkp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 
-		// Cannot test the return value of AdjustTokenPrivileges.
- 		if (GetLastError() != ERROR_SUCCESS)
-			return FALSE;						// Don't have the rights
-	}
+	// Get the shutdown privilege for this process.
+	AdjustTokenPrivileges(hToken, FALSE, &tkp, 0, (PTOKEN_PRIVILEGES)NULL, 0);
 
-	// if we are forcing the issue, AND this is 95/98 terminate all windows first
-	if ( (g_oVersion.IsWin9x()) && (nFlag & EWX_FORCE) )
-	{
-		nFlag ^= EWX_FORCE;	// remove this flag - not valid in 95
-		EnumWindows((WNDENUMPROC) Util_ShutdownHandler, 0);
-	}
+	// Cannot test the return value of AdjustTokenPrivileges.
+	if (GetLastError() != ERROR_SUCCESS)
+		return FALSE;						// Don't have the rights
 
-	// for suspend and hibernate code
-	if ( (nFlag == 32) || (nFlag == 64) )
-		return SetSystemPowerState(  (nFlag == 32),  FALSE);
+
+// for suspend and hibernate code
+	if ((nFlag == 32) || (nFlag == 64))
+		return SetSystemPowerState((nFlag == 32), FALSE);
 
 	// ExitWindows
 	return ExitWindowsEx(nFlag, 0);
@@ -2441,10 +2426,7 @@ void Util_Sleep(int nTimeOut)
 	DWORD		dwTimeOut = (DWORD)nTimeOut;
 
 	// Set the minimum Sleep accuracy
-	if (g_oVersion.IsWin9x())
-		dwMin = 55;
-	else
-		dwMin = 10;
+	dwMin = 10;
 
 	// If Sleep is >= dwMin or no performance counters are available then use native Sleep()
 	if (dwTimeOut >= dwMin || !QueryPerformanceCounter((LARGE_INTEGER *)&start))
