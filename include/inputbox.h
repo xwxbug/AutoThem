@@ -74,7 +74,7 @@ public:
 	uint m_flags;
 	int m_maxlen;
 	double m_timeout;
-	char m_password;
+	wchar_t m_password;
 	std::wstring	m_title;
 	std::wstring	m_strInputText;
 	std::wstring	m_strPrompt;
@@ -92,7 +92,7 @@ public:
 protected:
 
 	BOOL OnInitDialog(void);
-	void OnGetMinMaxInfo(MINMAXINFO FAR* lpMMI);
+	void OnGetMinMaxInfo(LPMINMAXINFO lpMMI);
 	void OnSize(UINT nType, int cx, int cy);
 	void OnOK(void);
 	void OnCancel(void);

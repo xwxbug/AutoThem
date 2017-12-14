@@ -153,6 +153,8 @@ enum
 	M_MSEC,
 	M_MUILANG,
 	M_OSARCH,
+	M_SW_LOCK,
+	M_SW_UNLOCK,
 	M_NUMPARAMS,
 	M_MAX
 };
@@ -248,6 +250,8 @@ const char * AutoIt_Script::m_szMacros[M_MAX] =	{
 	"MSEC",
 	"MUILANG",
 	"OSARCH",
+	"SW_LOCK",
+	"SW_UNLOCK",
 	"NUMPARAMS"
 };
 
@@ -469,7 +473,7 @@ void AutoIt_Script::Parser_ExpandVarString(Variant &vString)
 // Parser_EvaluateVariable()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::Parser_EvaluateVariable(VectorToken &vLineToks, unsigned int &ivPos, Variant &vResult)
+AUT_RESULT AutoIt_Script::Parser_EvaluateVariable(VectorToken &vLineToks, unsigned long &ivPos, Variant &vResult)
 {
 	Variant		*pvTemp;
 	bool		bConst = false;
@@ -534,7 +538,7 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateVariable(VectorToken &vLineToks, unsign
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::Parser_GetArrayElement(VectorToken &vLineToks, uint &ivPos, Variant **ppvTemp)
+AUT_RESULT AutoIt_Script::Parser_GetArrayElement(VectorToken &vLineToks, unsigned long &ivPos, Variant **ppvTemp)
 {
 	Variant vTemp;
 	int		nColVar = -1;
@@ -611,7 +615,7 @@ AUT_RESULT AutoIt_Script::Parser_GetArrayElement(VectorToken &vLineToks, uint &i
 
 AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vResult)
 {
-	AString		sMacro = szName;
+	std::string	sMacro = szName;
 	char		szValue[_MAX_PATH+1] = "";
 	char		szValue2[_MAX_PATH+1] ="";
 	wchar_t		szValue_w_tmp1[_MAX_PATH + 1] = { 0 };
@@ -620,7 +624,7 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vRes
 	struct		tm *newtime;
     time_t		long_time;
 	DWORD		dwTemp;
-	int			nTemp;
+//	int			nTemp;
 	RECT		rTemp;
 	char		szInetAddr[16];
 	HDC			hdc;
@@ -628,8 +632,7 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vRes
 
 	time(&long_time);							// Get time as long integer
 	newtime = localtime(&long_time);			// Convert to local time
-
-	sMacro.toupper();							// Convert to uppercase for quicker comparisons (strcmp rather than stricmp)
+	sMacro = stringtoupperA(sMacro);			// Convert to uppercase for quicker comparisons (strcmp rather than stricmp)
 	const char *szMacro = sMacro.c_str();		// Get a const pointer for speed
 
 
@@ -640,7 +643,7 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vRes
 	{
 		// No Macro match - check the variable table for a global variable of the same
 		// Name (WITH the @ prefix...) - used for special vars like @ExitMethod, @ExitCode
-		AString sNewMacro("@");
+		std::string sNewMacro("@");
 		Variant *pvTemp;
 		bool	bConst = false;
 
@@ -1102,6 +1105,11 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vRes
 				vResult = L"UNKNOW";
 			break;
 		}
+		case M_SW_LOCK:
+		case M_SW_UNLOCK:
+			vResult = 0;
+			break;
+
 		case M_NUMPARAMS:
 			vResult = m_nNumParams;
 			break;
@@ -1118,7 +1126,7 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateMacro(const char *szName, Variant &vRes
 // Parser_EvaluateCondition()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::Parser_EvaluateCondition(VectorToken &vLineToks, unsigned int &ivPos, bool &bResult)
+AUT_RESULT AutoIt_Script::Parser_EvaluateCondition(VectorToken &vLineToks, unsigned long &ivPos, bool &bResult)
 {
 	Variant	vTemp;
 
@@ -1141,7 +1149,7 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateCondition(VectorToken &vLineToks, unsig
 // Parser_EvaluateExpression()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::Parser_EvaluateExpression(VectorToken &vLineToks, unsigned int &ivPos, Variant &vResult)
+AUT_RESULT AutoIt_Script::Parser_EvaluateExpression(VectorToken &vLineToks, unsigned long &ivPos, Variant &vResult)
 {
 	StackInt		opStack;					// Operator parsing stack
 	StackVariant	valStack;					// Value (variant) parsing stack
@@ -1687,7 +1695,7 @@ AUT_RESULT AutoIt_Script::Parser_OprReduce(StackInt &opStack, StackVariant &valS
 // it is skipping which could contain syntax errors...lazy.
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::Parser_SkipBoolean(VectorToken &vLineToks, unsigned int &ivPos)
+AUT_RESULT AutoIt_Script::Parser_SkipBoolean(VectorToken &vLineToks, unsigned long &ivPos)
 {
 	int nCount = 0;
 	int	tok;

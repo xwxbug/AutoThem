@@ -51,7 +51,7 @@
 #endif
 
 #include "variabletable.h"
-
+#include "utility.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Assign()
@@ -119,6 +119,81 @@ bool VariableTable::GetRef(AString sVarName, Variant **pvVariant, bool &bConst, 
 		case VARTABLE_FORCEGLOBAL:
 			lpVar = m_Globals.findvar(sVarName.c_str(), bConst);
 			break;
+	}
+
+	*pvVariant = lpVar;
+
+	return (lpVar != NULL);
+
+} // GetRef()
+
+
+bool VariableTable::GetRef(std::string sVarName, Variant **pvVariant, bool &bConst, int nReqScope)
+{
+	Variant *lpVar = NULL;
+
+	// Always use uppercase to force case insensitive operation
+	sVarName = stringtoupperA(sVarName);
+
+	switch (nReqScope)
+	{
+	case VARTABLE_ANY:
+		if (!m_Locals.empty())
+			lpVar = m_Locals.top()->findvar(sVarName.c_str(), bConst);
+
+		if (lpVar == NULL)
+			lpVar = m_Globals.findvar(sVarName.c_str(), bConst);
+
+		break;
+
+	case VARTABLE_FORCELOCAL:
+		if (!m_Locals.empty())
+			lpVar = m_Locals.top()->findvar(sVarName.c_str(), bConst);
+		else
+			lpVar = m_Globals.findvar(sVarName.c_str(), bConst);
+
+		break;
+
+	case VARTABLE_FORCEGLOBAL:
+		lpVar = m_Globals.findvar(sVarName.c_str(), bConst);
+		break;
+	}
+
+	*pvVariant = lpVar;
+
+	return (lpVar != NULL);
+
+} // GetRef()
+
+bool VariableTable::GetRef(const char * sVarName, Variant **pvVariant, bool &bConst, int nReqScope)
+{
+	Variant *lpVar = NULL;
+
+	// Always use uppercase to force case insensitive operation
+	std::string sz_var_name_upper = stringtoupperA(sVarName);
+
+	switch (nReqScope)
+	{
+	case VARTABLE_ANY:
+		if (!m_Locals.empty())
+			lpVar = m_Locals.top()->findvar(sz_var_name_upper.c_str(), bConst);
+
+		if (lpVar == NULL)
+			lpVar = m_Globals.findvar(sz_var_name_upper.c_str(), bConst);
+
+		break;
+
+	case VARTABLE_FORCELOCAL:
+		if (!m_Locals.empty())
+			lpVar = m_Locals.top()->findvar(sz_var_name_upper.c_str(), bConst);
+		else
+			lpVar = m_Globals.findvar(sz_var_name_upper.c_str(), bConst);
+
+		break;
+
+	case VARTABLE_FORCEGLOBAL:
+		lpVar = m_Globals.findvar(sz_var_name_upper.c_str(), bConst);
+		break;
 	}
 
 	*pvVariant = lpVar;

@@ -53,7 +53,7 @@
 
 // Windows timers
 #define AUT_MAIN_TIMER_ID		1
-#define AUT_MAIN_TIMER_DELAY	750				// Tray icon hiding/flashing/drawing is checked every 750ms
+#define AUT_MAIN_TIMER_DELAY	750								// Tray icon hiding/flashing/drawing is checked every 750ms
 
 // Tray / popup menu identifiers
 #define AUT_WM_NOTIFYICON		WM_USER+1
@@ -65,8 +65,8 @@ class AutoIt_App
 {
 public:
 	// Functions
-	AutoIt_App();					// Constructor
-	~AutoIt_App();					// Denstructor
+	AutoIt_App();												// Constructor
+	~AutoIt_App();												// Denstructor
 	void		CreateTrayIcon(void);
 	void		DestroyTrayIcon(void);
 	void		Run(void);
@@ -79,11 +79,11 @@ public:
 private:
 	// Variables
 
-	bool		m_bSingleCmdMode;				// TRUE=/c cmdline mode
-	AString		m_sSingleLine;					// Single line for the /c cmdline
-	wchar_t		m_szScriptFileName[_MAX_PATH+1];// FileName (fullpath) of current script
-	wchar_t*	m_szScriptFilePart;			// Just the filename (no path)
-	bool		m_bShowingPauseIcon;			// State of the flashing paused icon
+	bool		m_bSingleCmdMode;								// TRUE=/c cmdline mode
+	std::string	m_sSingleLine;									// Single line for the /c cmdline
+	wchar_t		m_szScriptFileName[_MAX_PATH+1];				// FileName (fullpath) of current script
+	wchar_t*	m_szScriptFilePart;								// Just the filename (no path)
+	bool		m_bShowingPauseIcon;							// State of the flashing paused icon
 
 
 	// Functions

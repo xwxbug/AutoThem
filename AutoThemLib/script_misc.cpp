@@ -2203,7 +2203,7 @@ AUT_RESULT AutoIt_Script::F_Assign(VectorVariant &vParams, Variant &vResult)
 	}
 
 	// Get a reference to the variable in the requested scope, if it doesn't exist, then create it.
-	g_oVarTable.GetRef(Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str(), &pvTemp, bConst, nReqScope);
+	g_oVarTable.GetRef(Util_UNICODEtoANSIStr(vParams[0].szValue()), &pvTemp, bConst, nReqScope);
 	if (pvTemp == NULL)
 	{
 		if (bCreate)

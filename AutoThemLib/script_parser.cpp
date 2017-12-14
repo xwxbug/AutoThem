@@ -63,8 +63,8 @@
 
 void AutoIt_Script::Parser(VectorToken &vLineToks, int &nScriptLine)
 {
-	uint	ivPos;						// Position in the vector
-	Variant	vTemp;						// Temp variant for operations
+	unsigned long	ivPos;						// Position in the vector
+	Variant			vTemp;						// Temp variant for operations
 
 	// A line can either start with an assignment or a keyword or a function
 	// $var =
@@ -129,7 +129,7 @@ void AutoIt_Script::Parser(VectorToken &vLineToks, int &nScriptLine)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::Parser_FunctionCall(VectorToken &vLineToks, uint &ivPos, Variant &vResult)
+AUT_RESULT AutoIt_Script::Parser_FunctionCall(VectorToken &vLineToks, unsigned long &ivPos, Variant &vResult)
 {
 	VectorVariant	vParams;					// Vector array of the parameters for this function
 	int				nNumParams;
@@ -167,11 +167,11 @@ AUT_RESULT AutoIt_Script::Parser_FunctionCall(VectorToken &vLineToks, uint &ivPo
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::Parser_GetFunctionCallParams(VectorVariant &vParams, VectorToken &vLineToks, uint &ivPos, int &nNumParams)
+AUT_RESULT AutoIt_Script::Parser_GetFunctionCallParams(VectorVariant &vParams, VectorToken &vLineToks, unsigned long &ivPos, int &nNumParams)
 {
 	VectorToken		vFuncToks;					// Vector of tokens for THIS FUNCTION CALL
 	Variant			vTemp;
-	uint			ivFuncPos;
+	unsigned long	ivFuncPos;
 	Token			tok;
 	int				nColTemp;
 
@@ -298,7 +298,7 @@ bool AutoIt_Script::Parser_FindUserFunction(const char *szName, int &nLineNum, i
 // Parser_UserFunctionCall()
 ///////////////////////////////////////////////////////////////////////////////
 
-AUT_RESULT AutoIt_Script::Parser_UserFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant &vResult)
+AUT_RESULT AutoIt_Script::Parser_UserFunctionCall(VectorToken &vLineToks, unsigned long &ivPos, Variant &vResult)
 {
 	int		nLineNum; 							// Line number of function to call
 	int		nNumParamsMax;						// Max Number of parameters for function
@@ -328,8 +328,8 @@ AUT_RESULT AutoIt_Script::Parser_UserFunctionCall(VectorToken &vLineToks, uint &
 	Variant			vTemp;
 	Variant			*pvTemp;
 	bool			bConst = false;
-	uint			ivFuncPos, ivFuncDecPos;
-	uint			ivParamPos;
+	unsigned long	ivFuncPos, ivFuncDecPos;
+	unsigned long	ivParamPos;
 	Token			tok;
 	AString			sLine;						// Temp line buffer
 	const char		*szTempScriptLine;
@@ -547,8 +547,8 @@ AUT_RESULT AutoIt_Script::Parser_UserFunctionCall(VectorToken &vLineToks, uint &
 			if (i > nNumParams)
 			{
 				// We need to use a default value, we CAN assume that tokens are - "$var = [+ -] literal"
-				VectorToken	vTempExp;
-				uint		ivTempExpPos = 0;
+				VectorToken		vTempExp;
+				unsigned long	ivTempExpPos = 0;
 
 				// Optional sign?
 				if (vFuncDecToks[ivFuncDecPos+2].m_nType == TOK_MINUS || vFuncDecToks[ivFuncDecPos+2].m_nType == TOK_PLUS)
@@ -622,7 +622,7 @@ AUT_RESULT AutoIt_Script::Parser_UserFunctionCall(VectorToken &vLineToks, uint &
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-bool AutoIt_Script::Parser_PluginFunctionCall(VectorToken &vLineToks, uint &ivPos, Variant &vResult)
+bool AutoIt_Script::Parser_PluginFunctionCall(VectorToken &vLineToks, unsigned long &ivPos, Variant &vResult)
 {
 	return false;
 /*
@@ -670,7 +670,7 @@ typedef int (*PLUGINFUNC)(VectorVariant &vParams, Variant &vResult, int &nError)
 // Parser_StartWithVariable()
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::Parser_StartWithVariable(VectorToken &vLineToks, uint &ivPos)
+void AutoIt_Script::Parser_StartWithVariable(VectorToken &vLineToks, unsigned long &ivPos)
 {
 	Variant	vTemp;								// Resulting variant
 	Variant *pvTemp;
@@ -769,7 +769,7 @@ void AutoIt_Script::Parser_StartWithVariable(VectorToken &vLineToks, uint &ivPos
 // Parser_StartWithKeyword()
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::Parser_StartWithKeyword(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
+void AutoIt_Script::Parser_StartWithKeyword(VectorToken &vLineToks, unsigned long &ivPos, int &nScriptLine)
 {
 	int nTemp1, nTemp2, nTemp3, nTemp4;
 
@@ -875,11 +875,11 @@ void AutoIt_Script::Parser_StartWithKeyword(VectorToken &vLineToks, uint &ivPos,
 // Parser_Keyword_IF()
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::Parser_Keyword_IF(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
+void AutoIt_Script::Parser_Keyword_IF(VectorToken &vLineToks, unsigned long &ivPos, int &nScriptLine)
 {
 	bool			bCondition;
-	VectorToken	vIFToks;
-	uint			ivTempPos;					// Position in the vector
+	VectorToken		vIFToks;
+	unsigned long	ivTempPos;					// Position in the vector
 	GenStatement	tIFDetails;
 	int				nIfCount;					// Keep track of number of nested IF statements
 	bool			bElseFound = false;
@@ -1098,7 +1098,7 @@ void AutoIt_Script::Parser_Keyword_ELSE(int &nScriptLine)
 // Parser_Keyword_ENDIF()
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::Parser_Keyword_ENDIF(VectorToken &vLineToks, uint &ivPos)
+void AutoIt_Script::Parser_Keyword_ENDIF(VectorToken &vLineToks, unsigned long &ivPos)
 {
 	// Is there a matching IF? (No longer need this check, blocks verified on load)
 
@@ -1125,7 +1125,7 @@ void AutoIt_Script::Parser_Keyword_ENDIF(VectorToken &vLineToks, uint &ivPos)
 // Parser_Keyword_WHILE()
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::Parser_Keyword_WHILE(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
+void AutoIt_Script::Parser_Keyword_WHILE(VectorToken &vLineToks, unsigned long &ivPos, int &nScriptLine)
 {
 	bool			bCondition;
 	VectorToken		vWhileToks;
@@ -1213,7 +1213,7 @@ void AutoIt_Script::Parser_Keyword_WHILE(VectorToken &vLineToks, uint &ivPos, in
 // Parser_Keyword_WEND()
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::Parser_Keyword_WEND(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
+void AutoIt_Script::Parser_Keyword_WEND(VectorToken &vLineToks, unsigned long &ivPos, int &nScriptLine)
 {
 	// Is there a matching WHILE as the innermost (top) loop?
 	// (No longer need this check, blocks verified on load)
@@ -1242,7 +1242,7 @@ void AutoIt_Script::Parser_Keyword_WEND(VectorToken &vLineToks, uint &ivPos, int
 // Parser_Keyword_EXITLOOP()
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::Parser_Keyword_EXITLOOP(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
+void AutoIt_Script::Parser_Keyword_EXITLOOP(VectorToken &vLineToks, unsigned long &ivPos, int &nScriptLine)
 {
 	int		nBreakLevel;						// Number of loops to break (default is 1)
 
@@ -1306,7 +1306,7 @@ void AutoIt_Script::Parser_Keyword_EXITLOOP(VectorToken &vLineToks, uint &ivPos,
 // Parser_Keyword_CONTINUELOOP()
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::Parser_Keyword_CONTINUELOOP(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
+void AutoIt_Script::Parser_Keyword_CONTINUELOOP(VectorToken &vLineToks, unsigned long &ivPos, int &nScriptLine)
 {
 	int		nBreakLevel;						// Number of loops to break (default is 1)
 	int	i;
@@ -1369,10 +1369,10 @@ void AutoIt_Script::Parser_Keyword_CONTINUELOOP(VectorToken &vLineToks, uint &iv
 // Parser_Keyword_DO()
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::Parser_Keyword_DO(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
+void AutoIt_Script::Parser_Keyword_DO(VectorToken &vLineToks, unsigned long &ivPos, int &nScriptLine)
 {
 	VectorToken		vDoToks;
-	uint			ivTempPos;					// Position in the vector
+	unsigned long	ivTempPos;					// Position in the vector
 	GenStatement	tDODetails;
 	int				nDoCount;					// Keep track of number of nested DO statements
 	bool			bUntilFound = false;
@@ -1441,10 +1441,10 @@ void AutoIt_Script::Parser_Keyword_DO(VectorToken &vLineToks, uint &ivPos, int &
 // Parser_Keyword_UNTIL()
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::Parser_Keyword_UNTIL(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
+void AutoIt_Script::Parser_Keyword_UNTIL(VectorToken &vLineToks, unsigned long &ivPos, int &nScriptLine)
 {
 	bool			bCondition;
-	VectorToken	vDoToks;
+	VectorToken		vDoToks;
 	AString			sTempScriptLine;
 
 	// Is there a matching DO?
@@ -1484,7 +1484,7 @@ void AutoIt_Script::Parser_Keyword_UNTIL(VectorToken &vLineToks, uint &ivPos, in
 // Parser_Keyword_FOR()
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::Parser_Keyword_FOR(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
+void AutoIt_Script::Parser_Keyword_FOR(VectorToken &vLineToks, unsigned long &ivPos, int &nScriptLine)
 {
 	VectorToken		vForToks;
 	uint			ivTempPos;					// Position in the vector
@@ -1664,7 +1664,7 @@ void AutoIt_Script::Parser_Keyword_FOR(VectorToken &vLineToks, uint &ivPos, int 
 // Parser_Keyword_NEXT()
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::Parser_Keyword_NEXT(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
+void AutoIt_Script::Parser_Keyword_NEXT(VectorToken &vLineToks, unsigned long &ivPos, int &nScriptLine)
 {
 	GenStatement	tFORDetails;
 	VectorToken		vForToks;
@@ -1740,10 +1740,10 @@ void AutoIt_Script::Parser_Keyword_NEXT(VectorToken &vLineToks, uint &ivPos, int
 // Parser_Keyword_SELECT()
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::Parser_Keyword_SELECT(VectorToken &vLineToks, uint &ivPos, int &nScriptLine)
+void AutoIt_Script::Parser_Keyword_SELECT(VectorToken &vLineToks, unsigned long &ivPos, int &nScriptLine)
 {
-	VectorToken	vSELECTToks;
-	uint			ivTempPos;					// Position in the vector
+	VectorToken		vSELECTToks;
+	unsigned long	ivTempPos;					// Position in the vector
 	GenStatement	tSELECTDetails;
 	int				nSelectCount;				// Keep track of number of nested SELECT statements
 	bool			bCaseFound = false;
@@ -1883,7 +1883,7 @@ void AutoIt_Script::Parser_Keyword_CASE(int &nScriptLine)
 // Parser_Keyword_ENDSELECT()
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::Parser_Keyword_ENDSELECT(VectorToken &vLineToks, uint &ivPos)
+void AutoIt_Script::Parser_Keyword_ENDSELECT(VectorToken &vLineToks, unsigned long &ivPos)
 {
 	// Is there a matching SELECT?
 	// (No longer need this check, blocks verified on load)
@@ -1917,7 +1917,7 @@ void AutoIt_Script::Parser_Keyword_ENDSELECT(VectorToken &vLineToks, uint &ivPos
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::Parser_Keyword_DIM(VectorToken &vLineToks, uint &ivPos, int nReqScope)
+void AutoIt_Script::Parser_Keyword_DIM(VectorToken &vLineToks, unsigned long &ivPos, int nReqScope)
 {
 	Variant			vTemp;
 	Variant			vOld;	// stores the array during resizing
@@ -2093,7 +2093,7 @@ void AutoIt_Script::Parser_Keyword_DIM(VectorToken &vLineToks, uint &ivPos, int 
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::Parser_Keyword_CONST(VectorToken &vLineToks, uint &ivPos, int nReqScope)
+void AutoIt_Script::Parser_Keyword_CONST(VectorToken &vLineToks, unsigned long &ivPos, int nReqScope)
 {
 	Variant			vTemp;
 	Variant			*pvTemp;
@@ -2171,7 +2171,7 @@ void AutoIt_Script::Parser_Keyword_CONST(VectorToken &vLineToks, uint &ivPos, in
 // Parser_Keyword_RETURN()
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::Parser_Keyword_RETURN(VectorToken &vLineToks, uint &ivPos)
+void AutoIt_Script::Parser_Keyword_RETURN(VectorToken &vLineToks, unsigned long &ivPos)
 {
 	++ivPos;									// Skip RETURN keyword
 
@@ -2196,7 +2196,7 @@ void AutoIt_Script::Parser_Keyword_RETURN(VectorToken &vLineToks, uint &ivPos)
 // Parser_Keyword_EXIT()
 ///////////////////////////////////////////////////////////////////////////////
 
-void AutoIt_Script::Parser_Keyword_EXIT(VectorToken &vLineToks, uint &ivPos)
+void AutoIt_Script::Parser_Keyword_EXIT(VectorToken &vLineToks, unsigned long &ivPos)
 {
 	Variant	vReturn;
 

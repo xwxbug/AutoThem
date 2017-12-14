@@ -2953,3 +2953,40 @@ size_t Util_find_string_in_str(const wchar_t* sz_text, const wchar_t *szInput, b
 
 	return i;									// i = index of \0
 }
+
+
+std::string stringtolowerA(std::string str)
+{
+	std::string result;
+	result.resize(str.length() * 4);
+	std::transform(str.begin(), str.end(), result.begin(), tolower);
+	return result;
+}
+
+
+std::wstring stringtolowerW(std::wstring str)
+{
+	std::wstring result;
+	result.resize(str.length() * 4);
+	std::transform(str.begin(), str.end(), result.begin(), towlower);
+	return result;
+}
+
+
+std::string stringtoupperA(std::string str)
+{
+	std::string result;
+	result.resize(str.length() * 4);
+	std::transform(str.begin(), str.end(), result.begin(), toupper);
+	return result;
+}
+
+
+std::wstring stringtoupperW(std::wstring str)
+{
+	std::wstring result;
+	result.resize(str.length() * 4);
+	std::transform(str.begin(), str.end(), result.begin(), towupper);
+	return result;
+}
+

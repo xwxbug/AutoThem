@@ -191,6 +191,36 @@
   <ItemGroup>
     <None Include="AutoThemLib.def" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\application.h" />
+    <ClInclude Include="..\include\astring_datatype.h" />
+    <ClInclude Include="..\include\AutoIt.h" />
+    <ClInclude Include="..\include\cmdline.h" />
+    <ClInclude Include="..\include\globaldata.h" />
+    <ClInclude Include="..\include\guibox.h" />
+    <ClInclude Include="..\include\inputbox.h" />
+    <ClInclude Include="..\include\mt19937ar-cok.h" />
+    <ClInclude Include="..\include\os_version.h" />
+    <ClInclude Include="..\include\qmath.h" />
+    <ClInclude Include="..\include\regexp.h" />
+    <ClInclude Include="..\include\script.h" />
+    <ClInclude Include="..\include\scriptfile.h" />
+    <ClInclude Include="..\include\sendkeys.h" />
+    <ClInclude Include="..\include\setforegroundwinex.h" />
+    <ClInclude Include="..\include\stack_int_datatype.h" />
+    <ClInclude Include="..\include\stack_statement_datatype.h" />
+    <ClInclude Include="..\include\stack_variable_list.h" />
+    <ClInclude Include="..\include\stack_variant_datatype.h" />
+    <ClInclude Include="..\include\StdAfx.h" />
+    <ClInclude Include="..\include\token_datatype.h" />
+    <ClInclude Include="..\include\userfunction_list.h" />
+    <ClInclude Include="..\include\utility.h" />
+    <ClInclude Include="..\include\variabletable.h" />
+    <ClInclude Include="..\include\variable_list.h" />
+    <ClInclude Include="..\include\variant_datatype.h" />
+    <ClInclude Include="..\include\vector_token_datatype.h" />
+    <ClInclude Include="..\include\vector_variant_datatype.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

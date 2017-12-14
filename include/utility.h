@@ -168,6 +168,11 @@ std::string Util_UNICODEtoANSIStr(const wchar_t *szUNI, int nMinLen=0);
 
 size_t Util_find_string_in_str(const wchar_t* sz_text, const wchar_t *szInput, bool bCaseSense, int nOccurance=1);
 
+std::string stringtolowerA(std::string str);
+std::wstring stringtolowerW(std::wstring str);
+std::string stringtoupperA(std::string str);
+std::wstring stringtoupperW(std::wstring str);
+
 template<typename T> inline void Util_VariantArrayAssign(Variant *pvVariant, unsigned int iElement, T tParam)
 {
 	Variant *pvTemp = Util_VariantArrayGetRef(pvVariant, iElement);

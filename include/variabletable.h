@@ -66,9 +66,16 @@ private:
 
 public:
 	// Functions
-	bool	Assign(AString sVarName, const Variant &vVariant, bool bConst = false, int nReqScope = VARTABLE_ANY);	// Assign variable
-	bool	GetRef(AString sVarName, Variant **pvVariant, bool &bConst, int nReqScope = VARTABLE_ANY);		// Get pointer to a variable
-	bool	CreateRef(AString sRefName, Variant *pvVariant);									// Create a reference variable (alt)
+
+	// Assign variable
+	bool	Assign(AString sVarName, const Variant &vVariant, bool bConst = false, int nReqScope = VARTABLE_ANY);	
+	// Get pointer to a variable
+	bool	GetRef(AString		sVarName, Variant **pvVariant, bool &bConst, int nReqScope = VARTABLE_ANY);
+	bool	GetRef(std::string  sVarName, Variant **pvVariant, bool &bConst, int nReqScope = VARTABLE_ANY);
+	bool	GetRef(const char * sVarName, Variant **pvVariant, bool &bConst, int nReqScope = VARTABLE_ANY);
+	// Create a reference variable (alt)
+	bool	CreateRef(AString sRefName, Variant *pvVariant);
+
 
 	void	ScopeIncrease(void);				// Increase scope (user function call)
 	void	ScopeDecrease(void);				// Decrease scope (return from user function)
