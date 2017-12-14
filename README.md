@@ -68,7 +68,7 @@ Macro Name | autoit(3.3.15.0) | AutoThem(current)
 @KBLayout|Y|Y
 @LF|Y|Y
 @LocalAppDataDir|Y|Y
-@LogonDNSDomain|Y|N
+@LogonDNSDomain|Y|Y
 @LogonDomain|Y|N
 @LogonServer|Y|N
 @MDAY|Y|N
