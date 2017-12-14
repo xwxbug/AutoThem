@@ -80,6 +80,7 @@
 #define TOK_INT32			25
 #define TOK_INT64			26
 #define TOK_DOUBLE			27
+#define TOK_ATEFUNCTION		28					//外部模块函数
 
 class Token
 {

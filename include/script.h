@@ -229,6 +229,16 @@ typedef struct
 	int				nMax;						// Max params
 } AU3_FuncInfo;
 
+typedef AUT_RESULT(*ATE_FUNCTION)(VectorVariant &vParams, Variant &vResult);
+typedef struct 
+{
+	const char		*szName;					// Function name
+	ATE_FUNCTION	lpFunc;						// Pointer to function
+	int				nMin;						// Min params
+	int				nMax;						// Max params
+}ATE_FuncInfo;
+
+
 
 /*
 // Plugin lookup structures
@@ -282,9 +292,14 @@ typedef struct _WinListNode
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class IExternalScript
+{
+public:
+	virtual bool RegisterModuleFuncs(ATE_FuncInfo * lp_func_info) = 0;
+};
 
 // The AutoIt Script object
-class AutoIt_Script
+class AutoIt_Script : public IExternalScript
 {
 public:
 	// Variables
@@ -378,6 +393,8 @@ private:
 	static const char*		m_szKeywords[];							// Valid keywords
 	static const char*		m_szMacros[];							// Valid functions
 	AU3_FuncInfo*			m_FuncList;								// List of functions and details for each
+	std::vector<ATE_FuncInfo> m_vec_module_func_list;				// List of functions(ext module)
+	std::vector<HMODULE>	m_vec_module_list;
 	int						m_nFuncListSize;						// Number of functions
 
 	// Window related vars
@@ -448,7 +465,10 @@ private:
 	AUT_RESULT		VerifyUserFuncCalls(void);						// Ensures user function calls are defined
 
 	AUT_RESULT		StorePluginFuncs(void);							// Get all plugin function details
-
+////外部模块函数注册
+	AUT_RESULT		StoreModuleFuncs(void);
+	bool			RegisterModuleFuncs(ATE_FuncInfo * lp_func_info);
+////
 	bool			HandleDelayedFunctions(void);						// Handle delayed commands
 	bool			HandleAdlib(void);
 	bool			HandleHotKey(void);
@@ -462,9 +482,12 @@ private:
 	AUT_RESULT		Parser_GetArrayElement(VectorToken &vLineToks, unsigned long &ivPos, Variant **ppvTemp);
 	void			Parser_StartWithKeyword(VectorToken &vLineToks, unsigned long &ivPos, int &nScriptLine);
 	AUT_RESULT		Parser_FunctionCall(VectorToken &vLineToks, unsigned long &ivPos, Variant &vResult);
+	AUT_RESULT		Parser_ATEFunctionCall(VectorToken &vLineToks, unsigned long &ivPos, Variant &vResult);
 	AUT_RESULT		Parser_GetFunctionCallParams(VectorVariant &vParams, VectorToken &vLineToks, unsigned long &ivPos, int &nNumParams);
+	AUT_RESULT		Parser_GetATEFunctionCallParams(VectorVariant &vParams, VectorToken &vLineToks, unsigned long &ivPos, int &nNumParams);
 	AUT_RESULT		FunctionExecute(int nFunction, VectorVariant &vParams, Variant &vResult);
-	bool			Parser_FindUserFunction(const char *szName, int &nLineNum, int &nNumParams,int &nNumParamsMin, int &nEndLineNum);
+	AUT_RESULT		ATEFunctionExecute(int nFunction, VectorVariant &vParams, Variant &vResult);
+	bool			Parser_FindUserFunction(const char *szName, int &nLineNum, int &nNumParams, int &nNumParamsMin, int &nEndLineNum);
 	AUT_RESULT		Parser_UserFunctionCall(VectorToken &vLineToks, unsigned long &ivPos, Variant &vResult);
 	bool			Parser_PluginFunctionCall(VectorToken &vLineToks, unsigned long &ivPos, Variant &vResult);
 	void			Parser_Keyword_IF(VectorToken &vLineToks, unsigned long &ivPos, int &nScriptLine);

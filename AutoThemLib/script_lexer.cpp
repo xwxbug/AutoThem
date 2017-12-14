@@ -557,9 +557,37 @@ void AutoIt_Script::Lexer_KeywordOrFunc(const char *szLine, uint &iPos, Token &r
 	else
 	{
 		// Invalid built in function, must be user function
-		rtok.settype(TOK_USERFUNCTION);
-		rtok = szTemp;
-	}
+//		rtok.settype(TOK_USERFUNCTION);
+//		rtok = szTemp;
+		nFirst = 0;
+		nLast = m_vec_module_func_list.size() - 1;
+		nRes=0;
 
+		while (nFirst <= nLast)
+		{
+			i = (nFirst + nLast) / 2;			// Truncated to an integer!
+
+			nRes = strcmp(szTemp, m_vec_module_func_list[i].szName);
+
+			if (nRes < 0)
+				nLast = i - 1;
+			else if (nRes > 0)
+				nFirst = i + 1;
+			else
+				break;								// nRes == 0
+		}
+
+		if (nFirst <= nLast)
+		{
+			rtok.settype(TOK_ATEFUNCTION);
+			rtok.nValue = i;					// Save function index
+		}
+		else
+		{
+			// Invalid built in function, must be user function
+			rtok.settype(TOK_USERFUNCTION);
+			rtok = szTemp;
+		}
+	}
 } // Lexer_KeywordOrFunc()
 

@@ -95,7 +95,18 @@ void AutoIt_Script::Parser(VectorToken &vLineToks, int &nScriptLine)
 			}
 
 			break;
+		case TOK_ATEFUNCTION:
+			if ( AUT_SUCCEEDED(Parser_ATEFunctionCall(vLineToks, ivPos, vTemp) ) )
+			{
+				// Next token must be END (otherwise there is other crap on the line)
+				if (vLineToks[ivPos].m_nType != TOK_END)
+				{
+					FatalError(IDS_AUT_E_EXTRAONLINE, vLineToks[ivPos].m_nCol);
+					return;
+				}
+			}
 
+			break;
 		case TOK_USERFUNCTION:
 			if ( AUT_SUCCEEDED(Parser_UserFunctionCall(vLineToks, ivPos, vTemp)) )
 			{
@@ -157,7 +168,33 @@ AUT_RESULT AutoIt_Script::Parser_FunctionCall(VectorToken &vLineToks, unsigned l
 
 } // Parser_FunctionCall()
 
+AUT_RESULT AutoIt_Script::Parser_ATEFunctionCall(VectorToken &vLineToks, unsigned long &ivPos, Variant &vResult)
+{
+	VectorVariant	vParams;					// Vector array of the parameters for this function
+	int				nNumParams;
 
+	// Get the function name
+	int nFunction = vLineToks[ivPos].nValue;
+	int	nColTemp = vLineToks[ivPos].m_nCol;
+
+	// Parse the function call and populate vParams
+	if (AUT_FAILED(Parser_GetATEFunctionCallParams(vParams, vLineToks, ivPos, nNumParams)))
+		return AUT_ERR;
+
+	// How many parameters did we find?
+	if (nNumParams < m_vec_module_func_list[nFunction].nMin || nNumParams > m_vec_module_func_list[nFunction].nMax)
+	{
+		FatalError(IDS_AUT_E_FUNCTIONNUMPARAMS, nColTemp);
+		return AUT_ERR;
+	}
+
+	// Call the function
+	if (AUT_FAILED(ATEFunctionExecute(nFunction, vParams, vResult)))
+		return AUT_ERR;
+
+	return AUT_OK;
+
+} // Parser_FunctionCall()
 ///////////////////////////////////////////////////////////////////////////////
 // Parser_GetFunctionCallParams()
 //
@@ -268,7 +305,106 @@ AUT_RESULT AutoIt_Script::Parser_GetFunctionCallParams(VectorVariant &vParams, V
 
 } // Parser_GetFunctionCallParams()
 
+AUT_RESULT AutoIt_Script::Parser_GetATEFunctionCallParams(VectorVariant &vParams, VectorToken &vLineToks, unsigned long &ivPos, int &nNumParams)
+{
+	VectorToken		vFuncToks;					// Vector of tokens for THIS FUNCTION CALL
+	Variant			vTemp;
+	unsigned long	ivFuncPos;
+	Token			tok;
+	int				nColTemp;
 
+	// Tokens should be:
+	// function ( expression , expression , ... )
+
+	// Store the char number of the function name in case we need to generate
+	// an error
+	nColTemp = vLineToks[ivPos].m_nCol;
+
+	++ivPos;									// Skip function name
+
+	if ( vLineToks[ivPos].m_nType != TOK_LEFTPAREN )
+	{
+		FatalError(IDS_AUT_E_GENFUNCTION, vLineToks[ivPos-1].m_nCol);	// Error points to function name ( might = END (i.e not present)
+		return AUT_ERR;
+	}
+	++ivPos;										// Skip (
+
+	// Loop until we hit ) or END storing tokens as we go
+	// Watch out for nested function calls
+	int nFuncCount = 0;
+	bool bFinished = false;
+	while ( bFinished == false )
+	{
+		switch (vLineToks[ivPos].m_nType)
+		{
+			case TOK_LEFTPAREN:
+				++nFuncCount;
+				vFuncToks.push_back(vLineToks[ivPos]);
+				++ivPos;
+				break;
+
+			case TOK_RIGHTPAREN:
+				if (nFuncCount == 0)
+				{
+					bFinished = true;
+					++ivPos;					// Skip final )
+				}
+				else
+				{
+					nFuncCount--;
+					vFuncToks.push_back(vLineToks[ivPos]);
+					++ivPos;
+				}
+				break;
+
+			case TOK_END:
+				FatalError(IDS_AUT_E_GENFUNCTION, vLineToks[ivPos-1].m_nCol);
+				return AUT_ERR;
+
+			default:
+				vFuncToks.push_back(vLineToks[ivPos]);
+				++ivPos;
+				break;
+		}
+	}
+
+
+	tok.settype(TOK_END);						// Add an END token
+	tok.m_nCol = nColTemp;						// Just in case someone uses this value for the error message
+	vFuncToks.push_back(tok);
+
+
+	// Loop around until we hit END, count and store the evaluated expressions as we go
+	nNumParams = 0;
+	ivFuncPos = 0;
+	while ( vFuncToks[ivFuncPos].m_nType != TOK_END  )
+	{
+		// Parse an "expression" (or parameter)
+		if ( AUT_FAILED( Parser_EvaluateExpression(vFuncToks, ivFuncPos, vTemp) ) )
+			return AUT_ERR;
+
+		// Increase the number of expressions parsed and store the result in our
+		// parameter vector
+		++nNumParams;
+		vParams.push_back(vTemp);
+
+		// Did the parse function cause us to goto the end of our tokens?
+		if ( vFuncToks[ivFuncPos].m_nType == TOK_END )
+			break;
+
+		// If the next token is a comma it means that there are more parameters to read
+		if ( vFuncToks[ivFuncPos].m_nType == TOK_COMMA )
+			++ivFuncPos;
+
+	} // End While
+
+
+
+	// vParams now contains all the parameters needed to call our function - yay
+
+	return AUT_OK;
+
+} // Parser_GetFunctionCallParams()
 ///////////////////////////////////////////////////////////////////////////////
 // Parser_FindUserFunction()
 //

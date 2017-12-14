@@ -1308,7 +1308,13 @@ AUT_RESULT AutoIt_Script::Parser_EvaluateExpression(VectorToken &vLineToks, unsi
 
 				opTemp = OPR_VAL;
 				break;
+			case TOK_ATEFUNCTION:
+				// Call function
+				if ( AUT_FAILED(Parser_ATEFunctionCall(vLineToks, ivPos, vTemp)) )
+					return AUT_ERR;
 
+				opTemp = OPR_VAL;
+				break;
 			case TOK_USERFUNCTION:
 				// Call user function
 				if ( AUT_FAILED(Parser_UserFunctionCall(vLineToks, ivPos, vTemp)) )

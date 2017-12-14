@@ -592,6 +592,16 @@ AutoIt_Script::~AutoIt_Script()
 
 	delete [] m_FuncList;							// Delete the entire list
 
+	for (i=0;i<m_vec_module_func_list.size();++i)
+	{
+		free((void*)m_vec_module_func_list[i].szName);
+	}
+
+	for (size_t j=0;j<m_vec_module_list.size();j++)
+	{
+		FreeLibrary(m_vec_module_list[j]);
+	}
+	m_vec_module_list.clear();
 }
 
 
@@ -742,6 +752,9 @@ void AutoIt_Script::SetFuncExtCode(int nCode)
 
 AUT_RESULT AutoIt_Script::InitScript(wchar_t *szFile)
 {
+	//load external module func
+	StoreModuleFuncs();
+
 	// Check that the block structures are correct
 	if ( AUT_FAILED(Parser_VerifyBlockStructure()) )
 		return AUT_ERR;
@@ -1047,7 +1060,16 @@ AUT_RESULT AutoIt_Script::FunctionExecute(int nFunction, VectorVariant &vParams,
 
 } // FunctionExecute()
 
+AUT_RESULT AutoIt_Script::ATEFunctionExecute(int nFunction, VectorVariant &vParams, Variant &vResult)
+{
+	vResult		= 1;							// Default return value is 1
+	SetFuncErrorCode(0);						// Default extended error code is zero
+	SetFuncExtCode(0);							// Default extended code is zero
 
+	// Lookup the function and execute
+	return (m_vec_module_func_list[nFunction].lpFunc)(vParams, vResult);	
+
+} // FunctionExecute()
 ///////////////////////////////////////////////////////////////////////////////
 // StoreUserFuncs()
 //
@@ -1383,6 +1405,78 @@ AUT_RESULT AutoIt_Script::StorePluginFuncs(void)
 
 } // StorePluginFuncs()
 
+
+bool StoreModuleFuncsSort(ATE_FuncInfo i, ATE_FuncInfo j)
+{
+	return stricmp(i.szName, j.szName)==0;
+}
+
+AUT_RESULT AutoIt_Script::StoreModuleFuncs(void)
+{
+	WIN32_FIND_DATAW fd;
+	wchar_t sz_module_dir[MAX_PATH] = { 0 };
+	wchar_t sz_module_find[MAX_PATH] = { 0 };
+	GetModuleFileNameW(g_hInstance, sz_module_dir, MAX_PATH);
+	wchar_t * lp_sz_tmp = wcsrchr(sz_module_dir, L'\\');
+	lp_sz_tmp[0] = 0;
+	wcscpy(sz_module_find, sz_module_dir);
+#ifdef _WIN64
+	wcscat(sz_module_find, L"\\modules\\*.w64");
+#else
+	wcscat(sz_module_find, L"\\modules\\*.w32");
+#endif
+	HANDLE h_find=FindFirstFileW(sz_module_find, &fd);
+	if (h_find == INVALID_HANDLE_VALUE)
+		return AUT_OK;
+	do
+	{
+		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)		
+			continue;		
+		else
+		{
+			typedef bool (* ATE_REGISTER_MODULE)(void* LPREGISTER_MODULE_FUNC);
+			std::wstring sz_module_file_path;
+			sz_module_file_path = sz_module_dir;
+			sz_module_file_path += L"\\modules\\";
+			sz_module_file_path += fd.cFileName;
+			HMODULE h_module = LoadLibraryW(sz_module_file_path.c_str());
+			if (h_module==nullptr)
+				continue;
+			ATE_REGISTER_MODULE reg = (ATE_REGISTER_MODULE)GetProcAddress(h_module, "ATE_REGISTER_MODULE");
+			if (reg==nullptr)
+			{
+				FreeLibrary(h_module);
+				continue;
+			}
+			else
+			{
+				IExternalScript* lpIES = (IExternalScript*)this;
+				reg(lpIES);
+				m_vec_module_list.push_back(h_module);
+			}
+		}
+	} while (FindNextFileW(h_find, &fd));
+	FindClose(h_find);
+
+	std::sort(m_vec_module_func_list.begin(), m_vec_module_func_list.end(), StoreModuleFuncsSort);
+
+	return AUT_OK;
+}
+
+bool AutoIt_Script::RegisterModuleFuncs(ATE_FuncInfo * lp_func_info)
+{
+	if (!lp_func_info)
+		return false;
+	
+	ATE_FuncInfo afi_tmp = *lp_func_info;
+	// Make sure funcname is stored as upper case
+	char* lp_sz_func_name = strdup(lp_func_info->szName);
+	CharUpperA(lp_sz_func_name);
+	afi_tmp.szName = strdup(lp_sz_func_name);
+	free(lp_sz_func_name);
+	m_vec_module_func_list.push_back(afi_tmp);
+	return true;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // HandleAdlib()
