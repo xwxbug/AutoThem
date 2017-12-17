@@ -1408,7 +1408,7 @@ AUT_RESULT AutoIt_Script::StorePluginFuncs(void)
 
 bool StoreModuleFuncsSort(ATE_FuncInfo i, ATE_FuncInfo j)
 {
-	return stricmp(i.szName, j.szName)<=0;
+	return stricmp(i.szName, j.szName) < 0;
 }
 
 AUT_RESULT AutoIt_Script::StoreModuleFuncs(void)
@@ -1420,11 +1420,7 @@ AUT_RESULT AutoIt_Script::StoreModuleFuncs(void)
 	wchar_t * lp_sz_tmp = wcsrchr(sz_module_dir, L'\\');
 	lp_sz_tmp[0] = 0;
 	wcscpy(sz_module_find, sz_module_dir);
-#ifdef _WIN64
-	wcscat(sz_module_find, L"\\modules\\*.w64");
-#else
-	wcscat(sz_module_find, L"\\modules\\*.w32");
-#endif
+	wcscat(sz_module_find, L"\\modules\\*.atm");
 	HANDLE h_find=FindFirstFileW(sz_module_find, &fd);
 	if (h_find == INVALID_HANDLE_VALUE)
 		return AUT_OK;
@@ -1434,7 +1430,7 @@ AUT_RESULT AutoIt_Script::StoreModuleFuncs(void)
 			continue;		
 		else
 		{
-			typedef bool (* ATE_REGISTER_MODULE)(void* LPREGISTER_MODULE_FUNC);
+			typedef bool (* ATE_REGISTER_MODULE)(void* LPREGISTER_MODULE_FUNC,bool &b_is_thread_safe);
 			std::wstring sz_module_file_path;
 			sz_module_file_path = sz_module_dir;
 			sz_module_file_path += L"\\modules\\";
@@ -1442,8 +1438,8 @@ AUT_RESULT AutoIt_Script::StoreModuleFuncs(void)
 			HMODULE h_module = LoadLibraryW(sz_module_file_path.c_str());
 			if (h_module==nullptr)
 				continue;
-			ATE_REGISTER_MODULE reg = (ATE_REGISTER_MODULE)GetProcAddress(h_module, "ATE_REGISTER_MODULE");
-			if (reg==nullptr)
+			ATE_REGISTER_MODULE lp_fn_reg_module = (ATE_REGISTER_MODULE)GetProcAddress(h_module, "ATE_REGISTER_MODULE");
+			if (lp_fn_reg_module==nullptr)
 			{
 				FreeLibrary(h_module);
 				continue;
@@ -1451,8 +1447,10 @@ AUT_RESULT AutoIt_Script::StoreModuleFuncs(void)
 			else
 			{
 				IExternalScript* lpIES = (IExternalScript*)this;
-				reg(lpIES);
-				m_vec_module_list.push_back(h_module);
+				bool b_is_thread_safe = false;
+				lp_fn_reg_module(lpIES,b_is_thread_safe);
+				if (b_is_thread_safe)				
+					m_vec_module_list.push_back(h_module);
 			}
 		}
 	} while (FindNextFileW(h_find, &fd));

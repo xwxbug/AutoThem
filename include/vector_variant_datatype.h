@@ -59,7 +59,7 @@ typedef struct _VectorVariantNode
 } VectorVariantNode;
 
 
-class VectorVariant
+ class AUTOTHEMLIBEXPORT VectorVariant
 {
 public:
 	// Functions

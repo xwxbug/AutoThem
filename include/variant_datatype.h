@@ -80,9 +80,13 @@
 #define VAR_ITOA_MAX		65					// Maximum returned length of an i64toa operation
 #define VAR_SUBSCRIPT_MAX	64					// Maximum number of subscripts for an array
 
+#ifdef AUTOTHEMLIB
+#define AUTOTHEMLIBEXPORT __declspec(dllexport)
+#else
+#define AUTOTHEMLIBEXPORT __declspec(dllimport)
+#endif
 
-
-class Variant
+class AUTOTHEMLIBEXPORT Variant
 {
 
 public:

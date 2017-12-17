@@ -74,25 +74,25 @@
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir)\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\</OutDir>
-    <TargetExt>.w64</TargetExt>
+    <TargetExt>.atm</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir)\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)$(Configuration)\modules\</OutDir>
-    <TargetExt>.w32</TargetExt>
+    <TargetExt>.atm</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(SolutionDir)\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)$(Configuration)\modules\</OutDir>
-    <TargetExt>.w32</TargetExt>
+    <TargetExt>.atm</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(SolutionDir)\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\modules\</OutDir>
-    <TargetExt>.w64</TargetExt>
+    <TargetExt>.atm</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -159,6 +159,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ATM_BASE.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\AutoThemLib\AutoThemLib.vcxproj">
+      <Project>{029474fa-24fe-4eed-98b8-6d4d7cec6776}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

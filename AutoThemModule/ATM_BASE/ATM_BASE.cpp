@@ -2,24 +2,31 @@
 #include "script.h"
 
 
-AUT_RESULT V_MessageBox(VectorVariant &vParams, Variant &vResult)
+AUT_RESULT V_AutoThemModuleTest(VectorVariant &vParams, Variant &vResult)
 {
-	MessageBoxW(0, L"WTF", L"JUST TEST", 0);
-
+	if (vParams.size())
+	{
+		MessageBoxW(0, vParams[0].szValue(), L"JUST TEST", 0);
+	}
+	else
+	{
+		MessageBoxW(0, L"WTF", L"JUST TEST", 0);
+	}
+	
+	vResult = AUT_OK;
 	return 0;
 }
 
 
-bool ATE_REGISTER_MODULE(void* LPREGISTER_MODULE_FUNC)
+bool ATE_REGISTER_MODULE(void* LPREGISTER_MODULE_FUNC,bool &b_is_thread_safe)
 {
 	IExternalScript* ies = (IExternalScript*)LPREGISTER_MODULE_FUNC;
 	ATE_FuncInfo afi;
-	afi.lpFunc = V_MessageBox;
+	afi.lpFunc = V_AutoThemModuleTest;
 	afi.nMax = 5;
 	afi.nMin = 0;
-	afi.szName = "MessageBox";
+	afi.szName = "AutoThemModuleTest";
 	ies->RegisterModuleFuncs(&afi);
-	afi.szName = "MessageBox1";
-	ies->RegisterModuleFuncs(&afi);
+	b_is_thread_safe = false;
 	return true;
 }

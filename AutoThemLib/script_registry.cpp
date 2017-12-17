@@ -394,7 +394,7 @@ AUT_RESULT AutoIt_Script::F_RegWrite(VectorVariant &vParams, Variant &vResult)
 	if (!wcsicmp(vParams[2].szValue(), L"REG_SZ"))
 	{
 		wcscpy((wchar_t*)szRegBuffer, vParams[3].szValue());
-		if ( RegSetValueExW(hRegKey, vParams[1].szValue(), 0, REG_SZ, (CONST BYTE *)vParams[3].szValue(), (DWORD)nLen+1 ) != ERROR_SUCCESS )
+		if ( RegSetValueExW(hRegKey, vParams[1].szValue(), 0, REG_SZ, (CONST BYTE *)vParams[3].szValue(), (DWORD)(nLen +1 )* sizeof(wchar_t)) != ERROR_SUCCESS )
 			vResult = 0;						// Default is 1
 
 		RegCloseKey(hRegKey);
