@@ -13,6 +13,16 @@ AUT_RESULT F_Abs(VectorVariant &vParams, Variant &vResult)
 } // Abs()
 
 
+///////////////////////////////////////////////////////////////////////////////
+// ACos()
+///////////////////////////////////////////////////////////////////////////////
+AUT_RESULT F_ACos(VectorVariant &vParams, Variant &vResult)
+{
+	vResult = acos(vParams[0].fValue());
+	return AUT_OK;
+} // ACos()
+
+
 bool ATE_REGISTER_MODULE(void* LPREGISTER_MODULE_FUNC,bool &b_is_thread_safe)
 {
 	IExternalScript* ies = (IExternalScript*)LPREGISTER_MODULE_FUNC;
@@ -25,6 +35,7 @@ bool ATE_REGISTER_MODULE(void* LPREGISTER_MODULE_FUNC,bool &b_is_thread_safe)
 	ies->RegisterModuleFuncs(&afi);
 */
 	ies->RegisterModuleFuncs("ABS", F_Abs, 1, 1);
+	ies->RegisterModuleFuncs("ACOS", F_ACos, 1, 1);
 	b_is_thread_safe = false;
 	return true;
 }

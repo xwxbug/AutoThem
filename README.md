@@ -132,7 +132,7 @@ Current Function Port
 Function Name | autoit(3.3.15.0) | AutoThem(current) | Param Count | Modules
 ---|---|---|---|---
 Abs|Y|Y|(1,1)/(1,1)|MATH
-ACos|Y|N|(1,1)/(N/A,N/A)
+ACos|Y|Y|(1,1)/(1/1)|MATH
 AdlibRegister|Y|N|(1,2)/(N/A,N/A)
 AdlibUnRegister|Y|N|(0,1)/(N/A,N/A)
 Asc|Y|Y|(1,1)/(1,1)

@@ -551,24 +551,6 @@ AUT_RESULT AutoIt_Script::F_ATan(VectorVariant &vParams, Variant &vResult)
 } // ATab()
 
 
-///////////////////////////////////////////////////////////////////////////////
-// ACos()
-///////////////////////////////////////////////////////////////////////////////
-
-AUT_RESULT AutoIt_Script::F_ACos(VectorVariant &vParams, Variant &vResult)
-{
-#ifdef _MSC_VER
-		// MS Compiler
-	vResult = qmathAcos(vParams[0].fValue());
-#else
-		// Non MS/Ming
-	vResult = acos(vParams[0].fValue());
-#endif
-
-	return AUT_OK;
-
-} // ACos()
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // ASin()

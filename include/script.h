@@ -885,7 +885,6 @@ private:
 	AUT_RESULT		F_Sin(VectorVariant &vParams, Variant &vResult);
 	AUT_RESULT		F_ASin(VectorVariant &vParams, Variant &vResult);
 	AUT_RESULT		F_Cos(VectorVariant &vParams, Variant &vResult);
-	AUT_RESULT		F_ACos(VectorVariant &vParams, Variant &vResult);
 	AUT_RESULT		F_Tan(VectorVariant &vParams, Variant &vResult);
 	AUT_RESULT		F_ATan(VectorVariant &vParams, Variant &vResult);
 	AUT_RESULT		F_Log(VectorVariant &vParams, Variant &vResult);
