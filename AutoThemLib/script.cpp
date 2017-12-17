@@ -196,7 +196,6 @@ AutoIt_Script::AutoIt_Script()
 // Failure to observe these instructions will be very bad...
 AU3_FuncInfo funcList[] = 
 {
-	{"ABS", &AutoIt_Script::F_Abs, 1, 1},
 	{"ACOS", &AutoIt_Script::F_ACos, 1, 1},
 	{"ADLIBDISABLE", &AutoIt_Script::F_AdlibDisable, 0, 0},
 	{"ADLIBENABLE", &AutoIt_Script::F_AdlibEnable, 1, 2},

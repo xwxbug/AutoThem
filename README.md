@@ -129,9 +129,9 @@ Macro Name | autoit(3.3.15.0) | AutoThem(current)
 
 Current Function Port
 --
-Function Name | autoit(3.3.15.0) | AutoThem(current) | Param Count
----|---|---|---
-Abs|Y|N|(1,1)/(N/A,N/A)
+Function Name | autoit(3.3.15.0) | AutoThem(current) | Param Count | Modules
+---|---|---|---|---
+Abs|Y|Y|(1,1)/(1,1)|MATH
 ACos|Y|N|(1,1)/(N/A,N/A)
 AdlibRegister|Y|N|(1,2)/(N/A,N/A)
 AdlibUnRegister|Y|N|(0,1)/(N/A,N/A)

@@ -2,20 +2,15 @@
 #include "script.h"
 
 
-AUT_RESULT V_AutoThemModuleTest(VectorVariant &vParams, Variant &vResult)
+///////////////////////////////////////////////////////////////////////////////
+// Abs()
+///////////////////////////////////////////////////////////////////////////////
+AUT_RESULT F_Abs(VectorVariant &vParams, Variant &vResult)
 {
-	if (vParams.size())
-	{
-		MessageBoxW(0, vParams[0].szValue(), L"JUST TEST", 0);
-	}
-	else
-	{
-		MessageBoxW(0, L"WTF", L"JUST TEST", 0);
-	}
-	
-	vResult = AUT_OK;
-	return 0;
-}
+	//
+	vResult = fabs(vParams[0].fValue());
+	return AUT_OK;
+} // Abs()
 
 
 bool ATE_REGISTER_MODULE(void* LPREGISTER_MODULE_FUNC,bool &b_is_thread_safe)
@@ -29,6 +24,7 @@ bool ATE_REGISTER_MODULE(void* LPREGISTER_MODULE_FUNC,bool &b_is_thread_safe)
 	afi.szName = "AutoThemModuleTest";
 	ies->RegisterModuleFuncs(&afi);
 */
+	ies->RegisterModuleFuncs("ABS", F_Abs, 1, 1);
 	b_is_thread_safe = false;
 	return true;
 }

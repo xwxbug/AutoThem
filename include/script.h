@@ -890,7 +890,6 @@ private:
 	AUT_RESULT		F_ATan(VectorVariant &vParams, Variant &vResult);
 	AUT_RESULT		F_Log(VectorVariant &vParams, Variant &vResult);
 	AUT_RESULT		F_Exp(VectorVariant &vParams, Variant &vResult);
-	AUT_RESULT		F_Abs(VectorVariant &vParams, Variant &vResult);
 	AUT_RESULT		F_Mod(VectorVariant &vParams, Variant &vResult);
 	AUT_RESULT		F_Sqrt(VectorVariant &vParams, Variant &vResult);
 	AUT_RESULT		F_Round(VectorVariant &vParams, Variant &vResult);
