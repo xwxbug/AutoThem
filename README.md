@@ -143,7 +143,7 @@ ATan|Y|N|(1,1)/(1,1)|MATH
 AutoItSetOption|Y|N|(1,2)/(N/A,N/A)
 AutoItWinGetTitle|Y|N|(0,0)/(N/A,N/A)
 AutoItWinSetTitle|Y|N|(1,1)/(N/A,N/A)
-Beep|Y|N|(0,2)/(N/A,N/A)
+Beep|Y|Y|(0,2)/(0,2)|BASE
 Binary|Y|N|(1,1)/(N/A,N/A)
 BinaryLen|Y|N|(1,1)/(N/A,N/A)
 BinaryMid|Y|N|(2,3)/(N/A,N/A)
