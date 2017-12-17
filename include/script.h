@@ -869,7 +869,6 @@ private:
 	AUT_RESULT		F_BitXOR(VectorVariant &vParams, Variant &vResult);
 	AUT_RESULT		F_BitShift(VectorVariant &vParams, Variant &vResult);
 	AUT_RESULT		F_Chr(VectorVariant &vParams, Variant &vResult);
-	AUT_RESULT		F_Asc(VectorVariant &vParams, Variant &vResult);
 	AUT_RESULT		F_Dec(VectorVariant &vParams, Variant &vResult);
 	AUT_RESULT		F_VarType(VectorVariant &vParams, Variant &vResult);
 	AUT_RESULT		F_Int(VectorVariant &vParams, Variant &vResult);
@@ -883,10 +882,8 @@ private:
 	AUT_RESULT		F_Random(VectorVariant &vParams, Variant &vResult);
 
 	AUT_RESULT		F_Sin(VectorVariant &vParams, Variant &vResult);
-	AUT_RESULT		F_ASin(VectorVariant &vParams, Variant &vResult);
 	AUT_RESULT		F_Cos(VectorVariant &vParams, Variant &vResult);
 	AUT_RESULT		F_Tan(VectorVariant &vParams, Variant &vResult);
-	AUT_RESULT		F_ATan(VectorVariant &vParams, Variant &vResult);
 	AUT_RESULT		F_Log(VectorVariant &vParams, Variant &vResult);
 	AUT_RESULT		F_Exp(VectorVariant &vParams, Variant &vResult);
 	AUT_RESULT		F_Mod(VectorVariant &vParams, Variant &vResult);

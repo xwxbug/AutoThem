@@ -135,11 +135,11 @@ Abs|Y|Y|(1,1)/(1,1)|MATH
 ACos|Y|Y|(1,1)/(1/1)|MATH
 AdlibRegister|Y|N|(1,2)/(N/A,N/A)
 AdlibUnRegister|Y|N|(0,1)/(N/A,N/A)
-Asc|Y|Y|(1,1)/(1,1)
-AscW|Y|N|(1,1)/(N/A,N/A)
-ASin|Y|N|(1,1)/(N/A,N/A)
+Asc|Y|Y|(1,1)/(1,1)|MATH
+AscW|Y|Y|(1,1)/(1,1)|MATH
+ASin|Y|N|(1,1)/(1,1)|MATH
 Assign|Y|N|(2,3)/(N/A,N/A)
-ATan|Y|N|(1,1)/(N/A,N/A)
+ATan|Y|N|(1,1)/(1,1)|MATH
 AutoItSetOption|Y|N|(1,2)/(N/A,N/A)
 AutoItWinGetTitle|Y|N|(0,0)/(N/A,N/A)
 AutoItWinSetTitle|Y|N|(1,1)/(N/A,N/A)

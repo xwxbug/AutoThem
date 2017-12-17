@@ -198,10 +198,7 @@ AU3_FuncInfo funcList[] =
 {
 	{"ADLIBDISABLE", &AutoIt_Script::F_AdlibDisable, 0, 0},
 	{"ADLIBENABLE", &AutoIt_Script::F_AdlibEnable, 1, 2},
-	{"ASC", &AutoIt_Script::F_Asc, 1, 1},
-	{"ASIN", &AutoIt_Script::F_ASin, 1, 1},
 	{"ASSIGN", &AutoIt_Script::F_Assign, 2, 3},
-	{"ATAN", &AutoIt_Script::F_ATan, 1, 1},
 	{"AUTOITSETOPTION", &AutoIt_Script::F_AutoItSetOption, 2, 2},
 	{"AUTOITWINGETTITLE", &AutoIt_Script::F_AutoItWinGetTitle, 0, 0},
 	{"AUTOITWINSETTITLE", &AutoIt_Script::F_AutoItWinSetTitle, 1, 1},
