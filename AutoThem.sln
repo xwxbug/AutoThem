@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2003
+VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoThem", "AutoThem\AutoThem.vcxproj", "{0222B8AA-19D6-4357-AA2F-C1598FB73F61}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutoThemModule", "AutoThemModule", "{D0B6474E-33FC-49A3-8D3D-0FF1B52ADEEF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ATM_BASE", "AutoThemModule\ATM_BASE\ATM_BASE.vcxproj", "{F6F587ED-A227-425D-A98A-1BBFC42D1EFF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ATM_MATH", "AutoThemModule\ATM_MATH\ATM_MATH.vcxproj", "{E6FF4128-CCB0-4971-80C1-6978043BD80A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,12 +55,21 @@ Global
 		{F6F587ED-A227-425D-A98A-1BBFC42D1EFF}.Release|x64.Build.0 = Release|x64
 		{F6F587ED-A227-425D-A98A-1BBFC42D1EFF}.Release|x86.ActiveCfg = Release|Win32
 		{F6F587ED-A227-425D-A98A-1BBFC42D1EFF}.Release|x86.Build.0 = Release|Win32
+		{E6FF4128-CCB0-4971-80C1-6978043BD80A}.Debug|x64.ActiveCfg = Debug|x64
+		{E6FF4128-CCB0-4971-80C1-6978043BD80A}.Debug|x64.Build.0 = Debug|x64
+		{E6FF4128-CCB0-4971-80C1-6978043BD80A}.Debug|x86.ActiveCfg = Debug|Win32
+		{E6FF4128-CCB0-4971-80C1-6978043BD80A}.Debug|x86.Build.0 = Debug|Win32
+		{E6FF4128-CCB0-4971-80C1-6978043BD80A}.Release|x64.ActiveCfg = Release|x64
+		{E6FF4128-CCB0-4971-80C1-6978043BD80A}.Release|x64.Build.0 = Release|x64
+		{E6FF4128-CCB0-4971-80C1-6978043BD80A}.Release|x86.ActiveCfg = Release|Win32
+		{E6FF4128-CCB0-4971-80C1-6978043BD80A}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F6F587ED-A227-425D-A98A-1BBFC42D1EFF} = {D0B6474E-33FC-49A3-8D3D-0FF1B52ADEEF}
+		{E6FF4128-CCB0-4971-80C1-6978043BD80A} = {D0B6474E-33FC-49A3-8D3D-0FF1B52ADEEF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {02A71742-6504-4F9E-8BE0-291926EE1C77}
