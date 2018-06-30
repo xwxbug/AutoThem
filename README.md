@@ -164,8 +164,10 @@ ChrW|Y|N|(1,1)/(N/A,N/A)
 ClipGet|Y|N|(0,0)/(N/A,N/A)
 ClipPut|Y|N|(1,1)/(N/A,N/A)
 ConsoleRead|Y|N|(0,2)/(N/A,N/A)
-ConsoleWrite|Y|N|(1,1)/(N/A,N/A)
-ConsoleWriteError|Y|N|(1,1)/(N/A,N/A)
+ConsolePause|N|Y|(0,0)/BASE
+ConsoleSetTitle|N|Y|(1,1)/BASE
+ConsoleWrite|Y|Y|(1,1)/BASE
+ConsoleWriteError|Y|Y|(1,1)/BASE
 ControlClick|Y|N|(3,7)/(N/A,N/A)
 ControlCommand|Y|N|(4,5)/(N/A,N/A)
 ControlDisable|Y|N|(3,3)/(N/A,N/A)

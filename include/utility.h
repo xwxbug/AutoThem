@@ -164,7 +164,7 @@ wchar_t * Util_ANSItoUNICODE(const char *szANSI, int nMinLen = 0);
 std::wstring Util_ANSItoUNICODEStr(const char *szANSI, int nMinLen=0);
 
 char *	Util_UNICODEtoANSI(const wchar_t *szUNI, int nMinLen = 0);
-std::string Util_UNICODEtoANSIStr(const wchar_t *szUNI, int nMinLen=0);
+__declspec(dllexport) std::string Util_UNICODEtoANSIStr(const wchar_t *szUNI, int nMinLen=0);
 
 size_t Util_find_string_in_str(const wchar_t* sz_text, const wchar_t *szInput, bool bCaseSense, int nOccurance=1);
 

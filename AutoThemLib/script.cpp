@@ -214,7 +214,6 @@ AU3_FuncInfo funcList[] =
 	{"CHR", &AutoIt_Script::F_Chr, 1, 1},
 	{"CLIPGET", &AutoIt_Script::F_ClipGet, 0, 0},
 	{"CLIPPUT", &AutoIt_Script::F_ClipPut, 1, 1},
-	{"CONSOLEWRITE", &AutoIt_Script::F_ConsoleWrite, 1, 1},
 	{"CONTROLCLICK", &AutoIt_Script::F_ControlClick, 3, 5},
 	{"CONTROLCOMMAND", &AutoIt_Script::F_ControlCommand, 4, 5},
 	{"CONTROLDISABLE", &AutoIt_Script::F_ControlDisable, 3, 3},

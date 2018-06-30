@@ -197,7 +197,7 @@ typedef struct
 
 	// File Find
 	HANDLE		hFind;							// Find handle
-	char		*szFind;						// First search result (or NULL on 2nd, 3rd, etc)
+	wchar_t		*szFind;						// First search result (or NULL on 2nd, 3rd, etc)
 
 } FileHandleDetails;
 

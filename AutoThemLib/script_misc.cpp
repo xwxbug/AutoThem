@@ -2232,23 +2232,6 @@ AUT_RESULT AutoIt_Script::F_IsDeclared(VectorVariant &vParams, Variant &vResult)
 
 
 //////////////////////////////////////////////////////////////////////////
-// F_ConsoleWrite("text")
-//
-// Writes to the console so editors like SciTE can
-// read the data
-//////////////////////////////////////////////////////////////////////////
-
-AUT_RESULT AutoIt_Script::F_ConsoleWrite(VectorVariant &vParams, Variant &vResult)
-{
-	printf("%s", Util_UNICODEtoANSIStr(vParams[0].szValue()).c_str());
-	fflush(stdout);
-
-	return AUT_OK;
-
-}	// F_ConsoleWrite()
-
-
-//////////////////////////////////////////////////////////////////////////
 // ConvertCoords()
 //
 // Helps convert coordinates to screen, active window and client relative

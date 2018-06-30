@@ -2556,7 +2556,7 @@ AUT_RESULT	AutoIt_Script::F_FileFindFirstFile(VectorVariant &vParams, Variant &v
 	m_FileHandleDetails[nFreeHandle]->nType = AUT_FILEFIND;		// File find type
 	m_FileHandleDetails[nFreeHandle]->hFind = hFind;			// Store handle
 
-	char *szFind = Util_StrCpyAlloc(Util_UNICODEtoANSIStr(wfd.cFileName).c_str());					// Store the first find result
+	wchar_t *szFind = Util_StrCpyAlloc(wfd.cFileName);			// Store the first find result
 	m_FileHandleDetails[nFreeHandle]->szFind = szFind;			// Store string
 
 	++m_nNumFileHandles;
@@ -2575,7 +2575,7 @@ AUT_RESULT	AutoIt_Script::F_FileFindFirstFile(VectorVariant &vParams, Variant &v
 
 AUT_RESULT	AutoIt_Script::F_FileFindNextFile(VectorVariant &vParams, Variant &vResult)
 {
-	WIN32_FIND_DATAA		wfd;
+	WIN32_FIND_DATAW		wfd;
 	int					nHandle = vParams[0].nValue();
 
 	// Does this file handle exist?
@@ -2595,23 +2595,35 @@ AUT_RESULT	AutoIt_Script::F_FileFindNextFile(VectorVariant &vParams, Variant &vR
 	// Have we used the first search value?  If not, use and then set to NULL
 	if (m_FileHandleDetails[nHandle]->szFind != NULL)
 	{
-		vResult = m_FileHandleDetails[nHandle]->szFind;
-		delete [] m_FileHandleDetails[nHandle]->szFind;
-		m_FileHandleDetails[nHandle]->szFind = NULL;
-		return AUT_OK;
+		if (wcsicmp(m_FileHandleDetails[nHandle]->szFind, L".") == 0 || wcsicmp(m_FileHandleDetails[nHandle]->szFind, L"..") == 0)
+		{
+			delete[] m_FileHandleDetails[nHandle]->szFind;
+			m_FileHandleDetails[nHandle]->szFind = NULL;
+		}
+		else
+		{
+			vResult = m_FileHandleDetails[nHandle]->szFind;
+			delete[] m_FileHandleDetails[nHandle]->szFind;
+			m_FileHandleDetails[nHandle]->szFind = NULL;
+			return AUT_OK;
+		}
 	}
 
+next:
 	// Get the next file
-	if ( !FindNextFileA(m_FileHandleDetails[nHandle]->hFind, &wfd) )
+	if ( !FindNextFileW(m_FileHandleDetails[nHandle]->hFind, &wfd) )
 	{
 		SetFuncErrorCode(1);					// No more files
 		vResult = "";
 	}
 	else
+	{
+		if (wcsicmp(wfd.cFileName,L".")==0|| wcsicmp(wfd.cFileName, L"..") == 0)
+			goto next;
+		
 		vResult = wfd.cFileName;
-
+	}
 	return AUT_OK;
-
 } // FileFindNextFile()
 
 
